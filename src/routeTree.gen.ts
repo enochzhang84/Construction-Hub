@@ -66,9 +66,9 @@ const ProjectsDetailIdRoute = ProjectsDetailIdRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProjectsDetailIdAddonRoute = ProjectsDetailIdAddonRouteImport.update({
-  id: '/projects/detail/$id/addon',
-  path: '/projects/detail/$id/addon',
-  getParentRoute: () => rootRouteImport,
+  id: '/addon',
+  path: '/addon',
+  getParentRoute: () => ProjectsDetailIdRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
@@ -80,7 +80,7 @@ export interface FileRoutesByFullPath {
   '/reports': typeof ReportsRoute
   '/settings': typeof SettingsRoute
   '/projects/$status': typeof ProjectsStatusRoute
-  '/projects/detail/$id': typeof ProjectsDetailIdRoute
+  '/projects/detail/$id': typeof ProjectsDetailIdRouteWithChildren
   '/projects/detail/$id/addon': typeof ProjectsDetailIdAddonRoute
 }
 export interface FileRoutesByTo {
@@ -92,7 +92,7 @@ export interface FileRoutesByTo {
   '/reports': typeof ReportsRoute
   '/settings': typeof SettingsRoute
   '/projects/$status': typeof ProjectsStatusRoute
-  '/projects/detail/$id': typeof ProjectsDetailIdRoute
+  '/projects/detail/$id': typeof ProjectsDetailIdRouteWithChildren
   '/projects/detail/$id/addon': typeof ProjectsDetailIdAddonRoute
 }
 export interface FileRoutesById {
@@ -105,7 +105,7 @@ export interface FileRoutesById {
   '/reports': typeof ReportsRoute
   '/settings': typeof SettingsRoute
   '/projects/$status': typeof ProjectsStatusRoute
-  '/projects/detail/$id': typeof ProjectsDetailIdRoute
+  '/projects/detail/$id': typeof ProjectsDetailIdRouteWithChildren
   '/projects/detail/$id/addon': typeof ProjectsDetailIdAddonRoute
 }
 export interface FileRouteTypes {
@@ -156,8 +156,7 @@ export interface RootRouteChildren {
   ReportsRoute: typeof ReportsRoute
   SettingsRoute: typeof SettingsRoute
   ProjectsStatusRoute: typeof ProjectsStatusRoute
-  ProjectsDetailIdRoute: typeof ProjectsDetailIdRoute
-  ProjectsDetailIdAddonRoute: typeof ProjectsDetailIdAddonRoute
+  ProjectsDetailIdRoute: typeof ProjectsDetailIdRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
@@ -227,13 +226,24 @@ declare module '@tanstack/react-router' {
     }
     '/projects/detail/$id/addon': {
       id: '/projects/detail/$id/addon'
-      path: '/projects/detail/$id/addon'
+      path: '/addon'
       fullPath: '/projects/detail/$id/addon'
       preLoaderRoute: typeof ProjectsDetailIdAddonRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof ProjectsDetailIdRoute
     }
   }
 }
+
+interface ProjectsDetailIdRouteChildren {
+  ProjectsDetailIdAddonRoute: typeof ProjectsDetailIdAddonRoute
+}
+
+const ProjectsDetailIdRouteChildren: ProjectsDetailIdRouteChildren = {
+  ProjectsDetailIdAddonRoute: ProjectsDetailIdAddonRoute,
+}
+
+const ProjectsDetailIdRouteWithChildren =
+  ProjectsDetailIdRoute._addFileChildren(ProjectsDetailIdRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
@@ -244,8 +254,7 @@ const rootRouteChildren: RootRouteChildren = {
   ReportsRoute: ReportsRoute,
   SettingsRoute: SettingsRoute,
   ProjectsStatusRoute: ProjectsStatusRoute,
-  ProjectsDetailIdRoute: ProjectsDetailIdRoute,
-  ProjectsDetailIdAddonRoute: ProjectsDetailIdAddonRoute,
+  ProjectsDetailIdRoute: ProjectsDetailIdRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
