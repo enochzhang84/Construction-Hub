@@ -1,8 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useT } from "@/lib/i18n";
+import { useT, useLocale } from "@/lib/i18n";
 import { useCompany, type CompanyProfile } from "@/lib/company-store";
+import { useTerms, DEFAULT_TERMS_EN, DEFAULT_TERMS_ZH } from "@/lib/terms-store";
 import { toast } from "sonner";
-import { BookOpen, ChevronRight } from "lucide-react";
+import { BookOpen, ChevronRight, FileText, RotateCcw } from "lucide-react";
 
 export const Route = createFileRoute("/settings")({
   head: () => ({ meta: [{ title: "Settings · Construction Hub" }] }),
@@ -116,6 +117,8 @@ function SettingsPage() {
           </Link>
         </section>
 
+        <TermsSection />
+
         <section className="rounded-lg border border-border bg-card p-6 shadow-panel">
           <h2 className="mb-2 font-display text-base font-semibold">{t("set.roadmap")}</h2>
           <p className="mb-3 text-xs text-muted-foreground">{t("set.roadmapHint")}</p>
@@ -126,5 +129,96 @@ function SettingsPage() {
         </section>
       </div>
     </div>
+  );
+}
+
+function TermsSection() {
+  const locale = useLocale();
+  const isZh = locale === "zh";
+  const termsEn = useTerms((s) => s.termsEn);
+  const termsZh = useTerms((s) => s.termsZh);
+  const setTerms = useTerms((s) => s.setTerms);
+  const resetDefaults = useTerms((s) => s.resetDefaults);
+
+  return (
+    <section className="rounded-lg border border-border bg-card p-6 shadow-panel">
+      <div className="mb-4 flex items-start justify-between gap-4">
+        <div>
+          <h2 className="mb-1 flex items-center gap-2 font-display text-base font-semibold">
+            <FileText className="h-4 w-4 text-muted-foreground" />
+            {isZh ? "报价条款 (Terms & Conditions)" : "Terms & Conditions"}
+          </h2>
+          <p className="text-xs text-muted-foreground">
+            {isZh
+              ? "以下条款将自动附加到所有打印 / 导出的报价单底部，位于明细之后、签字栏之前。"
+              : "Automatically appended to every printed and exported estimate, after line totals and before the signature block."}
+          </p>
+        </div>
+        <button
+          onClick={() => {
+            resetDefaults();
+            toast.success(isZh ? "已恢复默认条款" : "Reset to default terms");
+          }}
+          className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-[10px] border border-input bg-background px-3 text-xs font-medium hover:bg-secondary"
+        >
+          <RotateCcw className="h-3.5 w-3.5" />
+          {isZh ? "恢复默认" : "Reset to default"}
+        </button>
+      </div>
+
+      <div className="grid gap-4 lg:grid-cols-2">
+        <label className="block">
+          <div className="mb-1.5 flex items-center justify-between">
+            <span className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+              English Terms
+            </span>
+            {termsEn !== DEFAULT_TERMS_EN && (
+              <button
+                onClick={() => setTerms({ termsEn: DEFAULT_TERMS_EN })}
+                className="text-[11px] text-muted-foreground hover:text-foreground"
+              >
+                reset
+              </button>
+            )}
+          </div>
+          <textarea
+            value={termsEn}
+            onChange={(e) => setTerms({ termsEn: e.target.value })}
+            rows={14}
+            className="w-full rounded-[10px] border border-input bg-background px-3.5 py-2.5 font-mono text-[11.5px] leading-relaxed outline-none transition-colors hover:border-foreground/20 focus:border-primary focus:ring-2 focus:ring-primary/15"
+          />
+        </label>
+        <label className="block">
+          <div className="mb-1.5 flex items-center justify-between">
+            <span className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+              中文条款
+            </span>
+            {termsZh !== DEFAULT_TERMS_ZH && (
+              <button
+                onClick={() => setTerms({ termsZh: DEFAULT_TERMS_ZH })}
+                className="text-[11px] text-muted-foreground hover:text-foreground"
+              >
+                重置
+              </button>
+            )}
+          </div>
+          <textarea
+            value={termsZh}
+            onChange={(e) => setTerms({ termsZh: e.target.value })}
+            rows={14}
+            className="w-full rounded-[10px] border border-input bg-background px-3.5 py-2.5 font-mono text-[11.5px] leading-relaxed outline-none transition-colors hover:border-foreground/20 focus:border-primary focus:ring-2 focus:ring-primary/15"
+          />
+        </label>
+      </div>
+
+      <div className="mt-4 flex justify-end">
+        <button
+          onClick={() => toast.success(isZh ? "条款已保存" : "Terms saved")}
+          className="inline-flex h-10 items-center justify-center rounded-[10px] bg-foreground px-4 text-sm font-medium text-background hover:bg-foreground/90"
+        >
+          {isZh ? "保存条款" : "Save Terms"}
+        </button>
+      </div>
+    </section>
   );
 }

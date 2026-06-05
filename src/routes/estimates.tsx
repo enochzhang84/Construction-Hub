@@ -9,6 +9,7 @@ import { useProjects } from "@/lib/project-store";
 import { useCompany, type CompanyProfile } from "@/lib/company-store";
 import { useEstimate, lineTotal, estimateTotals, type EstimateLine, type EstimateMeta } from "@/lib/estimate-store";
 import { nextEstimateNumber, seedEstimateNumberFrom } from "@/lib/estimate-number";
+import { useTerms } from "@/lib/terms-store";
 import { useT, useLocale, tCategory, tItem, tPricing, tUnit, type QuoteLanguage } from "@/lib/i18n";
 
 export const Route = createFileRoute("/estimates")({
@@ -41,6 +42,8 @@ function EstimatesPage() {
     seedEstimateNumberFrom(allProjects.map((p) => p.estimateNumber));
   }, [allProjects]);
   const company = useCompany((s) => s.profile);
+  const termsEn = useTerms((s) => s.termsEn);
+  const termsZh = useTerms((s) => s.termsZh);
   const [activeCat, setActiveCat] = useState(CATEGORIES[4].id); // Flooring
   const [itemQ, setItemQ] = useState("");
   const [mode, setMode] = useState<"view" | "create">("view");
@@ -184,7 +187,7 @@ function EstimatesPage() {
       toast.error(isZh ? "请先选择客户" : "Please select a customer first");
       return;
     }
-    exportPDF(meta, lines, totals, company, selectedCustomer, false);
+    exportPDF(meta, lines, totals, company, selectedCustomer, { termsEn, termsZh }, false);
   };
 
   const onPrint = () => {
@@ -196,7 +199,7 @@ function EstimatesPage() {
       toast.error(isZh ? "请添加项目" : "Add at least one item");
       return;
     }
-    exportPDF(meta, lines, totals, company, selectedCustomer, true);
+    exportPDF(meta, lines, totals, company, selectedCustomer, { termsEn, termsZh }, true);
   };
 
   const lockReason = !hasCustomer
@@ -831,6 +834,7 @@ function exportPDF(
   totals: ReturnType<typeof estimateTotals>,
   company: CompanyProfile,
   customer: Customer | null,
+  terms: { termsEn: string; termsZh: string },
   autoPrint: boolean,
 ) {
   const mode = meta.quoteLanguage;
@@ -919,10 +923,17 @@ function exportPDF(
   .totals .grand { display: flex; justify-content: space-between; padding: 8px 0 0; border-top: 1px solid #ccc; margin-top: 6px; font-size: 16px; font-weight: 700; color: #111; }
   .block { margin-top: 22px; font-size: 11px; color: #444; line-height: 1.55; }
   .block h4 { font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; color: #888; margin: 0 0 4px; font-weight: 700; }
-  .sigs { margin-top: 36px; display: flex; gap: 32px; }
+  .terms { margin-top: 28px; page-break-inside: avoid; }
+  .terms h3 { font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: #111; margin: 0 0 10px; padding-bottom: 6px; border-bottom: 1.5px solid #1a1a1a; font-weight: 700; }
+  .terms-body { font-size: 10.5px; line-height: 1.6; color: #333; white-space: pre-wrap; column-count: 2; column-gap: 24px; }
+  .terms-zh { margin-top: 14px; padding-top: 12px; border-top: 1px dashed #ccc; }
+  .sigs { margin-top: 32px; display: flex; gap: 32px; page-break-inside: avoid; }
   .sig { flex: 1; }
-  .sig .line { border-top: 1px solid #333; margin-top: 36px; padding-top: 4px; font-size: 10px; color: #666; display: flex; justify-content: space-between; }
-  .footer { margin-top: 24px; font-size: 9.5px; color: #999; text-align: center; }
+  .sig .blklabel { margin-bottom: 28px; }
+  .sig .field { font-size: 10px; color: #555; margin-bottom: 14px; }
+  .sig .field .lbl { display: inline-block; width: 90px; color: #888; }
+  .sig .field .ink { display: inline-block; min-width: 180px; border-bottom: 1px solid #333; padding: 0 4px 2px; }
+  .footer { margin-top: 28px; padding-top: 10px; border-top: 1px solid #eee; font-size: 9.5px; color: #999; text-align: center; }
   @media print { .noprint { display: none !important; } }
   .bar { position: fixed; top: 10px; right: 10px; }
   .bar button { font-size: 12px; padding: 6px 12px; cursor: pointer; }
@@ -980,23 +991,35 @@ function exportPDF(
     <div class="grand"><span>${bi(LABELS_EN.totalRow, LZ.totalRow, mode)}</span><span class="mono">${fmt(totals.total)}</span></div>
   </div>
 
-  <div class="block">
-    <h4>${bi(LABELS_EN.terms, LZ.terms, mode)}</h4>
-    <div>${bi(LABELS_EN.termsBody, LZ.termsBody, mode)}</div>
+  <div class="terms">
+    <h3>${mode === "zh" ? "条款与条件 / Terms &amp; Conditions" : "Terms &amp; Conditions"}</h3>
+    ${
+      mode === "zh"
+        ? `<div class="terms-body">${esc(terms.termsZh)}</div>`
+        : mode === "bilingual"
+          ? `<div class="terms-body">${esc(terms.termsEn)}</div>
+             <div class="terms-body terms-zh">${esc(terms.termsZh)}</div>`
+          : `<div class="terms-body">${esc(terms.termsEn)}</div>`
+    }
   </div>
 
   <div class="sigs">
     <div class="sig">
-      <div class="blklabel">${bi(LABELS_EN.customerSig, LZ.customerSig, mode)}</div>
-      <div class="line"><span>${bi(LABELS_EN.customerSig, LZ.customerSig, mode)}</span><span>${bi(LABELS_EN.signedDate, LZ.signedDate, mode)}</span></div>
+      <div class="blklabel">${bi("Customer Acceptance", "客户确认", mode)}</div>
+      <div class="field"><span class="lbl">${bi("Customer Name", "客户姓名", mode)}:</span> <span class="ink">&nbsp;</span></div>
+      <div class="field"><span class="lbl">${bi("Signature", "客户签字", mode)}:</span> <span class="ink">&nbsp;</span></div>
+      <div class="field"><span class="lbl">${bi("Date", "日期", mode)}:</span> <span class="ink">&nbsp;</span></div>
     </div>
     <div class="sig">
-      <div class="blklabel">${bi(LABELS_EN.companySig, LZ.companySig, mode)}</div>
-      <div class="line"><span>${esc(companyName)}</span><span>${bi(LABELS_EN.signedDate, LZ.signedDate, mode)}</span></div>
+      <div class="blklabel">${bi("Contractor Acceptance", "承包商确认", mode)}</div>
+      <div class="field"><span class="lbl">${bi("Company Name", "公司名称", mode)}:</span> <span class="ink">${esc(companyName)}</span></div>
+      <div class="field"><span class="lbl">${bi("Signature", "承包商签字", mode)}:</span> <span class="ink">&nbsp;</span></div>
+      <div class="field"><span class="lbl">${bi("Date", "日期", mode)}:</span> <span class="ink">&nbsp;</span></div>
     </div>
   </div>
 
-  <div class="footer">${bi(LABELS_EN.footer, LZ.footer, mode)}</div>
+  <div class="footer">${esc(`Generated by ${companyName || "Contractor Estimating System"}`)}</div>
+
 
   ${autoPrint ? `<script>window.addEventListener("load", function () { setTimeout(function () { window.print(); }, 350); });</script>` : ""}
 </body>
