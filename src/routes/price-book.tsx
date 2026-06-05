@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ArrowUpDown, ArrowUp, ArrowDown, Search, Pencil } from "lucide-react";
 import { CATEGORIES, PRICING_TYPES, type PriceItem } from "@/lib/data";
 import { useT, useLocale, tCategory, tItem, tPricing, tUnit } from "@/lib/i18n";
@@ -269,8 +269,10 @@ function EditDialog({
   const t = useT();
   const [form, setForm] = useState<PriceItem | null>(item);
 
-  // Sync when item changes
-  if (item && (!form || form.id !== item.id)) setForm(item);
+  useEffect(() => {
+    setForm(item);
+  }, [item]);
+
   if (!item || !form) {
     return (
       <Dialog open={false} onOpenChange={() => onClose()}>
