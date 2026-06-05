@@ -144,7 +144,19 @@ function EstimatesPage() {
       toast.error(isZh ? "请先选择客户" : "Please select a customer first");
       return;
     }
-    exportPDF(meta, lines, totals);
+    exportPDF(meta, lines, totals, company, selectedCustomer, false);
+  };
+
+  const onPrint = () => {
+    if (!hasCustomer) {
+      toast.error(isZh ? "请先选择客户" : "Please select a customer first");
+      return;
+    }
+    if (lines.length === 0) {
+      toast.error(isZh ? "请添加项目" : "Add at least one item");
+      return;
+    }
+    exportPDF(meta, lines, totals, company, selectedCustomer, true);
   };
 
   const lockReason = !hasCustomer
