@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { Category, PriceItem, PricingType } from "./data";
@@ -16,9 +17,20 @@ export const useLocaleStore = create<LocaleState>()(
       locale: "en",
       setLocale: (locale) => set({ locale }),
     }),
-    { name: "construction-hub-locale" },
+    { name: "construction-hub-locale", skipHydration: true },
   ),
 );
+
+// Rehydrate from localStorage only after the client mounts, so SSR/CSR markup matches.
+function useHydratedLocale(): Locale {
+  const locale = useLocaleStore((s) => s.locale);
+  const [hydrated, setHydrated] = useState(false);
+  useEffect(() => {
+    void useLocaleStore.persist.rehydrate();
+    setHydrated(true);
+  }, []);
+  return hydrated ? locale : "en";
+}
 
 // ---------------- Dictionary ----------------
 
