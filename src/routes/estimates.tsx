@@ -381,7 +381,9 @@ function EstimatesPage() {
                   </div>
                   <button
                     onClick={() => handleAddItem(it)}
-                    className="inline-flex shrink-0 items-center gap-1 rounded-md bg-primary px-2 py-1 text-xs font-medium text-primary-foreground hover:opacity-90"
+                    disabled={isView}
+                    title={isView ? (isZh ? "请先点击「新增报价单」" : "Click '+ New Estimate' first") : undefined}
+                    className="inline-flex shrink-0 items-center gap-1 rounded-md bg-primary px-2 py-1 text-xs font-medium text-primary-foreground hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
                   >
                     <Plus className="h-3 w-3" /> Add
                   </button>
