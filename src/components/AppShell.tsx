@@ -13,7 +13,7 @@ import {
   LogOut,
 } from "lucide-react";
 import { useLocaleStore, useLocale, useT } from "@/lib/i18n";
-import { Toaster } from "@/components/ui/sonner";
+
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -144,7 +144,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       </aside>
 
       <main className="flex-1 overflow-hidden">{children}</main>
-      <Toaster />
+      
     </div>
   );
 }
