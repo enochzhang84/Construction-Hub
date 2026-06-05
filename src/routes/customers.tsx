@@ -1,8 +1,9 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useMemo, useState } from "react";
 import { Search, Plus, Mail, Phone, MapPin } from "lucide-react";
-import { useT } from "@/lib/i18n";
+import { useT, useLocale } from "@/lib/i18n";
 import { useCustomers } from "@/lib/customer-store";
+import { useProjects, formatDMY, statusBadgeClass, statusLabel } from "@/lib/project-store";
 import {
   Dialog,
   DialogContent,
@@ -29,8 +30,10 @@ const EMPTY = {
 
 function CustomersPage() {
   const t = useT();
+  const locale = useLocale();
   const customers = useCustomers((s) => s.customers);
   const addCustomer = useCustomers((s) => s.addCustomer);
+  const projects = useProjects((s) => s.projects);
   const [q, setQ] = useState("");
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState(EMPTY);
@@ -38,6 +41,21 @@ function CustomersPage() {
   const filtered = customers.filter((c) =>
     [c.name, c.email, c.address, c.city].join(" ").toLowerCase().includes(q.toLowerCase()),
   );
+
+  // Most recent project per customerName (skip add-on entries)
+  const recent = useMemo(() => {
+    const map = new Map<string, typeof projects[number]>();
+    for (const p of projects) {
+      if (p.parentProjectId) continue;
+      const cur = map.get(p.customerName);
+      if (!cur || (p.estimateDate || "") > (cur.estimateDate || "")) {
+        map.set(p.customerName, p);
+      }
+    }
+    return Array.from(map.values()).sort((a, b) =>
+      (b.estimateDate || "").localeCompare(a.estimateDate || ""),
+    );
+  }, [projects]);
 
   const onSave = () => {
     if (!form.name.trim()) return;
@@ -82,7 +100,7 @@ function CustomersPage() {
         </div>
       </header>
 
-      <div className="flex-1 overflow-y-auto finder-scroll p-8">
+      <div className="flex-1 overflow-y-auto finder-scroll p-8 space-y-8">
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
           {filtered.map((c) => (
             <div
@@ -124,6 +142,45 @@ function CustomersPage() {
             </div>
           ))}
         </div>
+
+        <section>
+          <h2 className="mb-3 font-display text-lg font-semibold">{t("cust.recent")}</h2>
+          <div className="overflow-hidden rounded-lg border border-border bg-card shadow-panel">
+            <table className="w-full text-sm">
+              <thead className="border-b border-border bg-secondary/60 text-left text-xs uppercase tracking-wider text-muted-foreground">
+                <tr>
+                  <th className="px-4 py-2.5 font-medium">{t("dash.col.name")}</th>
+                  <th className="px-4 py-2.5 font-medium">{t("dash.col.phone")}</th>
+                  <th className="px-4 py-2.5 font-medium">{t("dash.col.address")}</th>
+                  <th className="px-4 py-2.5 font-medium">{t("cust.col.lastDate")}</th>
+                  <th className="px-4 py-2.5 font-medium">{t("cust.col.lastStatus")}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {recent.length === 0 && (
+                  <tr><td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">—</td></tr>
+                )}
+                {recent.map((p) => (
+                  <tr key={p.id} className="border-b border-border/60 last:border-0 hover:bg-secondary/40">
+                    <td className="px-4 py-3 font-medium">
+                      <Link to="/projects/detail/$id" params={{ id: p.id }} className="hover:underline">
+                        {p.customerName}
+                      </Link>
+                    </td>
+                    <td className="px-4 py-3 font-mono text-xs">{p.customerPhone || "—"}</td>
+                    <td className="px-4 py-3 text-muted-foreground">{p.projectAddress}</td>
+                    <td className="px-4 py-3 font-mono text-xs">{formatDMY(p.estimateDate)}</td>
+                    <td className="px-4 py-3">
+                      <span className={"rounded-md px-2 py-1 text-xs font-medium " + statusBadgeClass(p.status)}>
+                        {statusLabel(p.status, locale)}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
       </div>
 
       <Dialog open={open} onOpenChange={setOpen}>
