@@ -137,6 +137,225 @@ function SettingsPage() {
   );
 }
 
+type RoleKey = "super_admin" | "admin" | "estimator" | "sales" | "viewer";
+
+const ROLE_META: Record<
+  RoleKey,
+  { en: string; zh: string; tone: string }
+> = {
+  super_admin: { en: "Super Admin", zh: "超级管理员", tone: "bg-primary/15 text-primary border-primary/30" },
+  admin: { en: "Admin", zh: "管理员", tone: "bg-blue-500/15 text-blue-600 border-blue-500/30" },
+  estimator: { en: "Estimator", zh: "报价员", tone: "bg-emerald-500/15 text-emerald-600 border-emerald-500/30" },
+  sales: { en: "Sales", zh: "销售", tone: "bg-amber-500/15 text-amber-600 border-amber-500/30" },
+  viewer: { en: "Viewer", zh: "只读", tone: "bg-muted text-muted-foreground border-border" },
+};
+
+function UsersAndRolesSection() {
+  const locale = useLocale();
+  const isZh = locale === "zh";
+  const [loading, setLoading] = useState(true);
+  const [email, setEmail] = useState<string | null>(null);
+  const [displayName, setDisplayName] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [roles, setRoles] = useState<RoleKey[]>([]);
+  const [createdAt, setCreatedAt] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data: u } = await supabase.auth.getUser();
+      const user = u.user;
+      if (!user || cancelled) {
+        setLoading(false);
+        return;
+      }
+      setEmail(user.email ?? null);
+      setUserId(user.id);
+      setCreatedAt(user.created_at ?? null);
+
+      const [{ data: profile }, { data: roleRows }] = await Promise.all([
+        supabase.from("profiles").select("display_name").eq("id", user.id).maybeSingle(),
+        supabase.from("user_roles").select("role").eq("user_id", user.id),
+      ]);
+      if (cancelled) return;
+      setDisplayName(
+        profile?.display_name ??
+          (user.user_metadata?.display_name as string | undefined) ??
+          (user.email ? user.email.split("@")[0] : null),
+      );
+      setRoles(((roleRows ?? []).map((r) => r.role) as RoleKey[]) ?? []);
+      setLoading(false);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const primaryRole: RoleKey = roles.includes("super_admin")
+    ? "super_admin"
+    : roles.includes("admin")
+      ? "admin"
+      : roles[0] ?? "viewer";
+
+  const ROLE_DESCRIPTIONS: { role: RoleKey; perms: { en: string; zh: string }[] }[] = [
+    {
+      role: "super_admin",
+      perms: [
+        { en: "Full access to all data and settings", zh: "可访问全部数据与系统设置" },
+        { en: "Manage users and roles", zh: "管理用户与角色权限" },
+        { en: "Edit company profile, price book, terms", zh: "编辑公司资料、价格库、条款" },
+      ],
+    },
+    {
+      role: "admin",
+      perms: [
+        { en: "Manage customers, estimates, projects", zh: "管理客户、报价单、施工项目" },
+        { en: "Edit price book and templates", zh: "编辑价格库与模板" },
+        { en: "Cannot manage users or roles", zh: "不能管理用户与角色" },
+      ],
+    },
+    {
+      role: "estimator",
+      perms: [
+        { en: "Create and edit estimates", zh: "创建与编辑报价单" },
+        { en: "Read price book and customers", zh: "查看价格库与客户资料" },
+        { en: "Cannot edit company / system settings", zh: "不能修改公司资料与系统设置" },
+      ],
+    },
+    {
+      role: "sales",
+      perms: [
+        { en: "Manage customers and leads", zh: "管理客户与意向单" },
+        { en: "Create estimates from price book", zh: "基于价格库创建报价" },
+        { en: "Read-only on completed projects", zh: "对已完成项目只读" },
+      ],
+    },
+    {
+      role: "viewer",
+      perms: [
+        { en: "Read-only access to all data", zh: "对所有数据只读" },
+        { en: "Cannot create, edit, or delete", zh: "不能创建、编辑或删除" },
+      ],
+    },
+  ];
+
+  return (
+    <section className="rounded-lg border border-border bg-card p-6 shadow-panel">
+      <h2 className="mb-1 flex items-center gap-2 font-display text-base font-semibold">
+        <ShieldCheck className="h-4 w-4 text-muted-foreground" />
+        {isZh ? "用户与角色权限" : "Users & Roles"}
+      </h2>
+      <p className="mb-4 text-xs text-muted-foreground">
+        {isZh
+          ? "显示当前登录账号及其角色权限。首位注册用户自动获得超级管理员权限。"
+          : "Shows the currently signed-in account and its role permissions. The first registered user is automatically granted Super Admin."}
+      </p>
+
+      {/* Current user card */}
+      <div className="mb-5 rounded-lg border border-border bg-background/60 p-4">
+        <div className="flex items-start gap-4">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+            <UserCircle2 className="h-7 w-7" />
+          </div>
+          <div className="min-w-0 flex-1">
+            {loading ? (
+              <div className="text-sm text-muted-foreground">{isZh ? "加载中…" : "Loading…"}</div>
+            ) : email ? (
+              <>
+                <div className="flex flex-wrap items-center gap-2">
+                  <div className="font-display text-base font-semibold">
+                    {displayName || email}
+                  </div>
+                  {roles.length > 0 ? (
+                    roles.map((r) => (
+                      <span
+                        key={r}
+                        className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium ${ROLE_META[r]?.tone ?? ROLE_META.viewer.tone}`}
+                      >
+                        {isZh ? ROLE_META[r]?.zh : ROLE_META[r]?.en}
+                      </span>
+                    ))
+                  ) : (
+                    <span className="inline-flex items-center rounded-full border border-dashed border-border px-2 py-0.5 text-[11px] text-muted-foreground">
+                      {isZh ? "未分配角色" : "No role assigned"}
+                    </span>
+                  )}
+                </div>
+                <div className="mt-1 truncate text-sm text-muted-foreground">{email}</div>
+                <div className="mt-3 grid grid-cols-1 gap-y-1.5 text-[11.5px] text-muted-foreground sm:grid-cols-2">
+                  <div>
+                    <span className="text-foreground/70">{isZh ? "用户 ID：" : "User ID: "}</span>
+                    <span className="font-mono">{userId?.slice(0, 8)}…</span>
+                  </div>
+                  {createdAt && (
+                    <div>
+                      <span className="text-foreground/70">{isZh ? "注册时间：" : "Joined: "}</span>
+                      {new Date(createdAt).toLocaleDateString()}
+                    </div>
+                  )}
+                </div>
+              </>
+            ) : (
+              <div className="text-sm text-muted-foreground">
+                {isZh ? "未登录" : "Not signed in"}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Role matrix */}
+      <div className="space-y-2">
+        <div className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+          {isZh ? "角色权限说明" : "Role permissions"}
+        </div>
+        {ROLE_DESCRIPTIONS.map((r) => {
+          const meta = ROLE_META[r.role];
+          const isMine = r.role === primaryRole && !loading && roles.length > 0;
+          return (
+            <div
+              key={r.role}
+              className={
+                "rounded-md border px-4 py-3 " +
+                (isMine ? "border-primary/40 bg-primary/5" : "border-border/60 bg-background/40")
+              }
+            >
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <span
+                    className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium ${meta.tone}`}
+                  >
+                    {isZh ? meta.zh : meta.en}
+                  </span>
+                  {isMine && (
+                    <span className="text-[11px] text-primary">
+                      {isZh ? "· 当前账号" : "· current"}
+                    </span>
+                  )}
+                </div>
+              </div>
+              <ul className="mt-2 space-y-1 text-xs text-muted-foreground">
+                {r.perms.map((p, i) => (
+                  <li key={i} className="flex gap-2">
+                    <span className="text-foreground/40">•</span>
+                    <span>{isZh ? p.zh : p.en}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="mt-4 rounded-md border border-dashed border-border bg-background/50 px-4 py-3 text-[11.5px] text-muted-foreground">
+        {isZh
+          ? "多用户邀请、角色分配与权限审计将在下一版本上线。"
+          : "Multi-user invitations, role assignment, and permission audit log are coming in the next release."}
+      </div>
+    </section>
+  );
+}
+
 function TermsSection() {
   const locale = useLocale();
   const isZh = locale === "zh";
