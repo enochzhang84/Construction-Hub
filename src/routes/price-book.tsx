@@ -506,7 +506,7 @@ function AddDialog({
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="max-w-lg">
+   <DialogContent size="md">
         <DialogHeader>
           <DialogTitle>{t("pb.add.title")}</DialogTitle>
         </DialogHeader>
@@ -645,7 +645,7 @@ function ImportPreviewDialog({
 
   return (
     <Dialog open={!!rows} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="max-w-3xl">
+   <DialogContent size="md">
         <DialogHeader>
           <DialogTitle>{t("pb.import.preview")}</DialogTitle>
         </DialogHeader>
@@ -738,7 +738,7 @@ function EditDialog({
 
   return (
     <Dialog open={!!item} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="max-w-lg">
+   <DialogContent size="md">
         <DialogHeader>
           <DialogTitle>{t("pb.edit.title")}</DialogTitle>
         </DialogHeader>

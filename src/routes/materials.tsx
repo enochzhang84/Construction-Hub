@@ -321,7 +321,7 @@ function SupplierDialog({
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+   <DialogContent size="md">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
         </DialogHeader>

@@ -1011,7 +1011,7 @@ function CustomerDialog({
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="max-w-lg">
+   <DialogContent size="md">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
         </DialogHeader>
