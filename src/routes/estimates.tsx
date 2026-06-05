@@ -439,20 +439,33 @@ function EstimatesPage() {
                     <FileText className="h-6 w-6" />
                   </div>
                   <div className="font-display text-base font-semibold">
-                    {isZh ? "尚未添加项目" : "No items added yet"}
+                    {isView
+                      ? (isZh ? "暂无报价单" : "No estimate to display")
+                      : (isZh ? "尚未添加项目" : "No items added yet")}
                   </div>
                   <div className="mt-1.5 text-xs text-muted-foreground">
-                    {isZh ? "选择左侧分类并点击 Add 来构建报价单。" : "Select a trade and click Add to build this estimate."}
+                    {isView
+                      ? (isZh ? "点击上方「+ 新增报价单」开始创建。" : "Click '+ New Estimate' above to begin.")
+                      : (isZh ? "选择左侧分类并点击 Add 来构建报价单。" : "Select a trade and click Add to build this estimate.")}
                   </div>
-                  <button
-                    onClick={() => {
-                      const first = PRICE_ITEMS.find((p) => p.categoryId === activeCat);
-                      if (first) handleAddItem(first);
-                    }}
-                    className="mt-4 inline-flex items-center gap-1.5 rounded-md bg-primary px-3.5 py-2 text-sm font-medium text-primary-foreground hover:opacity-90"
-                  >
-                    <Plus className="h-4 w-4" /> {isZh ? "添加第一个项目" : "Add first item"}
-                  </button>
+                  {isView ? (
+                    <button
+                      onClick={onNewEstimate}
+                      className="mt-4 inline-flex items-center gap-1.5 rounded-md bg-primary px-3.5 py-2 text-sm font-medium text-primary-foreground hover:opacity-90"
+                    >
+                      <Plus className="h-4 w-4" /> {isZh ? "新增报价单" : "New Estimate"}
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => {
+                        const first = PRICE_ITEMS.find((p) => p.categoryId === activeCat);
+                        if (first) handleAddItem(first);
+                      }}
+                      className="mt-4 inline-flex items-center gap-1.5 rounded-md bg-primary px-3.5 py-2 text-sm font-medium text-primary-foreground hover:opacity-90"
+                    >
+                      <Plus className="h-4 w-4" /> {isZh ? "添加第一个项目" : "Add first item"}
+                    </button>
+                  )}
                 </div>
               </div>
             ) : (
