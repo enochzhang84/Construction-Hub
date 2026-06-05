@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import { HardHat, Phone, Mail, MapPin, BadgeCheck, Globe2, ArrowRight } from "lucide-react";
 import { useCompany } from "@/lib/company-store";
 import { useLocale, useLocaleStore } from "@/lib/i18n";
