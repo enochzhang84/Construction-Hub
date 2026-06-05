@@ -63,7 +63,7 @@ export const useEstimate = create<EstimateState>()(
       clear: () =>
         set({
           lines: [],
-          meta: { ...initialMeta, estimateNumber: `EST-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 9000) + 1000)}` },
+          meta: { ...initialMeta, estimateNumber: nextEstimateNumber() },
         }),
     }),
     { name: "construction-hub-estimate" },
