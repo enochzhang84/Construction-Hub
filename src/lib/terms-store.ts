@@ -2,66 +2,64 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
 export const DEFAULT_TERMS_EN = `1. Scope of Work
-This estimate includes only the work specifically listed in this proposal. Any additional work requested by the owner after acceptance shall be considered a Change Order and may result in additional charges.
+Only the work specifically listed in this estimate is included. Any additional work requested by the customer will be treated as a change order and may result in additional charges.
 
-2. Material Availability & Pricing
-Material prices and availability are subject to change without notice. Final pricing may be adjusted if supplier costs increase before project commencement.
+2. Material Prices and Availability
+Material prices and availability are subject to change without notice. Final pricing may be adjusted if supplier costs increase before the project starts.
 
-3. Unforeseen Conditions
-This estimate is based on visible site conditions only. Hidden conditions discovered during construction — including but not limited to water damage, mold, dry rot, termite damage, structural deficiencies, plumbing issues, electrical code violations, or other concealed conditions — may require additional labor and materials and will be billed separately.
+3. Hidden or Unforeseen Conditions
+This estimate is based on visible conditions only. Hidden conditions discovered during construction — including but not limited to dry rot, termite damage, water damage, mold, outdated wiring, plumbing issues, or structural defects — may require additional work and additional charges.
 
-4. Permits & Inspections
-Permit fees, engineering fees, architectural fees, HOA fees, and government inspection fees are not included unless specifically stated in this estimate.
+4. Permits and Inspections
+Permit fees, engineering fees, design fees, and government inspection fees are not included unless specifically stated in this estimate.
 
-5. Schedule
-Project schedules are estimates only. Contractor shall not be responsible for delays caused by weather, material shortages, inspections, utility companies, labor availability, acts of God, or circumstances beyond Contractor's control.
+5. Project Schedule
+Project schedule may be affected by weather, material delays, inspections, labor availability, or other circumstances beyond the contractor's control.
 
-6. Payment Terms
-Unless otherwise stated:
-• Deposit: 30%
-• Progress Payment: 40%
-• Final Payment: 30%
-Final payment is due immediately upon substantial completion of work.
+6. Customer Supplied Materials
+For customer-supplied materials, the contractor is not responsible for product defects, missing parts, delays, wrong sizes, color differences, warranty issues, or return/exchange problems.
 
 7. Estimate Validity
-This estimate is valid for 30 days from the date issued. Prices may be revised after expiration.
+This estimate is valid for 30 days from the date issued unless otherwise stated.
 
-8. Limitation of Liability
-Contractor shall not be liable for indirect, incidental, special, or consequential damages arising from this project. Contractor's liability shall be limited to the value of this estimate.
+8. Payment Terms
+Payment schedule and deposit requirements will be agreed upon before work begins. Final payment is due upon project completion unless otherwise stated in writing.
 
-9. Acceptance
-Acceptance of this estimate authorizes Contractor to perform the work described herein subject to the terms and conditions stated above.`;
+9. Change Orders
+Any work not included in this estimate must be approved as a written change order before work proceeds.
 
-export const DEFAULT_TERMS_ZH = `1. 工程范围
-本报价仅包含本提案中明确列出的施工项目。客户在签字接受后追加的任何工作均视为变更单（Change Order），并可能产生额外费用。
+10. Acceptance
+Customer signature or written approval indicates acceptance of this estimate, including the scope of work, pricing, and terms listed herein.`;
+
+export const DEFAULT_TERMS_ZH = `1. 施工范围
+本报价单仅包含明确列出的施工项目。客户后续要求增加的施工内容，将作为变更项目处理，并可能产生额外费用。
 
 2. 材料价格与供应
-材料价格及供应情况可能随时变动，恕不另行通知。如供应商在工程开工前调价，最终价格可能相应调整。
+材料价格和库存可能随时变化。如项目开工前供应商价格上涨或材料缺货，最终价格可能需要调整。
 
-3. 隐蔽工程条件
-本报价基于现场可见条件作出。施工过程中如发现隐蔽问题，包括但不限于水渍损坏、霉变、干腐、白蚁损害、结构缺陷、水管问题、电气违章等，将另行计价。
+3. 隐藏问题与不可预见情况
+本报价基于现场可见情况。施工过程中如发现隐藏问题，包括但不限于木腐、白蚁损坏、漏水、霉菌、旧电线不符合规范、水管问题或结构缺陷，可能需要额外施工并产生额外费用。
 
-4. 许可证与检验
-除非报价中另有说明，许可证费、工程师费、建筑师费、HOA 费用及政府检验费均不包含在本报价内。
+4. 许可证与检查
+除非报价单中明确列出，Permit 费用、工程师费用、设计费用和政府检查费用不包含在本报价内。
 
-5. 工期
-工期仅供参考。因天气、材料短缺、政府检验、市政公用单位、人工调度、不可抗力及其他承包商无法控制的原因造成的延误，承包商不承担责任。
+5. 施工进度
+施工进度可能受到天气、材料延迟、政府检查、人工安排或其他承包商无法控制的因素影响。
 
-6. 付款方式
-除非另有约定：
-• 定金：30%
-• 进度款：40%
-• 尾款：30%
-工程实质完工后，尾款应立即支付。
+6. 客户自购材料
+如客户自行购买材料，承包商不负责材料质量问题、缺少配件、送货延迟、尺寸错误、颜色差异、保修问题或退换货问题。
 
 7. 报价有效期
-本报价自签发日起 30 天内有效，逾期价格可能调整。
+本报价自开具日起 30 天内有效，除非另有说明。
 
-8. 责任限制
-承包商不对本工程所产生的间接、附带、特殊或后果性损失承担责任。承包商责任以本报价金额为上限。
+8. 付款条款
+开工前双方需确认付款计划和订金要求。除非另有书面约定，工程完成后客户应支付尾款。
 
-9. 接受条款
-客户签字接受本报价即授权承包商按上述条款执行本报价所述工程。`;
+9. 变更项目
+凡不包含在本报价单内的施工内容，必须以书面变更单形式确认后方可施工。
+
+10. 接受报价
+客户签字或书面确认即表示接受本报价单中的施工范围、价格和相关条款。`;
 
 export interface TermsState {
   termsEn: string;
@@ -79,6 +77,6 @@ export const useTerms = create<TermsState>()(
       resetDefaults: () =>
         set({ termsEn: DEFAULT_TERMS_EN, termsZh: DEFAULT_TERMS_ZH }),
     }),
-    { name: "construction-hub-terms" },
+    { name: "construction-hub-terms.v2" },
   ),
 );
