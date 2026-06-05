@@ -4,7 +4,6 @@ import {
   LayoutDashboard,
   Users,
   FileText,
-  BookOpen,
   Package,
   BarChart3,
   Settings,
