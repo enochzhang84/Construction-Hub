@@ -375,6 +375,19 @@ function CustomersPage() {
               ...CUSTOMER_SOURCES.map((s) => ({ value: s, label: s })),
             ]}
           />
+          <Select
+            value={archiveFilter}
+            onChange={(v) => {
+              setArchiveFilter(v as ArchiveFilter);
+              setPage(1);
+            }}
+            label={locale === "zh" ? "归档" : "View"}
+            options={[
+              { value: "active", label: locale === "zh" ? "活跃客户" : "Active" },
+              { value: "archived", label: locale === "zh" ? "已归档" : "Archived" },
+              { value: "all", label: locale === "zh" ? "全部" : "All" },
+            ]}
+          />
           <div className="ml-auto flex items-center gap-2">
             <span className="text-xs text-muted-foreground">{locale === "zh" ? "每页" : "Per page"}</span>
             <select
