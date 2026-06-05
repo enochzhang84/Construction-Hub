@@ -355,6 +355,116 @@ function EstimatesPage() {
   );
 }
 
+// -------- Searchable customer picker --------
+
+function CustomerPicker({
+  customers,
+  value,
+  valueLabel,
+  placeholder,
+  onSelect,
+}: {
+  customers: Customer[];
+  value: string | null;
+  valueLabel: string;
+  placeholder: string;
+  onSelect: (c: Customer | null) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [q, setQ] = useState("");
+  const wrapRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const onDoc = (e: MouseEvent) => {
+      if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", onDoc);
+    return () => document.removeEventListener("mousedown", onDoc);
+  }, [open]);
+
+  const filtered = useMemo(() => {
+    const needle = q.trim().toLowerCase();
+    if (!needle) return customers.slice(0, 50);
+    return customers
+      .filter((c) =>
+        [c.name, c.phone, c.email, c.city, c.address].join(" ").toLowerCase().includes(needle),
+      )
+      .slice(0, 50);
+  }, [customers, q]);
+
+  return (
+    <div ref={wrapRef} className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="inline-flex min-w-[220px] items-center gap-2 rounded-md border border-input bg-card px-2.5 py-1.5 text-left text-sm outline-none hover:bg-secondary/60 focus:ring-2 focus:ring-ring/40"
+      >
+        <User className="h-3.5 w-3.5 text-muted-foreground" />
+        <span className={value ? "truncate" : "text-muted-foreground truncate"}>
+          {value && valueLabel ? valueLabel : placeholder}
+        </span>
+        <ChevronRight className="ml-auto h-3 w-3 rotate-90 text-muted-foreground" />
+      </button>
+      {open && (
+        <div className="absolute left-0 top-full z-50 mt-1 w-[320px] rounded-md border border-border bg-popover shadow-lg">
+          <div className="border-b border-border p-2">
+            <div className="relative">
+              <Search className="absolute left-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+              <input
+                autoFocus
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+                placeholder="Search by name, phone, city…"
+                className="w-full rounded border border-input bg-card py-1.5 pl-7 pr-2 text-sm outline-none focus:ring-2 focus:ring-ring/40"
+              />
+            </div>
+          </div>
+          <div className="max-h-64 overflow-y-auto finder-scroll">
+            {value && (
+              <button
+                type="button"
+                onClick={() => {
+                  onSelect(null);
+                  setOpen(false);
+                  setQ("");
+                }}
+                className="w-full px-3 py-1.5 text-left text-xs text-muted-foreground hover:bg-secondary"
+              >
+                Clear selection
+              </button>
+            )}
+            {filtered.length === 0 && (
+              <div className="px-3 py-6 text-center text-xs text-muted-foreground">
+                No customers found.
+              </div>
+            )}
+            {filtered.map((c) => (
+              <button
+                key={c.id}
+                type="button"
+                onClick={() => {
+                  onSelect(c);
+                  setOpen(false);
+                  setQ("");
+                }}
+                className={
+                  "block w-full border-b border-border/40 px-3 py-2 text-left text-sm hover:bg-secondary " +
+                  (c.id === value ? "bg-secondary/60" : "")
+                }
+              >
+                <div className="font-medium">{c.name}</div>
+                <div className="mt-0.5 font-mono text-[11px] text-muted-foreground">{c.phone}</div>
+                <div className="text-[11px] text-muted-foreground">{c.city}, {c.state}</div>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // -------- Bilingual / multilingual PDF via print window (handles CJK natively) --------
 
 interface PDFLabels {
