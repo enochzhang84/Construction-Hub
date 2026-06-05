@@ -6,9 +6,9 @@ interface PriceBookState {
   overrides: Record<string, Partial<PriceItem>>;
   customItems: PriceItem[];
   updateItem: (id: string, patch: Partial<PriceItem>) => void;
-  addItem: (item: Omit<PriceItem, "id"> & { id?: string }) => PriceItem;
+  addItem: (item: Partial<PriceItem> & Pick<PriceItem, "categoryId" | "name" | "unit" | "defaultPricing" | "laborRate" | "materialRate">) => PriceItem;
   upsertMany: (
-    rows: Array<Omit<PriceItem, "id"> & { id?: string }>,
+    rows: Array<Partial<PriceItem> & Pick<PriceItem, "categoryId" | "name" | "unit" | "defaultPricing" | "laborRate" | "materialRate">>,
   ) => { created: number; updated: number };
   reset: () => void;
 }
