@@ -16,6 +16,7 @@ import { Route as MaterialsRouteImport } from './routes/materials'
 import { Route as EstimatesRouteImport } from './routes/estimates'
 import { Route as CustomersRouteImport } from './routes/customers'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ProjectsStatusRouteImport } from './routes/projects.$status'
 
 const SettingsRoute = SettingsRouteImport.update({
   id: '/settings',
@@ -52,6 +53,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProjectsStatusRoute = ProjectsStatusRouteImport.update({
+  id: '/projects/$status',
+  path: '/projects/$status',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -61,6 +67,7 @@ export interface FileRoutesByFullPath {
   '/price-book': typeof PriceBookRoute
   '/reports': typeof ReportsRoute
   '/settings': typeof SettingsRoute
+  '/projects/$status': typeof ProjectsStatusRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -70,6 +77,7 @@ export interface FileRoutesByTo {
   '/price-book': typeof PriceBookRoute
   '/reports': typeof ReportsRoute
   '/settings': typeof SettingsRoute
+  '/projects/$status': typeof ProjectsStatusRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -80,6 +88,7 @@ export interface FileRoutesById {
   '/price-book': typeof PriceBookRoute
   '/reports': typeof ReportsRoute
   '/settings': typeof SettingsRoute
+  '/projects/$status': typeof ProjectsStatusRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -91,6 +100,7 @@ export interface FileRouteTypes {
     | '/price-book'
     | '/reports'
     | '/settings'
+    | '/projects/$status'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -100,6 +110,7 @@ export interface FileRouteTypes {
     | '/price-book'
     | '/reports'
     | '/settings'
+    | '/projects/$status'
   id:
     | '__root__'
     | '/'
@@ -109,6 +120,7 @@ export interface FileRouteTypes {
     | '/price-book'
     | '/reports'
     | '/settings'
+    | '/projects/$status'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -119,6 +131,7 @@ export interface RootRouteChildren {
   PriceBookRoute: typeof PriceBookRoute
   ReportsRoute: typeof ReportsRoute
   SettingsRoute: typeof SettingsRoute
+  ProjectsStatusRoute: typeof ProjectsStatusRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -172,6 +185,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/projects/$status': {
+      id: '/projects/$status'
+      path: '/projects/$status'
+      fullPath: '/projects/$status'
+      preLoaderRoute: typeof ProjectsStatusRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -183,6 +203,7 @@ const rootRouteChildren: RootRouteChildren = {
   PriceBookRoute: PriceBookRoute,
   ReportsRoute: ReportsRoute,
   SettingsRoute: SettingsRoute,
+  ProjectsStatusRoute: ProjectsStatusRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
