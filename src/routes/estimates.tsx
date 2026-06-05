@@ -496,8 +496,9 @@ function EstimatesPage() {
                         <td className="px-2 py-2">
                           <select
                             value={l.pricingType}
+                            disabled={isView}
                             onChange={(e) => updateLine(l.id, { pricingType: e.target.value as PricingType })}
-                            className="rounded border border-input bg-card px-1.5 py-1 text-xs outline-none"
+                            className="rounded border border-input bg-card px-1.5 py-1 text-xs outline-none disabled:opacity-60"
                           >
                             {PRICING_TYPES.map((p) => (
                               <option key={p} value={p}>{tPricing(p, locale)}</option>
@@ -508,8 +509,9 @@ function EstimatesPage() {
                           <input
                             type="number" min={0} step="0.01"
                             value={l.quantity}
+                            disabled={isView}
                             onChange={(e) => updateLine(l.id, { quantity: Number(e.target.value) })}
-                            className="w-20 rounded border border-input bg-card px-2 py-1 text-right text-xs outline-none"
+                            className="w-20 rounded border border-input bg-card px-2 py-1 text-right text-xs outline-none disabled:opacity-60"
                           />
                         </td>
                         <td className="px-2 py-2 font-mono text-xs text-muted-foreground">{tUnit(l.unit, locale)}</td>
@@ -517,31 +519,36 @@ function EstimatesPage() {
                           <input
                             type="number" min={0} step="0.01"
                             value={l.laborRate}
+                            disabled={isView}
                             onChange={(e) => updateLine(l.id, { laborRate: Number(e.target.value) })}
-                            className="w-20 rounded border border-input bg-card px-2 py-1 text-right text-xs outline-none"
+                            className="w-20 rounded border border-input bg-card px-2 py-1 text-right text-xs outline-none disabled:opacity-60"
                           />
                         </td>
                         <td className="px-2 py-2 text-right">
                           <input
                             type="number" min={0} step="0.01"
                             value={l.materialRate}
+                            disabled={isView}
                             onChange={(e) => updateLine(l.id, { materialRate: Number(e.target.value) })}
-                            className="w-20 rounded border border-input bg-card px-2 py-1 text-right text-xs outline-none"
+                            className="w-20 rounded border border-input bg-card px-2 py-1 text-right text-xs outline-none disabled:opacity-60"
                           />
                         </td>
                         <td className="px-2 py-2 text-right">
                           <input
                             type="number" min={0} step="0.01"
                             value={l.discount}
+                            disabled={isView}
                             onChange={(e) => updateLine(l.id, { discount: Number(e.target.value) })}
-                            className="w-20 rounded border border-input bg-card px-2 py-1 text-right text-xs outline-none"
+                            className="w-20 rounded border border-input bg-card px-2 py-1 text-right text-xs outline-none disabled:opacity-60"
                           />
                         </td>
                         <td className="px-3 py-2 text-right font-mono font-medium">{fmt(lineTotal(l))}</td>
                         <td className="px-2 py-2">
-                          <button onClick={() => removeLine(l.id)} className="rounded p-1 text-muted-foreground hover:bg-destructive/10 hover:text-destructive">
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </button>
+                          {!isView && (
+                            <button onClick={() => removeLine(l.id)} className="rounded p-1 text-muted-foreground hover:bg-destructive/10 hover:text-destructive">
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </button>
+                          )}
                         </td>
                       </tr>
                     );
