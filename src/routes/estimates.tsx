@@ -6,6 +6,7 @@ import * as Icons from "lucide-react";
 import { CATEGORIES, PRICE_ITEMS, PRICING_TYPES, type PricingType, type Customer } from "@/lib/data";
 import { useCustomers } from "@/lib/customer-store";
 import { useProjects } from "@/lib/project-store";
+import { useCompany, type CompanyProfile } from "@/lib/company-store";
 import { useEstimate, lineTotal, estimateTotals, type EstimateLine, type EstimateMeta } from "@/lib/estimate-store";
 import { useT, useLocale, tCategory, tItem, tPricing, tUnit, type QuoteLanguage } from "@/lib/i18n";
 
@@ -33,6 +34,7 @@ function EstimatesPage() {
   const { customerId: prefillId } = Route.useSearch();
   const customers = useCustomers((s) => s.customers);
   const upsertProject = useProjects((s) => s.upsertByEstimateNumber);
+  const company = useCompany((s) => s.profile);
   const [activeCat, setActiveCat] = useState(CATEGORIES[4].id); // Flooring
   const [itemQ, setItemQ] = useState("");
   const { meta, lines, addLine, updateLine, removeLine, setMeta } = useEstimate();
@@ -142,7 +144,19 @@ function EstimatesPage() {
       toast.error(isZh ? "请先选择客户" : "Please select a customer first");
       return;
     }
-    exportPDF(meta, lines, totals);
+    exportPDF(meta, lines, totals, company, selectedCustomer, false);
+  };
+
+  const onPrint = () => {
+    if (!hasCustomer) {
+      toast.error(isZh ? "请先选择客户" : "Please select a customer first");
+      return;
+    }
+    if (lines.length === 0) {
+      toast.error(isZh ? "请添加项目" : "Add at least one item");
+      return;
+    }
+    exportPDF(meta, lines, totals, company, selectedCustomer, true);
   };
 
   const lockReason = !hasCustomer
@@ -209,8 +223,9 @@ function EstimatesPage() {
               <Save className="h-4 w-4" /> {t("common.save")}
             </button>
             <button
-              onClick={() => window.print()}
-              disabled={lines.length === 0}
+              onClick={onPrint}
+              disabled={!hasCustomer || lines.length === 0}
+              title={lockReason || undefined}
               className="inline-flex items-center gap-1.5 rounded-md border border-input bg-card px-3.5 py-2 text-sm font-medium hover:bg-secondary disabled:cursor-not-allowed disabled:opacity-40"
             >
               <Printer className="h-4 w-4" /> {isZh ? "打印报价" : "Print Estimate"}
@@ -611,14 +626,14 @@ function CustomerPicker({
   );
 }
 
-// -------- Bilingual / multilingual PDF via print window (handles CJK natively) --------
+// -------- Shared print + PDF template (handles CJK natively) --------
 
 interface PDFLabels {
-  brand: string;
   subtitle: string;
   estimate: string;
   date: string;
   billTo: string;
+  projectAddress: string;
   item: string;
   pricing: string;
   qty: string;
@@ -627,16 +642,25 @@ interface PDFLabels {
   subtotal: string;
   discounts: string;
   totalRow: string;
+  notes: string;
+  terms: string;
+  termsBody: string;
   footer: string;
-  signature: string;
+  customerSig: string;
+  companySig: string;
+  signedDate: string;
+  license: string;
+  phone: string;
+  email: string;
+  web: string;
 }
 
 const LABELS_EN: PDFLabels = {
-  brand: "Construction Hub",
   subtitle: "Contractor Estimate",
-  estimate: "Estimate",
+  estimate: "Estimate #",
   date: "Date",
   billTo: "Bill To",
+  projectAddress: "Project Address",
   item: "Item",
   pricing: "Pricing",
   qty: "Qty",
@@ -644,16 +668,26 @@ const LABELS_EN: PDFLabels = {
   total: "Total",
   subtotal: "Subtotal",
   discounts: "Discounts",
-  totalRow: "Total",
-  footer: "Quote valid for 30 days. Pricing subject to site verification.",
-  signature: "Customer signature: ____________________________   Date: __________",
+  totalRow: "Total Due",
+  notes: "Notes",
+  terms: "Terms & Conditions",
+  termsBody:
+    "Quote valid for 30 days from the date issued. Final pricing subject to on-site verification. A 30% deposit is required to schedule work. Change orders will be billed separately.",
+  footer: "Thank you for the opportunity to provide this estimate.",
+  customerSig: "Customer Signature",
+  companySig: "Company Signature",
+  signedDate: "Date",
+  license: "License",
+  phone: "Phone",
+  email: "Email",
+  web: "Web",
 };
 const LABELS_ZH: PDFLabels = {
-  brand: "Construction Hub",
   subtitle: "装修报价单",
   estimate: "报价编号",
   date: "日期",
   billTo: "客户",
+  projectAddress: "项目地址",
   item: "项目",
   pricing: "报价方式",
   qty: "数量",
@@ -661,9 +695,19 @@ const LABELS_ZH: PDFLabels = {
   total: "小计",
   subtotal: "小计",
   discounts: "折扣合计",
-  totalRow: "总计",
-  footer: "报价 30 天内有效，最终价格以现场核对为准。",
-  signature: "客户签字：____________________________   日期：__________",
+  totalRow: "应付总额",
+  notes: "备注",
+  terms: "条款说明",
+  termsBody:
+    "报价 30 天内有效，最终价格以现场核对为准。开工前需预付 30% 定金，工程变更将单独计费。",
+  footer: "感谢您给予我们报价的机会。",
+  customerSig: "客户签字",
+  companySig: "公司签字",
+  signedDate: "日期",
+  license: "执照",
+  phone: "电话",
+  email: "邮箱",
+  web: "网址",
 };
 
 function bi(en: string, zh: string, mode: QuoteLanguage): string {
@@ -672,10 +716,27 @@ function bi(en: string, zh: string, mode: QuoteLanguage): string {
   return `${en}<br/><span class="zh">${zh}</span>`;
 }
 
-function exportPDF(meta: EstimateMeta, lines: EstimateLine[], totals: ReturnType<typeof estimateTotals>) {
+function esc(s: string | null | undefined): string {
+  if (!s) return "";
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
+function exportPDF(
+  meta: EstimateMeta,
+  lines: EstimateLine[],
+  totals: ReturnType<typeof estimateTotals>,
+  company: CompanyProfile,
+  customer: Customer | null,
+  autoPrint: boolean,
+) {
   const mode = meta.quoteLanguage;
   const L = mode === "zh" ? LABELS_ZH : LABELS_EN;
   const LZ = LABELS_ZH;
+
+  const companyName = company.name?.trim() || "Your Company Name";
 
   const lineRows = lines
     .map((l) => {
@@ -685,34 +746,44 @@ function exportPDF(meta: EstimateMeta, lines: EstimateLine[], totals: ReturnType
       const nameZh = item?.nameZh ?? nameEn;
       const catEn = cat?.name ?? l.categoryName;
       const catZh = cat?.nameZh ?? catEn;
-      const pricingEn = l.pricingType;
       const pricingZh = tPricing(l.pricingType, "zh");
-      const unitEn = l.unit;
       const unitZh = tUnit(l.unit, "zh");
       return `
         <tr>
           <td>
-            <div class="strong">${bi(nameEn, nameZh, mode)}</div>
-            <div class="muted small">${bi(catEn, catZh, mode)}</div>
+            <div class="strong">${bi(esc(nameEn), esc(nameZh), mode)}</div>
+            <div class="muted small">${bi(esc(catEn), esc(catZh), mode)}</div>
           </td>
-          <td>${bi(pricingEn, pricingZh, mode)}</td>
+          <td>${bi(esc(l.pricingType), esc(pricingZh), mode)}</td>
           <td class="right mono">${l.quantity}</td>
-          <td class="mono">${bi(unitEn, unitZh, mode)}</td>
+          <td class="mono">${bi(esc(l.unit), esc(unitZh), mode)}</td>
           <td class="right mono">${fmt(lineTotal(l))}</td>
         </tr>`;
     })
     .join("");
 
   const titleHeader =
-    mode === "bilingual"
-      ? `${L.subtitle} / ${LZ.subtitle}`
-      : L.subtitle;
+    mode === "bilingual" ? `${L.subtitle} / ${LZ.subtitle}` : L.subtitle;
+
+  const customerName = customer?.name || meta.customerName || "—";
+  const customerPhone = customer?.phone || "";
+  const customerEmail = customer?.email || "";
+  const projectAddr = meta.projectAddress || "";
+
+  const companyLines: string[] = [];
+  if (company.address) companyLines.push(esc(company.address));
+  const contact: string[] = [];
+  if (company.phone) contact.push(`${L.phone}: ${esc(company.phone)}`);
+  if (company.email) contact.push(`${L.email}: ${esc(company.email)}`);
+  if (contact.length) companyLines.push(contact.join(" &nbsp;·&nbsp; "));
+  if (company.website) companyLines.push(`${L.web}: ${esc(company.website)}`);
+  if (company.license) companyLines.push(`${L.license}: ${esc(company.license)}`);
 
   const html = `<!doctype html>
 <html lang="${mode === "zh" ? "zh-CN" : "en"}">
 <head>
 <meta charset="utf-8" />
-<title>${meta.estimateNumber} — ${L.brand}</title>
+<title>${esc(meta.estimateNumber)} — ${esc(companyName)}</title>
 <style>
   @page { size: letter; margin: 0.6in; }
   * { box-sizing: border-box; }
@@ -722,12 +793,17 @@ function exportPDF(meta: EstimateMeta, lines: EstimateLine[], totals: ReturnType
     color: #1a1a1a; margin: 0; padding: 28px;
     -webkit-print-color-adjust: exact; print-color-adjust: exact;
   }
-  .head { display: flex; justify-content: space-between; align-items: flex-start; padding-bottom: 16px; border-bottom: 1px solid #ddd; }
-  .brand { font-size: 22px; font-weight: 700; letter-spacing: -0.01em; }
+  .head { display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; padding-bottom: 16px; border-bottom: 2px solid #1a1a1a; }
+  .head .left { display: flex; gap: 14px; align-items: flex-start; }
+  .logo { width: 64px; height: 64px; object-fit: contain; border-radius: 6px; }
+  .brand { font-size: 22px; font-weight: 700; letter-spacing: -0.01em; line-height: 1.15; }
   .sub { font-size: 11px; color: #777; margin-top: 4px; }
-  .meta { font-size: 11px; text-align: right; line-height: 1.6; }
-  .billto { margin: 22px 0; font-size: 12px; }
-  .billto .label { font-weight: 700; margin-bottom: 4px; }
+  .cline { font-size: 11px; color: #555; line-height: 1.55; margin-top: 6px; }
+  .meta { font-size: 11px; text-align: right; line-height: 1.7; }
+  .meta .estno { font-size: 14px; font-weight: 700; color: #111; }
+  .twocol { display: flex; gap: 24px; margin: 22px 0 6px; }
+  .twocol > div { flex: 1; font-size: 12px; }
+  .blklabel { font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; color: #888; font-weight: 700; margin-bottom: 4px; }
   .muted { color: #777; }
   .small { font-size: 10px; }
   .zh { color: #555; font-size: 0.92em; }
@@ -740,8 +816,12 @@ function exportPDF(meta: EstimateMeta, lines: EstimateLine[], totals: ReturnType
   .totals { margin-top: 16px; margin-left: auto; width: 280px; font-size: 12px; }
   .totals .row { display: flex; justify-content: space-between; padding: 4px 0; color: #555; }
   .totals .grand { display: flex; justify-content: space-between; padding: 8px 0 0; border-top: 1px solid #ccc; margin-top: 6px; font-size: 16px; font-weight: 700; color: #111; }
-  .footer { margin-top: 36px; font-size: 9.5px; color: #999; }
-  .footer .sig { margin-top: 8px; color: #555; }
+  .block { margin-top: 22px; font-size: 11px; color: #444; line-height: 1.55; }
+  .block h4 { font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; color: #888; margin: 0 0 4px; font-weight: 700; }
+  .sigs { margin-top: 36px; display: flex; gap: 32px; }
+  .sig { flex: 1; }
+  .sig .line { border-top: 1px solid #333; margin-top: 36px; padding-top: 4px; font-size: 10px; color: #666; display: flex; justify-content: space-between; }
+  .footer { margin-top: 24px; font-size: 9.5px; color: #999; text-align: center; }
   @media print { .noprint { display: none !important; } }
   .bar { position: fixed; top: 10px; right: 10px; }
   .bar button { font-size: 12px; padding: 6px 12px; cursor: pointer; }
@@ -753,20 +833,31 @@ function exportPDF(meta: EstimateMeta, lines: EstimateLine[], totals: ReturnType
   </div>
 
   <div class="head">
-    <div>
-      <div class="brand">${L.brand}</div>
-      <div class="sub">${titleHeader}</div>
+    <div class="left">
+      ${company.logoUrl ? `<img class="logo" src="${esc(company.logoUrl)}" alt="logo" />` : ""}
+      <div>
+        <div class="brand">${esc(companyName)}</div>
+        <div class="sub">${titleHeader}</div>
+        <div class="cline">${companyLines.join("<br/>")}</div>
+      </div>
     </div>
     <div class="meta">
-      <div><strong>${bi(LABELS_EN.estimate, LZ.estimate, mode)}:</strong> ${meta.estimateNumber}</div>
-      <div><strong>${bi(LABELS_EN.date, LZ.date, mode)}:</strong> ${meta.date}</div>
+      <div class="estno">${esc(meta.estimateNumber)}</div>
+      <div><strong>${bi(LABELS_EN.date, LZ.date, mode)}:</strong> ${esc(meta.date)}</div>
     </div>
   </div>
 
-  <div class="billto">
-    <div class="label">${bi(LABELS_EN.billTo, LZ.billTo, mode)}</div>
-    <div class="strong">${meta.customerName || "—"}</div>
-    <div class="muted">${meta.projectAddress || ""}</div>
+  <div class="twocol">
+    <div>
+      <div class="blklabel">${bi(LABELS_EN.billTo, LZ.billTo, mode)}</div>
+      <div class="strong">${esc(customerName)}</div>
+      ${customerPhone ? `<div class="muted mono">${esc(customerPhone)}</div>` : ""}
+      ${customerEmail ? `<div class="muted">${esc(customerEmail)}</div>` : ""}
+    </div>
+    <div>
+      <div class="blklabel">${bi(LABELS_EN.projectAddress, LZ.projectAddress, mode)}</div>
+      <div>${esc(projectAddr) || "—"}</div>
+    </div>
   </div>
 
   <table>
@@ -788,23 +879,35 @@ function exportPDF(meta: EstimateMeta, lines: EstimateLine[], totals: ReturnType
     <div class="grand"><span>${bi(LABELS_EN.totalRow, LZ.totalRow, mode)}</span><span class="mono">${fmt(totals.total)}</span></div>
   </div>
 
-  <div class="footer">
-    <div>${bi(LABELS_EN.footer, LZ.footer, mode)}</div>
-    <div class="sig">${bi(LABELS_EN.signature, LZ.signature, mode)}</div>
+  <div class="block">
+    <h4>${bi(LABELS_EN.terms, LZ.terms, mode)}</h4>
+    <div>${bi(LABELS_EN.termsBody, LZ.termsBody, mode)}</div>
   </div>
 
-  <script>
-    window.addEventListener("load", function () { setTimeout(function () { window.print(); }, 350); });
-  </script>
+  <div class="sigs">
+    <div class="sig">
+      <div class="blklabel">${bi(LABELS_EN.customerSig, LZ.customerSig, mode)}</div>
+      <div class="line"><span>${bi(LABELS_EN.customerSig, LZ.customerSig, mode)}</span><span>${bi(LABELS_EN.signedDate, LZ.signedDate, mode)}</span></div>
+    </div>
+    <div class="sig">
+      <div class="blklabel">${bi(LABELS_EN.companySig, LZ.companySig, mode)}</div>
+      <div class="line"><span>${esc(companyName)}</span><span>${bi(LABELS_EN.signedDate, LZ.signedDate, mode)}</span></div>
+    </div>
+  </div>
+
+  <div class="footer">${bi(LABELS_EN.footer, LZ.footer, mode)}</div>
+
+  ${autoPrint ? `<script>window.addEventListener("load", function () { setTimeout(function () { window.print(); }, 350); });</script>` : ""}
 </body>
 </html>`;
 
   const w = window.open("", "_blank", "width=900,height=1100");
   if (!w) {
-    alert("Please allow pop-ups to export the PDF.");
+    alert("Please allow pop-ups to print or export the PDF.");
     return;
   }
   w.document.open();
   w.document.write(html);
   w.document.close();
 }
+
