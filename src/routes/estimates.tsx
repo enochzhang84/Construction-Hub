@@ -6,6 +6,7 @@ import * as Icons from "lucide-react";
 import { CATEGORIES, PRICE_ITEMS, PRICING_TYPES, type PricingType, type Customer } from "@/lib/data";
 import { useCustomers } from "@/lib/customer-store";
 import { useProjects } from "@/lib/project-store";
+import { useCompany, type CompanyProfile } from "@/lib/company-store";
 import { useEstimate, lineTotal, estimateTotals, type EstimateLine, type EstimateMeta } from "@/lib/estimate-store";
 import { useT, useLocale, tCategory, tItem, tPricing, tUnit, type QuoteLanguage } from "@/lib/i18n";
 
