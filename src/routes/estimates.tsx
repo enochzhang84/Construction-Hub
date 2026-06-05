@@ -8,6 +8,7 @@ import { useCustomers } from "@/lib/customer-store";
 import { useProjects } from "@/lib/project-store";
 import { useCompany, type CompanyProfile } from "@/lib/company-store";
 import { useEstimate, lineTotal, estimateTotals, type EstimateLine, type EstimateMeta } from "@/lib/estimate-store";
+import { nextEstimateNumber, seedEstimateNumberFrom } from "@/lib/estimate-number";
 import { useT, useLocale, tCategory, tItem, tPricing, tUnit, type QuoteLanguage } from "@/lib/i18n";
 
 export const Route = createFileRoute("/estimates")({
