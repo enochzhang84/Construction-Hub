@@ -1,7 +1,22 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { FileText, HardHat, Wallet, CheckCircle2, ArrowUpRight } from "lucide-react";
+import { FileText, HardHat, Wallet, CheckCircle2, ArrowUpRight, CalendarIcon } from "lucide-react";
 import { useT, useLocale } from "@/lib/i18n";
-import { useProjects, summarizeProjects, type Project } from "@/lib/project-store";
+import {
+  useProjects,
+  summarizeProjects,
+  formatDMY,
+  statusBadgeClass,
+  statusLabel,
+  paymentLabel,
+  STATUS_OPTIONS,
+  PAYMENT_METHODS,
+  type Project,
+  type ProjectStatus,
+  type PaymentMethod,
+} from "@/lib/project-store";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/reports")({
   head: () => ({ meta: [{ title: "Reports · Construction Hub" }] }),
@@ -12,11 +27,48 @@ function money(n: number) {
   return `$${n.toLocaleString()}`;
 }
 
+function DatePickerCell({
+  value,
+  onChange,
+  placeholder,
+}: {
+  value?: string;
+  onChange: (iso: string | undefined) => void;
+  placeholder: string;
+}) {
+  const date = value ? new Date(value) : undefined;
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <button
+          className={cn(
+            "inline-flex w-full items-center gap-1.5 rounded-md border border-input bg-card px-2 py-1.5 text-xs font-mono hover:bg-secondary/60",
+            !value && "text-muted-foreground",
+          )}
+        >
+          <CalendarIcon className="h-3 w-3" />
+          {value ? formatDMY(value) : placeholder}
+        </button>
+      </PopoverTrigger>
+      <PopoverContent align="start" className="w-auto p-0 pointer-events-auto">
+        <Calendar
+          mode="single"
+          selected={date}
+          onSelect={(d) => onChange(d ? d.toISOString().slice(0, 10) : undefined)}
+          initialFocus
+          className="p-3 pointer-events-auto"
+        />
+      </PopoverContent>
+    </Popover>
+  );
+}
+
 function ReportsPage() {
   const t = useT();
   const locale = useLocale();
   const isZh = locale === "zh";
   const projects = useProjects((s) => s.projects);
+  const update = useProjects((s) => s.update);
   const sum = summarizeProjects(projects);
 
   const STAGES: Array<{
@@ -35,7 +87,7 @@ function ReportsPage() {
       items: sum.estimates,
       amountLabel: isZh ? "总报价" : "Total Estimated",
       amount: money(sum.estimateTotal),
-      status: isZh ? "等待客户确认" : "Awaiting customer approval",
+      status: isZh ? "等待客户确认" : "Awaiting approval",
       icon: FileText,
       tone: "info",
     },
@@ -45,7 +97,7 @@ function ReportsPage() {
       items: sum.active,
       amountLabel: isZh ? "合同金额" : "Contract Value",
       amount: money(sum.contractTotal),
-      status: isZh ? "施工进行中" : "Construction in progress",
+      status: isZh ? "施工进行中" : "In progress",
       icon: HardHat,
       tone: "warning",
     },
@@ -71,20 +123,18 @@ function ReportsPage() {
     },
   ];
 
+  const records = projects.filter((p) => !p.parentProjectId);
+
   return (
     <div className="flex h-full flex-col">
       <header className="border-b border-border px-8 py-5">
         <h1 className="font-display text-2xl font-semibold">{t("rep.title")}</h1>
-        <p className="text-sm text-muted-foreground">
-          {isZh ? "工程状态与流程管理" : "Project pipeline & workflow management"}
-        </p>
+        <p className="text-sm text-muted-foreground">{t("rep.subtitle")}</p>
       </header>
-      <div className="flex-1 overflow-y-auto finder-scroll p-8 space-y-6">
+      <div className="flex-1 overflow-y-auto finder-scroll p-8 space-y-8">
         <section>
           <div className="mb-3 flex items-center justify-between">
-            <h2 className="font-display text-lg font-semibold">
-              {isZh ? "工程状态管理" : "Project Pipeline"}
-            </h2>
+            <h2 className="font-display text-lg font-semibold">{t("rep.pipeline")}</h2>
             <span className="text-xs text-muted-foreground">
               {isZh ? "报价 → 施工 → 结算 → 完成" : "Estimate → Active → Pending → Completed"}
             </span>
@@ -121,16 +171,10 @@ function ReportsPage() {
                 >
                   <div className="flex items-start justify-between">
                     <div>
-                      <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                        {p.title}
-                      </div>
+                      <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">{p.title}</div>
                       <div className="mt-2 flex items-baseline gap-2">
-                        <span className="font-display text-3xl font-semibold tracking-tight">
-                          {p.items.length}
-                        </span>
-                        <span className="text-xs text-muted-foreground">
-                          {isZh ? "个项目" : "projects"}
-                        </span>
+                        <span className="font-display text-3xl font-semibold tracking-tight">{p.items.length}</span>
+                        <span className="text-xs text-muted-foreground">{isZh ? "个项目" : "projects"}</span>
                       </div>
                     </div>
                     <div className={"rounded-md bg-secondary p-2 " + toneText}>
@@ -154,6 +198,111 @@ function ReportsPage() {
                 </Link>
               );
             })}
+          </div>
+        </section>
+
+        <section>
+          <h2 className="mb-3 font-display text-lg font-semibold">{t("rep.records")}</h2>
+          <div className="overflow-x-auto rounded-lg border border-border bg-card shadow-panel">
+            <table className="w-full min-w-[1200px] text-sm">
+              <thead className="border-b border-border bg-secondary/60 text-left text-xs uppercase tracking-wider text-muted-foreground">
+                <tr>
+                  <th className="px-3 py-2.5 font-medium">{t("rep.col.date")}</th>
+                  <th className="px-3 py-2.5 font-medium">{t("rep.col.customer")}</th>
+                  <th className="px-3 py-2.5 font-medium">{t("rep.col.address")}</th>
+                  <th className="px-3 py-2.5 font-medium">{t("rep.col.issueDate")}</th>
+                  <th className="px-3 py-2.5 font-medium">{t("rep.col.status")}</th>
+                  <th className="px-3 py-2.5 font-medium">{t("rep.col.startDate")}</th>
+                  <th className="px-3 py-2.5 font-medium">{t("rep.col.settlementDate")}</th>
+                  <th className="px-3 py-2.5 font-medium">{t("rep.col.payment")}</th>
+                  <th className="px-3 py-2.5 font-medium">{t("rep.col.notes")}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {records.map((p) => (
+                  <tr key={p.id} className="border-b border-border/60 last:border-0 hover:bg-secondary/40">
+                    <td className="px-3 py-2 font-mono text-xs">{formatDMY(p.estimateDate)}</td>
+                    <td className="px-3 py-2">
+                      <Link to="/projects/detail/$id" params={{ id: p.id }} className="font-medium hover:underline">
+                        {p.customerName}
+                      </Link>
+                      <div className="font-mono text-[11px] text-muted-foreground">{p.customerPhone || "—"}</div>
+                    </td>
+                    <td className="px-3 py-2 text-xs text-muted-foreground">{p.projectAddress}</td>
+                    <td className="px-3 py-2">
+                      <DatePickerCell
+                        value={p.issueDate}
+                        onChange={(d) => update(p.id, { issueDate: d })}
+                        placeholder={t("rep.pickDate")}
+                      />
+                    </td>
+                    <td className="px-3 py-2">
+                      <select
+                        value={p.status}
+                        onChange={(e) => update(p.id, { status: e.target.value as ProjectStatus })}
+                        className={
+                          "rounded-md border-0 px-2 py-1 text-xs font-medium outline-none focus:ring-2 focus:ring-ring/40 " +
+                          statusBadgeClass(p.status)
+                        }
+                      >
+                        {STATUS_OPTIONS.map((s) => (
+                          <option key={s} value={s}>
+                            {statusLabel(s, locale)}
+                          </option>
+                        ))}
+                      </select>
+                    </td>
+                    <td className="px-3 py-2">
+                      <DatePickerCell
+                        value={p.startDate}
+                        onChange={(d) => update(p.id, { startDate: d })}
+                        placeholder={t("rep.pickDate")}
+                      />
+                    </td>
+                    <td className="px-3 py-2">
+                      <DatePickerCell
+                        value={p.settlementDate}
+                        onChange={(d) => update(p.id, { settlementDate: d })}
+                        placeholder={t("rep.pickDate")}
+                      />
+                    </td>
+                    <td className="px-3 py-2">
+                      <select
+                        value={p.paymentMethod || ""}
+                        onChange={(e) =>
+                          update(p.id, {
+                            paymentMethod: (e.target.value || undefined) as PaymentMethod | undefined,
+                          })
+                        }
+                        className="rounded-md border border-input bg-card px-2 py-1 text-xs outline-none focus:ring-2 focus:ring-ring/40"
+                      >
+                        <option value="">—</option>
+                        {PAYMENT_METHODS.map((m) => (
+                          <option key={m} value={m}>
+                            {paymentLabel(m, locale)}
+                          </option>
+                        ))}
+                      </select>
+                    </td>
+                    <td className="px-3 py-2">
+                      <input
+                        defaultValue={p.notes || ""}
+                        onBlur={(e) => update(p.id, { notes: e.target.value })}
+                        placeholder="—"
+                        className="w-40 rounded-md border border-input bg-card px-2 py-1 text-xs outline-none focus:ring-2 focus:ring-ring/40"
+                      />
+                    </td>
+                  </tr>
+                ))}
+                {records.length === 0 && (
+                  <tr>
+                    <td colSpan={9} className="px-4 py-10 text-center text-muted-foreground">
+                      {isZh ? "暂无记录" : "No records"}
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
           </div>
         </section>
       </div>
