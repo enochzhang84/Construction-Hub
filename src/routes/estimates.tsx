@@ -116,6 +116,10 @@ function EstimatesPage() {
   };
 
   const handleAddItem = (it: typeof PRICE_ITEMS[number]) => {
+    if (isView) {
+      toast.error(isZh ? "请先点击「新增报价单」" : "Click '+ New Estimate' first");
+      return;
+    }
     const cat = CATEGORIES.find((c) => c.id === it.categoryId)!;
     addLine({
       categoryId: cat.id,
@@ -134,6 +138,7 @@ function EstimatesPage() {
   };
 
   const onSave = () => {
+    if (isView) return;
     if (!hasCustomer) {
       toast.error(isZh ? "请先选择客户" : "Please select a customer first");
       return;
