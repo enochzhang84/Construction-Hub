@@ -19,7 +19,7 @@ import {
 import { CATEGORIES } from "@/lib/data";
 import { useT, useLocale, tCategory } from "@/lib/i18n";
 import { LanguageToggle } from "@/components/AppShell";
-import { useProjects, summarizeProjects, statusBadgeClass, statusLabel } from "@/lib/project-store";
+import { useProjects, summarizeProjects } from "@/lib/project-store";
 import { useCustomers } from "@/lib/customer-store";
 
 export const Route = createFileRoute("/")({
