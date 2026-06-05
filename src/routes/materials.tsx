@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dialog";
 
 export const Route = createFileRoute("/materials")({
-  head: () => ({ meta: [{ title: "Materials · Construction Hub" }] }),
+  head: () => ({ meta: [{ title: "Suppliers · Construction Hub" }] }),
   component: MaterialsPage,
 });
 
@@ -65,7 +65,7 @@ function MaterialsPage() {
         saved: "供货商保存成功",
         deleted: "供货商已删除",
         empty: "暂无供货商，点击右上角新增。",
-        secTitle: "材料与供应商",
+        secTitle: "供货商",
         secSub: "供应商资料库 · 关联材料采购来源",
       }
     : {
@@ -81,7 +81,7 @@ function MaterialsPage() {
         saved: "Supplier saved successfully",
         deleted: "Supplier removed",
         empty: "No suppliers yet. Click Add Supplier to get started.",
-        secTitle: "Materials & Suppliers",
+        secTitle: "Suppliers",
         secSub: "Supplier directory · linked to material sourcing",
       };
 

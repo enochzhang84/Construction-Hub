@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/dialog";
 
 export const Route = createFileRoute("/price-book")({
-  head: () => ({ meta: [{ title: "Price Book · Construction Hub" }] }),
+  head: () => ({ meta: [{ title: "Construction Items · Construction Hub" }] }),
   component: PriceBookPage,
 });
 

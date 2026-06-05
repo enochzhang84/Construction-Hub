@@ -1,7 +1,8 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useT } from "@/lib/i18n";
 import { useCompany, type CompanyProfile } from "@/lib/company-store";
 import { toast } from "sonner";
+import { BookOpen, ChevronRight } from "lucide-react";
 
 export const Route = createFileRoute("/settings")({
   head: () => ({ meta: [{ title: "Settings · Construction Hub" }] }),
@@ -100,6 +101,19 @@ function SettingsPage() {
               </div>
             ))}
           </div>
+        </section>
+
+        <section className="rounded-lg border border-border bg-card p-6 shadow-panel">
+          <h2 className="mb-1 font-display text-base font-semibold">{t("set.constructionItems")}</h2>
+          <p className="mb-4 text-xs text-muted-foreground">{t("set.constructionItems.desc")}</p>
+          <Link
+            to="/price-book"
+            className="inline-flex items-center gap-2 rounded-md border border-input bg-background px-4 py-2.5 text-sm font-medium hover:bg-secondary transition-colors"
+          >
+            <BookOpen className="h-4 w-4 text-muted-foreground" />
+            <span>{t("set.manageConstructionItems")}</span>
+            <ChevronRight className="h-4 w-4 text-muted-foreground" />
+          </Link>
         </section>
 
         <section className="rounded-lg border border-border bg-card p-6 shadow-panel">

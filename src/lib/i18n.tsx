@@ -41,8 +41,7 @@ const DICT: Dict = {
   "nav.dashboard": { en: "Dashboard", zh: "仪表板" },
   "nav.customers": { en: "Customers", zh: "客户管理" },
   "nav.estimates": { en: "Estimates", zh: "报价单" },
-  "nav.priceBook": { en: "Price Book", zh: "价格库" },
-  "nav.materials": { en: "Materials", zh: "材料库" },
+  "nav.suppliers": { en: "Suppliers", zh: "供货商" },
   "nav.reports": { en: "Reports", zh: "报表中心" },
   "nav.settings": { en: "Settings", zh: "系统设置" },
 
@@ -143,8 +142,8 @@ const DICT: Dict = {
   "est.lang.zh": { en: "中文", zh: "中文" },
   "est.lang.bilingual": { en: "Bilingual", zh: "中英双语" },
 
-  // Price Book
-  "pb.title": { en: "Price Book", zh: "价格库" },
+  // Construction Items (Price Book)
+  "pb.title": { en: "Construction Items", zh: "施工项目" },
   "pb.items": { en: "items across", zh: "个项目，共" },
   "pb.trades": { en: "trades", zh: "个施工分类" },
   "pb.col.trade": { en: "Trade", zh: "施工分类" },
@@ -155,10 +154,10 @@ const DICT: Dict = {
   "pb.col.material": { en: "Material", zh: "材料" },
   "pb.col.combined": { en: "Combined", zh: "合计" },
 
-  // Materials
-  "mat.title": { en: "Materials & Suppliers", zh: "材料与供应商" },
+  // Suppliers
+  "mat.title": { en: "Suppliers", zh: "供货商" },
   "mat.subtitle": {
-    en: "Vendor accounts and material cost references.",
+    en: "Supplier accounts and material cost references.",
     zh: "供应商账户与材料成本参考。",
   },
   "mat.account": { en: "Account", zh: "账户" },
@@ -225,13 +224,13 @@ const DICT: Dict = {
   "set.field.tax": { en: "Default Tax Rate", zh: "默认税率" },
   "set.role.admin": { en: "Super Admin", zh: "超级管理员" },
   "set.role.admin.desc": {
-    en: "Full access · price book · users · billing",
-    zh: "完整权限 · 价格库 · 用户 · 账单",
+    en: "Full access · construction items · users · billing",
+    zh: "完整权限 · 施工项目 · 用户 · 账单",
   },
   "set.role.estimator": { en: "Estimator", zh: "报价员" },
   "set.role.estimator.desc": {
-    en: "Create / edit estimates · view price book",
-    zh: "创建/编辑报价 · 查看价格库",
+    en: "Create / edit estimates · view construction items",
+    zh: "创建/编辑报价 · 查看施工项目",
   },
   "set.role.sales": { en: "Sales", zh: "销售" },
   "set.role.sales.desc": {
@@ -240,6 +239,12 @@ const DICT: Dict = {
   },
   "set.role.viewer": { en: "Viewer", zh: "查看者" },
   "set.role.viewer.desc": { en: "Read-only access", zh: "只读权限" },
+  "set.constructionItems": { en: "Construction Items", zh: "施工项目" },
+  "set.constructionItems.desc": {
+    en: "Manage trades, items, units, and pricing.",
+    zh: "管理施工分类、项目、单位和定价。",
+  },
+  "set.manageConstructionItems": { en: "Manage Construction Items", zh: "管理施工项目" },
 
   // PDF
   "pdf.brand": { en: "Construction Hub", zh: "Construction Hub" },
