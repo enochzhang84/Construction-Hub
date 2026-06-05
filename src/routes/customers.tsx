@@ -592,7 +592,9 @@ function CustomersPage() {
             )}
           </div>
         </div>
+        )}
       </div>
+
 
       {/* Add dialog */}
       <CustomerDialog
