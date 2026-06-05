@@ -28,11 +28,14 @@ function fmt(n: number) {
 function EstimatesPage() {
   const t = useT();
   const locale = useLocale();
+  const isZh = locale === "zh";
   const { customerId: prefillId } = Route.useSearch();
   const customers = useCustomers((s) => s.customers);
+  const upsertProject = useProjects((s) => s.upsertByEstimateNumber);
   const [activeCat, setActiveCat] = useState(CATEGORIES[4].id); // Flooring
   const [itemQ, setItemQ] = useState("");
   const { meta, lines, addLine, updateLine, removeLine, setMeta } = useEstimate();
+  const linesScrollRef = useRef<HTMLDivElement>(null);
 
   const applyCustomer = (c: Customer | null) => {
     setMeta({
@@ -62,76 +65,218 @@ function EstimatesPage() {
   }, [activeCat, itemQ]);
 
   const totals = estimateTotals(lines, meta.globalDiscount);
+  const hasCustomer = !!meta.customerId;
+  const selectedCustomer = useMemo(
+    () => (meta.customerId ? customers.find((c) => c.id === meta.customerId) ?? null : null),
+    [meta.customerId, customers],
+  );
+
+  const categoryItemCounts = useMemo(() => {
+    const m = new Map<string, number>();
+    for (const it of PRICE_ITEMS) m.set(it.categoryId, (m.get(it.categoryId) ?? 0) + 1);
+    return m;
+  }, []);
+
+  const scrollToLines = () => {
+    requestAnimationFrame(() => {
+      linesScrollRef.current?.scrollTo({ top: linesScrollRef.current.scrollHeight, behavior: "smooth" });
+    });
+  };
+
+  const handleAddItem = (it: typeof PRICE_ITEMS[number]) => {
+    const cat = CATEGORIES.find((c) => c.id === it.categoryId)!;
+    addLine({
+      categoryId: cat.id,
+      categoryName: cat.name,
+      itemId: it.id,
+      itemName: it.name,
+      unit: it.unit,
+      pricingType: it.defaultPricing,
+      quantity: 1,
+      hoursPerUnit: it.hoursPerUnit,
+      laborRate: it.laborRate,
+      materialRate: it.materialRate,
+      discount: 0,
+    });
+    scrollToLines();
+  };
+
+  const onSave = () => {
+    if (!hasCustomer) {
+      toast.error(isZh ? "请先选择客户" : "Please select a customer first");
+      return;
+    }
+    if (lines.length === 0) {
+      toast.error(isZh ? "请至少添加一个项目" : "Add at least one item");
+      return;
+    }
+    upsertProject({
+      customerId: meta.customerId ?? null,
+      customerName: meta.customerName,
+      customerPhone: selectedCustomer?.phone,
+      projectAddress: meta.projectAddress,
+      estimateNumber: meta.estimateNumber,
+      amount: totals.total,
+      discount: meta.globalDiscount,
+      paidAmount: 0,
+      estimateDate: meta.date,
+      issueDate: meta.date,
+      status: "Estimate",
+      subStatus: "Draft",
+      lineItems: lines.map((l) => ({
+        id: l.id,
+        categoryName: l.categoryName,
+        name: l.itemName,
+        qty: l.quantity,
+        unit: l.unit,
+        unitPrice: l.laborRate + l.materialRate,
+        amount: lineTotal(l) + l.discount,
+      })),
+    });
+    toast.success(isZh ? "保存成功" : "Saved successfully");
+  };
+
+  const onExport = () => {
+    if (!hasCustomer) {
+      toast.error(isZh ? "请先选择客户" : "Please select a customer first");
+      return;
+    }
+    exportPDF(meta, lines, totals);
+  };
+
+  const lockReason = !hasCustomer
+    ? isZh ? "请先选择客户" : "Please select a customer first"
+    : lines.length === 0
+    ? isZh ? "请添加项目" : "Add at least one item"
+    : "";
 
   return (
-    <div className="flex h-full flex-col">
-      <header className="flex items-center justify-between gap-4 border-b border-border bg-background/80 px-6 py-3 backdrop-blur">
-        <div className="flex items-center gap-3">
-          <div>
-            <div className="font-display text-sm font-semibold" suppressHydrationWarning>{meta.estimateNumber}</div>
-            <div className="text-[11px] text-muted-foreground">{meta.date}</div>
+    <div className="flex h-full flex-col bg-[oklch(0.985_0.005_240)] dark:bg-background">
+      {/* Header card */}
+      <header className="border-b border-border bg-card px-6 py-4 shadow-[0_1px_0_0_oklch(0.92_0.005_240)]">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div className="flex flex-wrap items-center gap-4">
+            <div>
+              <div className="font-display text-base font-semibold tracking-tight" suppressHydrationWarning>
+                {meta.estimateNumber}
+              </div>
+              <div className="mt-0.5 font-mono text-[11px] text-muted-foreground">{meta.date}</div>
+            </div>
+            <div className="hidden h-10 w-px bg-border sm:block" />
+            <div className="flex flex-col gap-1">
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                {isZh ? "客户" : "Customer"}
+              </span>
+              <CustomerPicker
+                customers={customers}
+                value={meta.customerId}
+                valueLabel={meta.customerName}
+                placeholder={t("est.selectCustomer")}
+                onSelect={applyCustomer}
+              />
+              {selectedCustomer && (
+                <div className="mt-0.5 flex items-center gap-3 text-[11px] text-muted-foreground">
+                  <span className="font-mono">{selectedCustomer.phone}</span>
+                  <span className="truncate">{selectedCustomer.address}, {selectedCustomer.city}</span>
+                </div>
+              )}
+            </div>
+            <div className="hidden h-10 w-px bg-border sm:block" />
+            <div className="flex flex-col gap-1">
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                {t("est.quoteLanguage")}
+              </span>
+              <select
+                value={meta.quoteLanguage}
+                onChange={(e) => setMeta({ quoteLanguage: e.target.value as QuoteLanguage })}
+                className="rounded-md border border-input bg-card px-2.5 py-1.5 text-xs outline-none focus:ring-2 focus:ring-ring/40"
+              >
+                <option value="en">{t("est.lang.en")}</option>
+                <option value="zh">{t("est.lang.zh")}</option>
+                <option value="bilingual">{t("est.lang.bilingual")}</option>
+              </select>
+            </div>
           </div>
-          <div className="h-8 w-px bg-border" />
-          <CustomerPicker
-            customers={customers}
-            value={meta.customerId}
-            valueLabel={meta.customerName}
-            placeholder={t("est.selectCustomer")}
-            onSelect={applyCustomer}
-          />
 
-
-
-          <div className="h-8 w-px bg-border" />
-          <label className="flex items-center gap-2 text-xs text-muted-foreground">
-            <span>{t("est.quoteLanguage")}:</span>
-            <select
-              value={meta.quoteLanguage}
-              onChange={(e) => setMeta({ quoteLanguage: e.target.value as QuoteLanguage })}
-              className="rounded-md border border-input bg-card px-2 py-1 text-xs outline-none"
+          <div className="flex items-center gap-2">
+            <button
+              onClick={onSave}
+              disabled={!hasCustomer || lines.length === 0}
+              title={lockReason || undefined}
+              className="inline-flex items-center gap-1.5 rounded-md border border-input bg-card px-3.5 py-2 text-sm font-medium hover:bg-secondary disabled:cursor-not-allowed disabled:opacity-40"
             >
-              <option value="en">{t("est.lang.en")}</option>
-              <option value="zh">{t("est.lang.zh")}</option>
-              <option value="bilingual">{t("est.lang.bilingual")}</option>
-            </select>
-          </label>
+              <Save className="h-4 w-4" /> {t("common.save")}
+            </button>
+            <button
+              onClick={() => window.print()}
+              disabled={lines.length === 0}
+              className="inline-flex items-center gap-1.5 rounded-md border border-input bg-card px-3.5 py-2 text-sm font-medium hover:bg-secondary disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              <Printer className="h-4 w-4" /> {isZh ? "打印报价" : "Print Estimate"}
+            </button>
+            <button
+              onClick={onExport}
+              disabled={!hasCustomer || lines.length === 0}
+              title={lockReason || undefined}
+              className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3.5 py-2 text-sm font-medium text-primary-foreground shadow-sm hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              <Download className="h-4 w-4" /> {t("est.exportPDF")}
+            </button>
+          </div>
         </div>
-        <button
-          onClick={() => exportPDF(meta, lines, totals)}
-          disabled={lines.length === 0}
-          className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3.5 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-40"
-        >
-          <Download className="h-4 w-4" /> {t("est.exportPDF")}
-        </button>
       </header>
 
       <div className="flex flex-1 overflow-hidden">
         {/* Pane 1: Categories */}
-        <div className="w-56 shrink-0 border-r border-border bg-panel/40 overflow-y-auto finder-scroll">
-          <div className="px-3 py-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{t("est.trades")}</div>
-          {CATEGORIES.map((c) => {
-            const Icon = (Icons as any)[c.icon] ?? Tag;
-            const active = activeCat === c.id;
-            return (
-              <button
-                key={c.id}
-                onClick={() => setActiveCat(c.id)}
-                className={
-                  "flex w-full items-center gap-2 px-3 py-1.5 text-left text-sm transition-colors " +
-                  (active ? "bg-primary text-primary-foreground" : "text-foreground/85 hover:bg-secondary")
-                }
-              >
-                <Icon className="h-3.5 w-3.5 shrink-0" />
-                <span className="flex-1 truncate">{tCategory(c, locale)}</span>
-                <ChevronRight className={"h-3 w-3 " + (active ? "opacity-100" : "opacity-30")} />
-              </button>
-            );
-          })}
+        <div className="w-60 shrink-0 border-r border-border bg-card/40 overflow-y-auto finder-scroll">
+          <div className="px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+            {t("est.trades")}
+          </div>
+          <div className="space-y-0.5 px-2 pb-3">
+            {CATEGORIES.map((c) => {
+              const Icon = (Icons as any)[c.icon] ?? Tag;
+              const active = activeCat === c.id;
+              const count = categoryItemCounts.get(c.id) ?? 0;
+              return (
+                <button
+                  key={c.id}
+                  onClick={() => setActiveCat(c.id)}
+                  className={
+                    "group flex w-full items-center gap-2.5 rounded-md px-2.5 py-2 text-left transition-colors " +
+                    (active
+                      ? "bg-[oklch(0.95_0.04_240)] text-[oklch(0.40_0.18_240)] dark:bg-[oklch(0.30_0.10_240)] dark:text-[oklch(0.88_0.10_240)]"
+                      : "text-foreground/85 hover:bg-secondary/70")
+                  }
+                >
+                  <Icon className="h-4 w-4 shrink-0" />
+                  <div className="min-w-0 flex-1">
+                    <div className="truncate text-sm font-medium leading-tight">{c.name}</div>
+                    {isZh && c.nameZh !== c.name && (
+                      <div className={"truncate text-[11px] leading-tight " + (active ? "opacity-80" : "text-muted-foreground")}>
+                        {c.nameZh}
+                      </div>
+                    )}
+                  </div>
+                  <span
+                    className={
+                      "shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-mono " +
+                      (active ? "bg-white/60 dark:bg-black/30" : "bg-secondary text-muted-foreground")
+                    }
+                  >
+                    {count}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
         </div>
 
         {/* Pane 2: Items */}
-        <div className="w-[340px] shrink-0 border-r border-border bg-panel/20 flex flex-col">
+        <div className="w-[360px] shrink-0 border-r border-border bg-card/20 flex flex-col">
           <div className="border-b border-border p-3">
+            <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+              {isZh ? "项目" : "Items"}
+            </div>
             <div className="relative">
               <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
               <input
@@ -142,42 +287,40 @@ function EstimatesPage() {
               />
             </div>
           </div>
-          <div className="flex-1 overflow-y-auto finder-scroll">
+          <div className="flex-1 overflow-y-auto finder-scroll p-2 space-y-2">
             {items.map((it) => (
-              <div key={it.id} className="group border-b border-border/60 p-3 hover:bg-secondary/50">
+              <div
+                key={it.id}
+                className="group rounded-lg border border-border bg-card p-3 shadow-sm transition-shadow hover:shadow-md"
+              >
                 <div className="flex items-start justify-between gap-2">
-                  <div className="min-w-0">
-                    <div className="truncate text-sm font-medium">{tItem(it, locale)}</div>
-                    <div className="mt-0.5 flex items-center gap-2 text-[11px] text-muted-foreground">
+                  <div className="min-w-0 flex-1">
+                    <div className="truncate text-sm font-semibold leading-tight">{tItem(it, locale)}</div>
+                    <div className="mt-1 flex items-center gap-2 text-[11px] text-muted-foreground">
                       <span className="rounded bg-secondary px-1.5 py-0.5 font-mono">{tUnit(it.unit, locale)}</span>
                       <span>{tPricing(it.defaultPricing, locale)}</span>
                     </div>
-                    <div className="mt-1 font-mono text-xs text-muted-foreground">
-                      L {fmt(it.laborRate)} · M {fmt(it.materialRate)} /{it.unit}
-                    </div>
                   </div>
                   <button
-                    onClick={() => {
-                      const cat = CATEGORIES.find((c) => c.id === it.categoryId)!;
-                      addLine({
-                        categoryId: cat.id,
-                        categoryName: cat.name,
-                        itemId: it.id,
-                        itemName: it.name,
-                        unit: it.unit,
-                        pricingType: it.defaultPricing,
-                        quantity: 1,
-                        hoursPerUnit: it.hoursPerUnit,
-                        laborRate: it.laborRate,
-                        materialRate: it.materialRate,
-                        discount: 0,
-                      });
-                    }}
-                    className="rounded-md bg-primary p-1.5 text-primary-foreground opacity-0 transition-opacity group-hover:opacity-100"
-                    title={t("est.addToEstimate")}
+                    onClick={() => handleAddItem(it)}
+                    className="inline-flex shrink-0 items-center gap-1 rounded-md bg-primary px-2 py-1 text-xs font-medium text-primary-foreground hover:opacity-90"
                   >
-                    <Plus className="h-3.5 w-3.5" />
+                    <Plus className="h-3 w-3" /> Add
                   </button>
+                </div>
+                <div className="mt-2 grid grid-cols-3 gap-2 border-t border-border/50 pt-2 text-[11px]">
+                  <div>
+                    <div className="text-muted-foreground">L</div>
+                    <div className="font-mono">{fmt(it.laborRate)}</div>
+                  </div>
+                  <div>
+                    <div className="text-muted-foreground">M</div>
+                    <div className="font-mono">{fmt(it.materialRate)}</div>
+                  </div>
+                  <div>
+                    <div className="text-muted-foreground">{isZh ? "合计" : "Total"}</div>
+                    <div className="font-mono font-semibold">{fmt(it.laborRate + it.materialRate)}</div>
+                  </div>
                 </div>
               </div>
             ))}
@@ -189,9 +332,14 @@ function EstimatesPage() {
 
         {/* Pane 3: Estimate detail */}
         <div className="flex-1 flex flex-col bg-background min-w-0">
-          <div className="flex items-center justify-between border-b border-border px-5 py-2.5">
-            <div className="text-sm font-medium">
-              {t("est.lineItems")} <span className="ml-1 text-muted-foreground">({lines.length})</span>
+          <div className="flex items-center justify-between border-b border-border bg-card px-6 py-3">
+            <div>
+              <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                {isZh ? "报价明细" : "Estimate Items"}
+              </div>
+              <div className="mt-0.5 text-sm font-medium">
+                {lines.length} {lines.length === 1 ? "item" : "items"}
+              </div>
             </div>
             {lines.length > 0 && (
               <button
@@ -203,29 +351,42 @@ function EstimatesPage() {
             )}
           </div>
 
-          <div className="flex-1 overflow-y-auto finder-scroll">
+          <div ref={linesScrollRef} className="flex-1 overflow-y-auto finder-scroll">
             {lines.length === 0 ? (
               <div className="flex h-full items-center justify-center p-10 text-center">
-                <div>
-                  <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-secondary">
-                    <Plus className="h-5 w-5 text-muted-foreground" />
+                <div className="max-w-xs">
+                  <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[oklch(0.95_0.04_240)] text-[oklch(0.55_0.18_240)] dark:bg-[oklch(0.30_0.10_240)] dark:text-[oklch(0.85_0.10_240)]">
+                    <FileText className="h-6 w-6" />
                   </div>
-                  <div className="font-display text-sm font-semibold">{t("est.empty")}</div>
-                  <div className="mt-1 text-xs text-muted-foreground">{t("est.emptyHint")}</div>
+                  <div className="font-display text-base font-semibold">
+                    {isZh ? "尚未添加项目" : "No items added yet"}
+                  </div>
+                  <div className="mt-1.5 text-xs text-muted-foreground">
+                    {isZh ? "选择左侧分类并点击 Add 来构建报价单。" : "Select a trade and click Add to build this estimate."}
+                  </div>
+                  <button
+                    onClick={() => {
+                      const first = PRICE_ITEMS.find((p) => p.categoryId === activeCat);
+                      if (first) handleAddItem(first);
+                    }}
+                    className="mt-4 inline-flex items-center gap-1.5 rounded-md bg-primary px-3.5 py-2 text-sm font-medium text-primary-foreground hover:opacity-90"
+                  >
+                    <Plus className="h-4 w-4" /> {isZh ? "添加第一个项目" : "Add first item"}
+                  </button>
                 </div>
               </div>
             ) : (
               <table className="w-full text-sm">
-                <thead className="sticky top-0 z-10 border-b border-border bg-panel/80 text-left text-[10px] uppercase tracking-wider text-muted-foreground backdrop-blur">
+                <thead className="sticky top-0 z-10 border-b border-border bg-card/95 text-left text-[10px] uppercase tracking-wider text-muted-foreground backdrop-blur">
                   <tr>
-                    <th className="px-3 py-2 font-medium">{t("est.col.item")}</th>
-                    <th className="px-2 py-2 font-medium">{t("est.col.pricing")}</th>
-                    <th className="px-2 py-2 font-medium text-right">{t("est.col.qty")}</th>
-                    <th className="px-2 py-2 font-medium">{t("est.col.unit")}</th>
-                    <th className="px-2 py-2 font-medium text-right">{t("est.col.labor")}</th>
-                    <th className="px-2 py-2 font-medium text-right">{t("est.col.material")}</th>
-                    <th className="px-2 py-2 font-medium text-right">{t("est.col.disc")}</th>
-                    <th className="px-3 py-2 font-medium text-right">{t("est.col.total")}</th>
+                    <th className="px-3 py-2.5 font-medium">{t("est.col.item")}</th>
+                    <th className="px-2 py-2.5 font-medium">{t("est.col.pricing")}</th>
+                    <th className="px-2 py-2.5 font-medium text-right">{t("est.col.qty")}</th>
+                    <th className="px-2 py-2.5 font-medium">{t("est.col.unit")}</th>
+                    <th className="px-2 py-2.5 font-medium text-right">{t("est.col.labor")}</th>
+                    <th className="px-2 py-2.5 font-medium text-right">{t("est.col.material")}</th>
+                    <th className="px-2 py-2.5 font-medium text-right">{t("est.col.disc")}</th>
+                    <th className="px-3 py-2.5 font-medium text-right">{t("est.col.total")}</th>
                     <th></th>
                   </tr>
                 </thead>
@@ -297,63 +458,47 @@ function EstimatesPage() {
             )}
           </div>
 
-          <div className="border-t border-border bg-panel/60 px-5 py-4">
-            <div className="ml-auto max-w-sm space-y-1.5 text-sm">
-              <div className="flex justify-between text-muted-foreground">
-                <span>{t("est.subtotal")}</span>
-                <span className="font-mono">{fmt(totals.subtotal)}</span>
-              </div>
-              <div className="flex justify-between text-muted-foreground">
-                <span>{t("est.lineDiscounts")}</span>
-                <span className="font-mono">− {fmt(totals.lineDiscounts)}</span>
-              </div>
-              <div className="flex items-center justify-between text-muted-foreground">
-                <span>{t("est.globalDiscount")}</span>
-                <input
-                  type="number" min={0} step="1"
-                  value={meta.globalDiscount}
-                  onChange={(e) => setMeta({ globalDiscount: Number(e.target.value) })}
-                  className="w-24 rounded border border-input bg-card px-2 py-1 text-right font-mono text-xs outline-none"
-                />
-              </div>
-              <div className="mt-2 flex items-center justify-between border-t border-border pt-2">
-                <span className="font-display text-base font-semibold">{t("est.total")}</span>
-                <span className="font-display text-2xl font-semibold tracking-tight">{fmt(totals.total)}</span>
+          {/* Summary card */}
+          <div className="border-t border-border bg-card px-6 py-4">
+            <div className="ml-auto max-w-md rounded-lg border border-border bg-[oklch(0.985_0.005_240)] p-4 shadow-sm dark:bg-secondary/40">
+              <div className="space-y-1.5 text-sm">
+                <div className="flex justify-between text-muted-foreground">
+                  <span>{t("est.subtotal")}</span>
+                  <span className="font-mono">{fmt(totals.subtotal)}</span>
+                </div>
+                <div className="flex justify-between text-muted-foreground">
+                  <span>{t("est.lineDiscounts")}</span>
+                  <span className="font-mono">− {fmt(totals.lineDiscounts)}</span>
+                </div>
+                <div className="flex items-center justify-between text-muted-foreground">
+                  <span>{t("est.globalDiscount")}</span>
+                  <input
+                    type="number" min={0} step="1"
+                    value={meta.globalDiscount}
+                    onChange={(e) => setMeta({ globalDiscount: Number(e.target.value) })}
+                    className="w-24 rounded border border-input bg-card px-2 py-1 text-right font-mono text-xs outline-none"
+                  />
+                </div>
+                <div className="mt-2 flex items-center justify-between border-t border-border pt-2">
+                  <span className="font-display text-base font-semibold">{t("est.total")}</span>
+                  <span className="font-display text-3xl font-semibold tracking-tight text-[oklch(0.45_0.18_240)] dark:text-[oklch(0.88_0.10_240)]">
+                    {fmt(totals.total)}
+                  </span>
+                </div>
               </div>
             </div>
-            <div className="mt-4 flex flex-wrap items-center justify-end gap-2">
-              <button
-                onClick={() => {
-                  // Zustand persist auto-saves on every change; this is an explicit confirm.
-                  useEstimate.setState((s) => ({ ...s }));
-                  toast.success(locale === "zh" ? "保存成功" : "Saved successfully");
-                }}
-                disabled={lines.length === 0}
-                className="inline-flex items-center gap-1.5 rounded-md border border-input bg-card px-3.5 py-2 text-sm font-medium hover:bg-secondary disabled:opacity-40"
-              >
-                <Save className="h-4 w-4" /> {t("common.save")}
-              </button>
-              <button
-                onClick={() => window.print()}
-                disabled={lines.length === 0}
-                className="inline-flex items-center gap-1.5 rounded-md border border-input bg-card px-3.5 py-2 text-sm font-medium hover:bg-secondary disabled:opacity-40"
-              >
-                <Printer className="h-4 w-4" /> {locale === "zh" ? "打印报价" : "Print Estimate"}
-              </button>
-              <button
-                onClick={() => exportPDF(meta, lines, totals)}
-                disabled={lines.length === 0}
-                className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3.5 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-40"
-              >
-                <Download className="h-4 w-4" /> {t("est.exportPDF")}
-              </button>
-            </div>
+            {!hasCustomer && (
+              <div className="mt-3 text-right text-xs text-muted-foreground">
+                {isZh ? "请先选择客户后再保存或导出。" : "Please select a customer first to save or export."}
+              </div>
+            )}
           </div>
         </div>
       </div>
     </div>
   );
 }
+
 
 // -------- Searchable customer picker --------
 
