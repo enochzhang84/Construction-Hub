@@ -42,6 +42,7 @@ function Field({
 function SettingsPage() {
   const t = useT();
   const profile = useCompany((s) => s.profile);
+  useCompanyHydration();
 
 
   const ROLES = [
