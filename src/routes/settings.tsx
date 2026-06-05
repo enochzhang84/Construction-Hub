@@ -104,6 +104,19 @@ function SettingsPage() {
         </section>
 
         <section className="rounded-lg border border-border bg-card p-6 shadow-panel">
+          <h2 className="mb-1 font-display text-base font-semibold">{t("set.constructionItems")}</h2>
+          <p className="mb-4 text-xs text-muted-foreground">{t("set.constructionItems.desc")}</p>
+          <Link
+            to="/price-book"
+            className="inline-flex items-center gap-2 rounded-md border border-input bg-background px-4 py-2.5 text-sm font-medium hover:bg-secondary transition-colors"
+          >
+            <BookOpen className="h-4 w-4 text-muted-foreground" />
+            <span>{t("set.manageConstructionItems")}</span>
+            <ChevronRight className="h-4 w-4 text-muted-foreground" />
+          </Link>
+        </section>
+
+        <section className="rounded-lg border border-border bg-card p-6 shadow-panel">
           <h2 className="mb-2 font-display text-base font-semibold">{t("set.roadmap")}</h2>
           <p className="mb-3 text-xs text-muted-foreground">{t("set.roadmapHint")}</p>
           <ul className="space-y-1.5 text-sm">
