@@ -106,6 +106,74 @@ function Dashboard() {
 
         <section>
           <div className="mb-3 flex items-center justify-between">
+            <h2 className="font-display text-lg font-semibold">
+              {isZh ? "工程状态管理" : "Project Pipeline"}
+            </h2>
+            <span className="text-xs text-muted-foreground">
+              {isZh ? "报价 → 施工 → 结算" : "Estimate → Active → Pending Payment"}
+            </span>
+          </div>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+            {PIPELINE.map((p) => {
+              const Icon = p.icon;
+              const toneRing =
+                p.tone === "info"
+                  ? "before:bg-[oklch(0.62_0.18_240)]"
+                  : p.tone === "warning"
+                  ? "before:bg-[oklch(0.72_0.18_55)]"
+                  : "before:bg-[oklch(0.62_0.16_150)]";
+              const toneText =
+                p.tone === "info"
+                  ? "text-[oklch(0.55_0.18_240)]"
+                  : p.tone === "warning"
+                  ? "text-[oklch(0.58_0.18_50)]"
+                  : "text-[oklch(0.50_0.16_150)]";
+              return (
+                <Link
+                  key={p.to}
+                  to={p.to}
+                  className={
+                    "group relative overflow-hidden rounded-lg border border-border bg-card p-5 shadow-panel transition-all hover:shadow-md " +
+                    "before:absolute before:left-0 before:top-0 before:h-full before:w-1 " +
+                    toneRing
+                  }
+                >
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                        {p.title}
+                      </div>
+                      <div className="mt-2 flex items-baseline gap-2">
+                        <span className="font-display text-3xl font-semibold tracking-tight">
+                          {p.count}
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          {isZh ? "个项目" : "projects"}
+                        </span>
+                      </div>
+                    </div>
+                    <div className={"rounded-md bg-secondary p-2 " + toneText}>
+                      <Icon className="h-4 w-4" />
+                    </div>
+                  </div>
+                  <div className="mt-4 border-t border-border/60 pt-3">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-muted-foreground">{p.amountLabel}</span>
+                      <span className="font-mono font-semibold">{p.amount}</span>
+                    </div>
+                    <div className={"mt-2 text-xs " + toneText}>{p.status}</div>
+                  </div>
+                  <ArrowUpRight className="absolute right-4 top-4 h-4 w-4 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
+                </Link>
+              );
+            })}
+          </div>
+        </section>
+
+
+
+        <section>
+          <div className="mb-3 flex items-center justify-between">
             <h2 className="font-display text-lg font-semibold">{t("dash.recentCustomers")}</h2>
             <Link to="/customers" className="text-xs text-muted-foreground hover:text-foreground">{t("dash.viewAll")}</Link>
           </div>
