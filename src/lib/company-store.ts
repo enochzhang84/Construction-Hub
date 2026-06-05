@@ -77,10 +77,12 @@ function schedulePush(patch: Partial<CompanyProfile>) {
   pending = { ...pending, ...patch };
   if (pushTimer) clearTimeout(pushTimer);
   pushTimer = setTimeout(async () => {
-    const payload = profileToRow(pending);
+    const payload = profileToRow(pending) as Parameters<
+      ReturnType<typeof supabase.from<"company_profile">>["update"]
+    >[0];
     pending = {};
     pushTimer = null;
-    if (Object.keys(payload).length === 0) return;
+    if (Object.keys(payload as object).length === 0) return;
     const { error } = await supabase
       .from("company_profile")
       .update(payload)
