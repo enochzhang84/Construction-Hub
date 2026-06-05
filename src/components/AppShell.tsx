@@ -11,7 +11,7 @@ import {
   HardHat,
   Globe,
 } from "lucide-react";
-import { useLocaleStore, useT } from "@/lib/i18n";
+import { useLocaleStore, useLocale, useT } from "@/lib/i18n";
 
 const NAV = [
   { to: "/", labelKey: "nav.dashboard", icon: LayoutDashboard },
