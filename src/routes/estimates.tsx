@@ -303,6 +303,33 @@ function EstimatesPage() {
                 <span className="font-display text-2xl font-semibold tracking-tight">{fmt(totals.total)}</span>
               </div>
             </div>
+            <div className="mt-4 flex flex-wrap items-center justify-end gap-2">
+              <button
+                onClick={() => {
+                  // Zustand persist auto-saves on every change; this is an explicit confirm.
+                  useEstimate.setState((s) => ({ ...s }));
+                  toast.success(locale === "zh" ? "保存成功" : "Saved successfully");
+                }}
+                disabled={lines.length === 0}
+                className="inline-flex items-center gap-1.5 rounded-md border border-input bg-card px-3.5 py-2 text-sm font-medium hover:bg-secondary disabled:opacity-40"
+              >
+                <Save className="h-4 w-4" /> {t("common.save")}
+              </button>
+              <button
+                onClick={() => window.print()}
+                disabled={lines.length === 0}
+                className="inline-flex items-center gap-1.5 rounded-md border border-input bg-card px-3.5 py-2 text-sm font-medium hover:bg-secondary disabled:opacity-40"
+              >
+                <Printer className="h-4 w-4" /> {locale === "zh" ? "打印报价" : "Print Estimate"}
+              </button>
+              <button
+                onClick={() => exportPDF(meta, lines, totals)}
+                disabled={lines.length === 0}
+                className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3.5 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-40"
+              >
+                <Download className="h-4 w-4" /> {t("est.exportPDF")}
+              </button>
+            </div>
           </div>
         </div>
       </div>
