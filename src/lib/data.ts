@@ -205,6 +205,25 @@ PRICE_ITEMS.forEach((i) => {
 
 
 
+export type CustomerSource =
+  | "Website"
+  | "Referral"
+  | "Yelp"
+  | "Google"
+  | "Facebook"
+  | "Walk-in"
+  | "Other";
+
+export const CUSTOMER_SOURCES: CustomerSource[] = [
+  "Website",
+  "Referral",
+  "Yelp",
+  "Google",
+  "Facebook",
+  "Walk-in",
+  "Other",
+];
+
 export interface Customer {
   id: string;
   name: string;
@@ -215,6 +234,7 @@ export interface Customer {
   state: string;
   zip: string;
   notes?: string;
+  source?: CustomerSource;
   createdAt: string;
 }
 
