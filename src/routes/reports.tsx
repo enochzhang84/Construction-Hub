@@ -237,16 +237,18 @@ function ReportsPage() {
                 </tr>
               </thead>
               <tbody>
-                {records.map((p) => (
+                {records.map((p) => {
+                  const info = liveInfo(p);
+                  return (
                   <tr key={p.id} className="border-b border-border/60 last:border-0 hover:bg-secondary/40">
                     <td className="px-3 py-2 font-mono text-xs">{formatDMY(p.estimateDate)}</td>
                     <td className="px-3 py-2">
                       <Link to="/projects/detail/$id" params={{ id: p.id }} className="font-medium hover:underline">
-                        {p.customerName}
+                        {info.name}
                       </Link>
-                      <div className="font-mono text-[11px] text-muted-foreground">{p.customerPhone || "—"}</div>
+                      <div className="font-mono text-[11px] text-muted-foreground">{info.phone || "—"}</div>
                     </td>
-                    <td className="px-3 py-2 text-xs text-muted-foreground">{p.projectAddress}</td>
+                    <td className="px-3 py-2 text-xs text-muted-foreground">{info.address}</td>
                     <td className="px-3 py-2">
                       <DatePickerCell
                         value={p.issueDate}
