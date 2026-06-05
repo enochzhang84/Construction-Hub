@@ -122,7 +122,6 @@ function ProjectsByStatus() {
             </table>
           </div>
         </div>
-      </div>
-    </AppShell>
+    </div>
   );
 }
