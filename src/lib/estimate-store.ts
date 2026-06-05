@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { PricingType } from "./data";
+import { nextEstimateNumber } from "./estimate-number";
 
 export interface EstimateLine {
   id: string;
