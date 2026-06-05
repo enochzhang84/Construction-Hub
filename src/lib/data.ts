@@ -28,7 +28,7 @@ export interface PriceItem {
   id: string;
   categoryId: string;
   name: string;
-  nameZh: string;
+  nameZh?: string;
   unit: string;
   defaultPricing: PricingType;
   laborRate: number; // per unit
