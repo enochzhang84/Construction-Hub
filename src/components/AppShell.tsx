@@ -24,7 +24,7 @@ const NAV = [
 ] as const;
 
 export function LanguageToggle({ className = "" }: { className?: string }) {
-  const locale = useLocaleStore((s) => s.locale);
+  const locale = useLocale();
   const setLocale = useLocaleStore((s) => s.setLocale);
   return (
     <div
