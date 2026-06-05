@@ -1,13 +1,17 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
-import { Search, Plus, Trash2, Download, ChevronRight, Tag, Save, Printer } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Search, Plus, Trash2, Download, ChevronRight, Tag, Save, Printer, User } from "lucide-react";
 import { toast } from "sonner";
 import * as Icons from "lucide-react";
-import { CATEGORIES, PRICE_ITEMS, PRICING_TYPES, SEED_CUSTOMERS, type PricingType } from "@/lib/data";
+import { CATEGORIES, PRICE_ITEMS, PRICING_TYPES, type PricingType, type Customer } from "@/lib/data";
+import { useCustomers } from "@/lib/customer-store";
 import { useEstimate, lineTotal, estimateTotals, type EstimateLine, type EstimateMeta } from "@/lib/estimate-store";
 import { useT, useLocale, tCategory, tItem, tPricing, tUnit, type QuoteLanguage } from "@/lib/i18n";
 
 export const Route = createFileRoute("/estimates")({
+  validateSearch: (s: Record<string, unknown>) => ({
+    customerId: typeof s.customerId === "string" ? s.customerId : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "Estimates · Construction Hub" },
