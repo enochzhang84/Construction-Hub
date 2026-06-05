@@ -66,7 +66,24 @@ export function LanguageToggle({ className = "" }: { className?: string }) {
 
 export function AppShell({ children }: { children: ReactNode }) {
   const path = useRouterState({ select: (s) => s.location.pathname });
+  const navigate = useNavigate();
   const t = useT();
+  const [email, setEmail] = useState<string | null>(null);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => setEmail(data.user?.email ?? null));
+    const { data } = supabase.auth.onAuthStateChange((_e, session) => {
+      setEmail(session?.user?.email ?? null);
+    });
+    return () => data.subscription.unsubscribe();
+  }, []);
+
+  async function handleSignOut() {
+    await supabase.auth.signOut();
+    toast.success("Signed out");
+    navigate({ to: "/auth", replace: true });
+  }
+
   return (
     <div className="flex h-screen w-full overflow-hidden bg-background text-foreground">
       <aside className="flex w-60 shrink-0 flex-col border-r border-sidebar-border bg-sidebar">
@@ -110,11 +127,27 @@ export function AppShell({ children }: { children: ReactNode }) {
 
         <div className="border-t border-sidebar-border p-3 space-y-2">
           <LanguageToggle className="w-full justify-center" />
-          <div className="rounded-md bg-card/60 px-3 py-2 text-[11px] text-muted-foreground">
-            <div className="font-medium text-foreground">{t("app.workspace")}</div>
-            <div>{t("app.workspaceMeta")}</div>
-          </div>
+          {email && (
+            <div className="rounded-md bg-card/60 px-3 py-2 text-[11px] text-muted-foreground">
+              <div className="truncate font-medium text-foreground">{email}</div>
+              <div>{t("app.workspaceMeta")}</div>
+            </div>
+          )}
+          <button
+            onClick={handleSignOut}
+            className="flex w-full items-center justify-center gap-1.5 rounded-md border border-sidebar-border bg-card/40 px-3 py-1.5 text-xs font-medium text-sidebar-foreground/80 transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground"
+          >
+            <LogOut className="h-3.5 w-3.5" />
+            {t("auth.logout")}
+          </button>
         </div>
+      </aside>
+
+      <main className="flex-1 overflow-hidden">{children}</main>
+      <Toaster />
+    </div>
+  );
+}
       </aside>
 
       <main className="flex-1 overflow-hidden">{children}</main>
