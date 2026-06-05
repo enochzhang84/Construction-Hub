@@ -18,6 +18,13 @@ import {
   CreditCard,
   ChevronLeft,
   ChevronRight,
+  Star,
+  Archive,
+  ArchiveRestore,
+  Trash2,
+  AlertTriangle,
+  Gem,
+  Crown,
 } from "lucide-react";
 import { useT, useLocale } from "@/lib/i18n";
 import { useCustomers } from "@/lib/customer-store";
@@ -30,7 +37,14 @@ import {
   type Project,
   type ProjectStatus,
 } from "@/lib/project-store";
-import { CUSTOMER_SOURCES, type Customer, type CustomerSource } from "@/lib/data";
+import {
+  CUSTOMER_SOURCES,
+  CUSTOMER_FLAG_TYPES,
+  type Customer,
+  type CustomerSource,
+  type CustomerFlag,
+  type CustomerFlagType,
+} from "@/lib/data";
 import {
   Dialog,
   DialogContent,
@@ -38,11 +52,54 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuSeparator,
+  ContextMenuTrigger,
+} from "@/components/ui/context-menu";
 
 export const Route = createFileRoute("/customers")({
   head: () => ({ meta: [{ title: "Customers · Construction Hub" }] }),
   component: CustomersPage,
 });
+
+type ArchiveFilter = "active" | "archived" | "all";
+
+function flagLabel(type: CustomerFlagType, locale: "en" | "zh"): string {
+  const map: Record<CustomerFlagType, { en: string; zh: string }> = {
+    VIP: { en: "VIP", zh: "VIP" },
+    Loyal: { en: "Loyal", zh: "老客户" },
+    Referral: { en: "Referral", zh: "推荐客户" },
+    HighRisk: { en: "High Risk", zh: "高风险" },
+    Custom: { en: "Custom", zh: "自定义" },
+  };
+  return map[type][locale];
+}
+
+function flagBadgeClass(type: CustomerFlagType): string {
+  switch (type) {
+    case "VIP":
+      return "bg-[oklch(0.95_0.08_85)] text-[oklch(0.45_0.16_75)] dark:bg-[oklch(0.32_0.10_85)] dark:text-[oklch(0.88_0.12_85)]";
+    case "Loyal":
+      return "bg-[oklch(0.94_0.06_200)] text-[oklch(0.40_0.14_220)] dark:bg-[oklch(0.30_0.10_220)] dark:text-[oklch(0.88_0.10_220)]";
+    case "Referral":
+      return "bg-[oklch(0.94_0.06_150)] text-[oklch(0.40_0.14_150)] dark:bg-[oklch(0.30_0.10_150)] dark:text-[oklch(0.88_0.10_150)]";
+    case "HighRisk":
+      return "bg-[oklch(0.95_0.08_25)] text-[oklch(0.48_0.18_25)] dark:bg-[oklch(0.32_0.10_25)] dark:text-[oklch(0.88_0.12_25)]";
+    case "Custom":
+      return "bg-secondary text-foreground";
+  }
+}
+
+function FlagIcon({ type, className }: { type: CustomerFlagType; className?: string }) {
+  if (type === "VIP") return <Crown className={className} />;
+  if (type === "HighRisk") return <AlertTriangle className={className} />;
+  if (type === "Loyal") return <Gem className={className} />;
+  return <Star className={className} />;
+}
+
 
 type FormState = {
   name: string;
