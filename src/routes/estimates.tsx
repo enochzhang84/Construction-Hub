@@ -923,10 +923,17 @@ function exportPDF(
   .totals .grand { display: flex; justify-content: space-between; padding: 8px 0 0; border-top: 1px solid #ccc; margin-top: 6px; font-size: 16px; font-weight: 700; color: #111; }
   .block { margin-top: 22px; font-size: 11px; color: #444; line-height: 1.55; }
   .block h4 { font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; color: #888; margin: 0 0 4px; font-weight: 700; }
-  .sigs { margin-top: 36px; display: flex; gap: 32px; }
+  .terms { margin-top: 28px; page-break-inside: avoid; }
+  .terms h3 { font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: #111; margin: 0 0 10px; padding-bottom: 6px; border-bottom: 1.5px solid #1a1a1a; font-weight: 700; }
+  .terms-body { font-size: 10.5px; line-height: 1.6; color: #333; white-space: pre-wrap; column-count: 2; column-gap: 24px; }
+  .terms-zh { margin-top: 14px; padding-top: 12px; border-top: 1px dashed #ccc; }
+  .sigs { margin-top: 32px; display: flex; gap: 32px; page-break-inside: avoid; }
   .sig { flex: 1; }
-  .sig .line { border-top: 1px solid #333; margin-top: 36px; padding-top: 4px; font-size: 10px; color: #666; display: flex; justify-content: space-between; }
-  .footer { margin-top: 24px; font-size: 9.5px; color: #999; text-align: center; }
+  .sig .blklabel { margin-bottom: 28px; }
+  .sig .field { font-size: 10px; color: #555; margin-bottom: 14px; }
+  .sig .field .lbl { display: inline-block; width: 90px; color: #888; }
+  .sig .field .ink { display: inline-block; min-width: 180px; border-bottom: 1px solid #333; padding: 0 4px 2px; }
+  .footer { margin-top: 28px; padding-top: 10px; border-top: 1px solid #eee; font-size: 9.5px; color: #999; text-align: center; }
   @media print { .noprint { display: none !important; } }
   .bar { position: fixed; top: 10px; right: 10px; }
   .bar button { font-size: 12px; padding: 6px 12px; cursor: pointer; }
