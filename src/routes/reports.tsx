@@ -71,6 +71,22 @@ function ReportsPage() {
   const isZh = locale === "zh";
   const projects = useProjects((s) => s.projects);
   const update = useProjects((s) => s.update);
+  const customers = useCustomers((s) => s.customers);
+  const customerById = useMemo(() => {
+    const m = new Map<string, typeof customers[number]>();
+    for (const c of customers) m.set(c.id, c);
+    return m;
+  }, [customers]);
+  // Resolve live customer info via customerId (source of truth = Customers store);
+  // fall back to snapshot fields when no link exists.
+  const liveInfo = (p: Project) => {
+    const c = p.customerId ? customerById.get(p.customerId) : null;
+    return {
+      name: c?.name ?? p.customerName,
+      phone: c?.phone ?? p.customerPhone ?? "",
+      address: c ? `${c.address}, ${c.city}, ${c.state} ${c.zip}` : p.projectAddress,
+    };
+  };
   const sum = summarizeProjects(projects);
 
   const STAGES: Array<{
