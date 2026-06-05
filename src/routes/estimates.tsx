@@ -206,13 +206,38 @@ function EstimatesPage() {
       <header className="border-b border-border bg-card px-6 py-4 shadow-[0_1px_0_0_oklch(0.92_0.005_240)]">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="flex flex-wrap items-center gap-4">
+            {/* 1. Estimate number */}
             <div>
-              <div className="font-display text-base font-semibold tracking-tight" suppressHydrationWarning>
-                {meta.estimateNumber}
+              <div className="flex items-center gap-2">
+                <div className="font-display text-base font-semibold tracking-tight" suppressHydrationWarning>
+                  {meta.estimateNumber}
+                </div>
+                <span
+                  className={
+                    "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider " +
+                    (isView
+                      ? "bg-secondary text-muted-foreground"
+                      : "bg-[oklch(0.95_0.06_150)] text-[oklch(0.40_0.14_150)] dark:bg-[oklch(0.30_0.10_150)] dark:text-[oklch(0.88_0.10_150)]")
+                  }
+                >
+                  {isView ? <Eye className="h-3 w-3" /> : <FilePlus className="h-3 w-3" />}
+                  {isView ? (isZh ? "查看模式" : "View") : (isZh ? "新建模式" : "Create")}
+                </span>
               </div>
               <div className="mt-0.5 font-mono text-[11px] text-muted-foreground">{meta.date}</div>
             </div>
             <div className="hidden h-10 w-px bg-border sm:block" />
+
+            {/* 2. New estimate button */}
+            <button
+              onClick={onNewEstimate}
+              className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3.5 py-2 text-sm font-medium text-primary-foreground shadow-sm hover:opacity-90"
+            >
+              <Plus className="h-4 w-4" /> {isZh ? "新增报价单" : "New Estimate"}
+            </button>
+            <div className="hidden h-10 w-px bg-border sm:block" />
+
+            {/* 3. Customer */}
             <div className="flex flex-col gap-1">
               <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
                 {isZh ? "客户" : "Customer"}
@@ -221,8 +246,9 @@ function EstimatesPage() {
                 customers={customers}
                 value={meta.customerId}
                 valueLabel={meta.customerName}
-                placeholder={t("est.selectCustomer")}
+                placeholder={isView ? (isZh ? "查看模式，无法选择" : "View mode — locked") : t("est.selectCustomer")}
                 onSelect={applyCustomer}
+                disabled={isView}
               />
               {selectedCustomer && (
                 <div className="mt-0.5 flex items-center gap-3 text-[11px] text-muted-foreground">
@@ -239,7 +265,8 @@ function EstimatesPage() {
               <select
                 value={meta.quoteLanguage}
                 onChange={(e) => setMeta({ quoteLanguage: e.target.value as QuoteLanguage })}
-                className="rounded-md border border-input bg-card px-2.5 py-1.5 text-xs outline-none focus:ring-2 focus:ring-ring/40"
+                disabled={isView}
+                className="rounded-md border border-input bg-card px-2.5 py-1.5 text-xs outline-none focus:ring-2 focus:ring-ring/40 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <option value="en">{t("est.lang.en")}</option>
                 <option value="zh">{t("est.lang.zh")}</option>
@@ -251,8 +278,8 @@ function EstimatesPage() {
           <div className="flex items-center gap-2">
             <button
               onClick={onSave}
-              disabled={!hasCustomer || lines.length === 0}
-              title={lockReason || undefined}
+              disabled={isView || !hasCustomer || lines.length === 0}
+              title={isView ? (isZh ? "请先点击「新增报价单」" : "Click '+ New Estimate' first") : (lockReason || undefined)}
               className="inline-flex items-center gap-1.5 rounded-md border border-input bg-card px-3.5 py-2 text-sm font-medium hover:bg-secondary disabled:cursor-not-allowed disabled:opacity-40"
             >
               <Save className="h-4 w-4" /> {t("common.save")}
