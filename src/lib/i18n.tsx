@@ -224,13 +224,13 @@ const DICT: Dict = {
   "set.field.tax": { en: "Default Tax Rate", zh: "默认税率" },
   "set.role.admin": { en: "Super Admin", zh: "超级管理员" },
   "set.role.admin.desc": {
-    en: "Full access · price book · users · billing",
-    zh: "完整权限 · 价格库 · 用户 · 账单",
+    en: "Full access · construction items · users · billing",
+    zh: "完整权限 · 施工项目 · 用户 · 账单",
   },
   "set.role.estimator": { en: "Estimator", zh: "报价员" },
   "set.role.estimator.desc": {
-    en: "Create / edit estimates · view price book",
-    zh: "创建/编辑报价 · 查看价格库",
+    en: "Create / edit estimates · view construction items",
+    zh: "创建/编辑报价 · 查看施工项目",
   },
   "set.role.sales": { en: "Sales", zh: "销售" },
   "set.role.sales.desc": {
@@ -239,6 +239,12 @@ const DICT: Dict = {
   },
   "set.role.viewer": { en: "Viewer", zh: "查看者" },
   "set.role.viewer.desc": { en: "Read-only access", zh: "只读权限" },
+  "set.constructionItems": { en: "Construction Items", zh: "施工项目" },
+  "set.constructionItems.desc": {
+    en: "Manage trades, items, units, and pricing.",
+    zh: "管理施工分类、项目、单位和定价。",
+  },
+  "set.manageConstructionItems": { en: "Manage Construction Items", zh: "管理施工项目" },
 
   // PDF
   "pdf.brand": { en: "Construction Hub", zh: "Construction Hub" },
