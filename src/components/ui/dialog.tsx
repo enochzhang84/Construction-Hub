@@ -63,7 +63,7 @@ const DialogContent = React.forwardRef<
           // - Anything else (the body) becomes the scrollable region
           "[&>[data-dialog-header]]:shrink-0 [&>[data-dialog-header]]:border-b [&>[data-dialog-header]]:border-border/60 [&>[data-dialog-header]]:px-6 [&>[data-dialog-header]]:py-4 [&>[data-dialog-header]]:bg-background",
           "[&>[data-dialog-footer]]:shrink-0 [&>[data-dialog-footer]]:border-t [&>[data-dialog-footer]]:border-border/60 [&>[data-dialog-footer]]:px-6 [&>[data-dialog-footer]]:py-3.5 [&>[data-dialog-footer]]:bg-background/95 [&>[data-dialog-footer]]:backdrop-blur",
-          "[&>:not([data-dialog-header]):not([data-dialog-footer])]:min-h-0 [&>:not([data-dialog-header]):not([data-dialog-footer])]:flex-1 [&>:not([data-dialog-header]):not([data-dialog-footer])]:overflow-y-auto [&>:not([data-dialog-header]):not([data-dialog-footer])]:px-6 [&>:not([data-dialog-header]):not([data-dialog-footer])]:py-5 [&>:not([data-dialog-header]):not([data-dialog-footer])]:finder-scroll",
+          "[&>:not([data-dialog-header]):not([data-dialog-footer]):not([data-dialog-raw])]:min-h-0 [&>:not([data-dialog-header]):not([data-dialog-footer]):not([data-dialog-raw])]:flex-1 [&>:not([data-dialog-header]):not([data-dialog-footer]):not([data-dialog-raw])]:overflow-y-auto [&>:not([data-dialog-header]):not([data-dialog-footer]):not([data-dialog-raw])]:px-6 [&>:not([data-dialog-header]):not([data-dialog-footer]):not([data-dialog-raw])]:py-5 [&>:not([data-dialog-header]):not([data-dialog-footer]):not([data-dialog-raw])]:finder-scroll",
           !callerHasMaxWidth && SIZE_CLASS[size],
           className,
         )}
