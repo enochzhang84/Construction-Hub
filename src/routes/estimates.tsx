@@ -35,6 +35,11 @@ function EstimatesPage() {
   const { customerId: prefillId } = Route.useSearch();
   const customers = useCustomers((s) => s.customers);
   const upsertProject = useProjects((s) => s.upsertByEstimateNumber);
+  const allProjects = useProjects((s) => s.projects);
+  // Keep today's daily counter in sync with any estimate numbers already in the projects store
+  useEffect(() => {
+    seedEstimateNumberFrom(allProjects.map((p) => p.estimateNumber));
+  }, [allProjects]);
   const company = useCompany((s) => s.profile);
   const [activeCat, setActiveCat] = useState(CATEGORIES[4].id); // Flooring
   const [itemQ, setItemQ] = useState("");
