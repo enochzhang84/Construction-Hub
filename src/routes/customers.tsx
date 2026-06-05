@@ -125,40 +125,51 @@ function CustomersPage() {
           {filtered.map((c) => (
             <div
               key={c.id}
-              className="rounded-lg border border-border bg-card p-5 shadow-panel transition-shadow hover:shadow-soft"
+              className="group flex flex-col rounded-lg border border-border bg-card p-5 shadow-panel transition-shadow hover:shadow-soft"
             >
-              <div className="flex items-start justify-between">
-                <div>
-                  <div className="font-display text-base font-semibold">{c.name}</div>
-                  <div className="mt-0.5 text-xs text-muted-foreground">
-                    {t("cust.added")} {c.createdAt}
+              <button type="button" onClick={() => setDetail(c)} className="flex-1 text-left">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <div className="font-display text-base font-semibold hover:underline">{c.name}</div>
+                    <div className="mt-0.5 text-xs text-muted-foreground">
+                      {t("cust.added")} {c.createdAt}
+                    </div>
                   </div>
-                </div>
-                <span className="rounded-full bg-secondary px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-                  {c.state}
-                </span>
-              </div>
-              <div className="mt-4 space-y-1.5 text-sm">
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  <Phone className="h-3.5 w-3.5" />
-                  <span className="font-mono text-xs">{c.phone}</span>
-                </div>
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  <Mail className="h-3.5 w-3.5" />
-                  <span className="text-xs">{c.email}</span>
-                </div>
-                <div className="flex items-start gap-2 text-muted-foreground">
-                  <MapPin className="h-3.5 w-3.5 mt-0.5" />
-                  <span className="text-xs">
-                    {c.address}, {c.city}, {c.state} {c.zip}
+                  <span className="rounded-full bg-secondary px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+                    {c.state}
                   </span>
                 </div>
+                <div className="mt-4 space-y-1.5 text-sm">
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                    <Phone className="h-3.5 w-3.5" />
+                    <span className="font-mono text-xs">{c.phone}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                    <Mail className="h-3.5 w-3.5" />
+                    <span className="text-xs">{c.email}</span>
+                  </div>
+                  <div className="flex items-start gap-2 text-muted-foreground">
+                    <MapPin className="h-3.5 w-3.5 mt-0.5" />
+                    <span className="text-xs">
+                      {c.address}, {c.city}, {c.state} {c.zip}
+                    </span>
+                  </div>
+                </div>
+                {c.notes && (
+                  <p className="mt-3 border-t border-border/60 pt-3 text-xs italic text-muted-foreground">
+                    "{c.notes}"
+                  </p>
+                )}
+              </button>
+              <div className="mt-4 flex justify-end border-t border-border/60 pt-3">
+                <button
+                  type="button"
+                  onClick={() => createEstimateFor(c)}
+                  className="inline-flex items-center gap-1.5 rounded-md border border-input bg-card px-3 py-1.5 text-xs font-medium hover:bg-secondary"
+                >
+                  <FileText className="h-3.5 w-3.5" /> {t("cust.createEstimate")}
+                </button>
               </div>
-              {c.notes && (
-                <p className="mt-3 border-t border-border/60 pt-3 text-xs italic text-muted-foreground">
-                  "{c.notes}"
-                </p>
-              )}
             </div>
           ))}
         </div>
