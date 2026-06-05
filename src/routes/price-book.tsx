@@ -39,6 +39,11 @@ function PriceBookPage() {
   const [sortDir, setSortDir] = useState<SortDir>("asc");
   const [page, setPage] = useState(1);
   const [editing, setEditing] = useState<PriceItem | null>(null);
+  const [adding, setAdding] = useState(false);
+  const [importing, setImporting] = useState<ImportRow[] | null>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
+  const addItem = usePriceBookStore((s) => s.addItem);
+  const upsertMany = usePriceBookStore((s) => s.upsertMany);
 
   const rows = useMemo(() => {
     const needle = q.toLowerCase();
