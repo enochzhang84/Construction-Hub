@@ -14,7 +14,7 @@ const SUPPLIERS = [
   { name: "Dunn-Edwards", category: "Paint", account: "DE-PRO-115", terms: "Net 15" },
 ];
 
-export default function noop() {}
+
 
 function MaterialsPage() {
   return (

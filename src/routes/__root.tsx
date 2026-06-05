@@ -14,14 +14,12 @@ import { AppShell } from "../components/AppShell";
 
 function NotFoundComponent() {
   return (
-    <AppShell>
-      <div className="flex h-full items-center justify-center">
-        <div className="text-center">
-          <div className="font-display text-6xl font-semibold">404</div>
-          <p className="mt-2 text-sm text-muted-foreground">Page not found.</p>
-        </div>
+    <div className="flex h-full items-center justify-center">
+      <div className="text-center">
+        <div className="font-display text-6xl font-semibold">404</div>
+        <p className="mt-2 text-sm text-muted-foreground">Page not found.</p>
       </div>
-    </AppShell>
+    </div>
   );
 }
 
