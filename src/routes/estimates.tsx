@@ -34,6 +34,7 @@ function EstimatesPage() {
   const { customerId: prefillId } = Route.useSearch();
   const customers = useCustomers((s) => s.customers);
   const upsertProject = useProjects((s) => s.upsertByEstimateNumber);
+  const company = useCompany((s) => s.profile);
   const [activeCat, setActiveCat] = useState(CATEGORIES[4].id); // Flooring
   const [itemQ, setItemQ] = useState("");
   const { meta, lines, addLine, updateLine, removeLine, setMeta } = useEstimate();
