@@ -39,6 +39,6 @@ export const useCustomers = create<CustomerState>()(
           customers: s.customers.map((c) => (c.id === id ? { ...c, isArchived: archived } : c)),
         })),
     }),
-    { name: "construction-hub-customers" },
+    { name: "construction-hub-customers.v2" },
   ),
 );

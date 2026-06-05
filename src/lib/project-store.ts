@@ -60,122 +60,8 @@ interface ProjectsState {
   upsertByEstimateNumber: (p: Omit<Project, "id">) => Project;
 }
 
-const today = new Date();
-const iso = (d: Date) => d.toISOString().slice(0, 10);
-const addDays = (n: number) => {
-  const d = new Date(today);
-  d.setDate(d.getDate() + n);
-  return iso(d);
-};
-
-const SEED: Project[] = [
-  {
-    id: "p-e1",
-    customerName: "James Liu",
-    customerPhone: "(510) 123-4567",
-    projectAddress: "1421 Cedar St, Palo Alto, CA",
-    estimateNumber: "EST-2026-1042",
-    amount: 28500,
-    discount: 0,
-    paidAmount: 0,
-    estimateDate: addDays(-2),
-    issueDate: addDays(-2),
-    status: "Estimate",
-    subStatus: "Sent",
-    notes: "Kitchen flooring + paint.",
-  },
-  {
-    id: "p-e2",
-    customerName: "Maria Gonzalez",
-    customerPhone: "(408) 555-0192",
-    projectAddress: "88 Oak Ave, San Jose, CA",
-    estimateNumber: "EST-2026-1043",
-    amount: 64200,
-    discount: 1200,
-    paidAmount: 0,
-    estimateDate: addDays(-5),
-    issueDate: addDays(-4),
-    status: "Estimate",
-    subStatus: "Waiting Approval",
-  },
-  {
-    id: "p-e3",
-    customerName: "Wei Chen",
-    customerPhone: "(415) 888-2210",
-    projectAddress: "2200 Mission Blvd, Fremont, CA",
-    estimateNumber: "EST-2026-1044",
-    amount: 92500,
-    paidAmount: 0,
-    estimateDate: addDays(-1),
-    status: "Estimate",
-    subStatus: "Draft",
-  },
-  {
-    id: "p-a1",
-    customerName: "Daniel Park",
-    customerPhone: "(650) 222-1188",
-    projectAddress: "501 Forest Rd, Menlo Park, CA",
-    estimateNumber: "EST-2026-0998",
-    amount: 145000,
-    paidAmount: 50000,
-    estimateDate: addDays(-30),
-    issueDate: addDays(-29),
-    startDate: addDays(-14),
-    expectedEndDate: addDays(28),
-    status: "Active",
-    subStatus: "In Progress",
-    paymentMethod: "Bank Transfer",
-  },
-  {
-    id: "p-a2",
-    customerName: "Sophia Nguyen",
-    customerPhone: "(408) 401-9922",
-    projectAddress: "77 Elm St, Sunnyvale, CA",
-    estimateNumber: "EST-2026-1001",
-    amount: 88000,
-    paidAmount: 30000,
-    estimateDate: addDays(-25),
-    issueDate: addDays(-24),
-    startDate: addDays(-7),
-    expectedEndDate: addDays(35),
-    status: "Active",
-    subStatus: "Planning",
-  },
-  {
-    id: "p-p1",
-    customerName: "Robert Kim",
-    customerPhone: "(408) 777-3344",
-    projectAddress: "910 Birch Ln, Cupertino, CA",
-    estimateNumber: "EST-2025-0871",
-    amount: 72000,
-    paidAmount: 50000,
-    estimateDate: addDays(-90),
-    issueDate: addDays(-90),
-    startDate: addDays(-75),
-    expectedEndDate: addDays(-5),
-    settlementDate: addDays(-2),
-    status: "Pending Payment",
-    subStatus: "Pending Payment",
-    paymentMethod: "Check",
-  },
-  {
-    id: "p-p2",
-    customerName: "Linda Zhao",
-    customerPhone: "(650) 909-5566",
-    projectAddress: "33 Walnut Way, Mountain View, CA",
-    estimateNumber: "EST-2025-0850",
-    amount: 38000,
-    paidAmount: 15000,
-    estimateDate: addDays(-110),
-    issueDate: addDays(-110),
-    startDate: addDays(-90),
-    expectedEndDate: addDays(-15),
-    settlementDate: addDays(-10),
-    status: "Pending Payment",
-    subStatus: "Final Payment Due",
-    paymentMethod: "Zelle",
-  },
-];
+// Estimates / projects / payments are business data — no seed records.
+const SEED: Project[] = [];
 
 export const useProjects = create<ProjectsState>()(
   persist(
@@ -214,7 +100,7 @@ export const useProjects = create<ProjectsState>()(
         return result!;
       },
     }),
-    { name: "construction-hub-projects-v2" },
+    { name: "construction-hub-projects.v3" },
   ),
 );
 

@@ -255,9 +255,5 @@ export interface Customer {
   isArchived?: boolean;
 }
 
-export const SEED_CUSTOMERS: Customer[] = [
-  { id: "c1", name: "James Wilson", phone: "(415) 555-0142", email: "james@example.com", address: "284 Sunset Blvd", city: "San Francisco", state: "CA", zip: "94122", notes: "Kitchen remodel — wants quartz countertops", createdAt: "2026-05-12" },
-  { id: "c2", name: "Maria Garcia", phone: "(408) 555-0193", email: "maria.g@example.com", address: "1290 Lincoln Ave", city: "San Jose", state: "CA", zip: "95125", notes: "Full bath + flooring", createdAt: "2026-05-21" },
-  { id: "c3", name: "David Chen", phone: "(510) 555-0167", email: "dchen@example.com", address: "55 Telegraph Ave", city: "Oakland", state: "CA", zip: "94612", notes: "ADU garage conversion", createdAt: "2026-05-28" },
-  { id: "c4", name: "Sarah Johnson", phone: "(650) 555-0118", email: "sj@example.com", address: "412 University Dr", city: "Palo Alto", state: "CA", zip: "94301", notes: "Whole-house paint", createdAt: "2026-06-01" },
-];
+// Customers are business data — no seed records. Users add their own.
+export const SEED_CUSTOMERS: Customer[] = [];
