@@ -195,6 +195,24 @@ export const useProjects = create<ProjectsState>()(
             x.id === id ? { ...x, status, subStatus: subStatus ?? x.subStatus } : x,
           ),
         })),
+      upsertByEstimateNumber: (p) => {
+        let result: Project | null = null;
+        set((s) => {
+          const idx = s.projects.findIndex((x) => x.estimateNumber === p.estimateNumber);
+          if (idx >= 0) {
+            const existing = s.projects[idx];
+            const merged: Project = { ...existing, ...p, id: existing.id };
+            result = merged;
+            const next = s.projects.slice();
+            next[idx] = merged;
+            return { projects: next };
+          }
+          const created: Project = { ...p, id: crypto.randomUUID() };
+          result = created;
+          return { projects: [created, ...s.projects] };
+        });
+        return result!;
+      },
     }),
     { name: "construction-hub-projects-v2" },
   ),
