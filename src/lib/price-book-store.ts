@@ -37,8 +37,8 @@ export const usePriceBookStore = create<PriceBookState>()(
         }),
       addItem: (item) => {
         const created: PriceItem = {
-          hoursPerUnit: 0,
           ...item,
+          hoursPerUnit: item.hoursPerUnit ?? 0,
           id: item.id ?? makeId(item.categoryId),
         } as PriceItem;
         set((s) => ({ customItems: [created, ...s.customItems] }));
