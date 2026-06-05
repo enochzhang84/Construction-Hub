@@ -421,7 +421,7 @@ function EstimatesPage() {
                 {lines.length} {lines.length === 1 ? "item" : "items"}
               </div>
             </div>
-            {lines.length > 0 && (
+            {lines.length > 0 && !isView && (
               <button
                 onClick={() => useEstimate.getState().clear()}
                 className="text-xs text-muted-foreground hover:text-destructive"
