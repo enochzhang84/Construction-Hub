@@ -1011,7 +1011,7 @@ function CustomerDialog({
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="max-w-lg">
+   <DialogContent size="md">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
         </DialogHeader>
@@ -1049,7 +1049,7 @@ function CustomerDialog({
             <select
               value={form.source}
               onChange={(e) => set("source", e.target.value as CustomerSource)}
-              className="w-full rounded-md border border-input bg-card px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring/40"
+              className="h-11 w-full rounded-[10px] border border-input bg-background px-3.5 text-sm outline-none transition-colors hover:border-foreground/20 focus:border-primary focus:ring-2 focus:ring-primary/15"
             >
               {CUSTOMER_SOURCES.map((s) => (
                 <option key={s} value={s}>
@@ -1064,20 +1064,20 @@ function CustomerDialog({
               value={form.notes}
               onChange={(e) => set("notes", e.target.value)}
               rows={3}
-              className="w-full rounded-md border border-input bg-card px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring/40"
+              className="h-11 w-full rounded-[10px] border border-input bg-background px-3.5 text-sm outline-none transition-colors hover:border-foreground/20 focus:border-primary focus:ring-2 focus:ring-primary/15"
             />
           </div>
         </div>
         <DialogFooter>
           <button
             onClick={onClose}
-            className="rounded-md border border-input bg-card px-4 py-2 text-sm font-medium hover:bg-secondary"
+            className="inline-flex h-10 items-center justify-center rounded-[10px] border border-input bg-background px-4 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
           >
             {t("common.cancel")}
           </button>
           <button
             onClick={onSave}
-            className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90"
+            className="inline-flex h-10 items-center justify-center rounded-[10px] bg-foreground px-4 text-sm font-medium text-background transition-colors hover:bg-foreground/90"
           >
             {t("common.save")}
           </button>
@@ -1092,7 +1092,7 @@ function Input({ value, onChange }: { value: string; onChange: (v: string) => vo
     <input
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className="w-full rounded-md border border-input bg-card px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring/40"
+      className="h-11 w-full rounded-[10px] border border-input bg-background px-3.5 text-sm outline-none transition-colors hover:border-foreground/20 focus:border-primary focus:ring-2 focus:ring-primary/15"
     />
   );
 }
@@ -1169,7 +1169,7 @@ function FlagDialog({
               onChange={(e) => setNote(e.target.value)}
               rows={3}
               placeholder={L.ph}
-              className="w-full rounded-md border border-input bg-card px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring/40"
+              className="h-11 w-full rounded-[10px] border border-input bg-background px-3.5 text-sm outline-none transition-colors hover:border-foreground/20 focus:border-primary focus:ring-2 focus:ring-primary/15"
             />
           </div>
         </div>
@@ -1183,13 +1183,13 @@ function FlagDialog({
           <div className="flex gap-2">
             <button
               onClick={onClose}
-              className="rounded-md border border-input bg-card px-4 py-2 text-sm font-medium hover:bg-secondary"
+              className="inline-flex h-10 items-center justify-center rounded-[10px] border border-input bg-background px-4 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
             >
               {L.cancel}
             </button>
             <button
               onClick={() => onSave({ type, note: note.trim() || undefined })}
-              className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90"
+              className="inline-flex h-10 items-center justify-center rounded-[10px] bg-foreground px-4 text-sm font-medium text-background transition-colors hover:bg-foreground/90"
             >
               {L.save}
             </button>
@@ -1261,14 +1261,14 @@ function DeleteDialog({
         <DialogFooter>
           <button
             onClick={onClose}
-            className="rounded-md border border-input bg-card px-4 py-2 text-sm font-medium hover:bg-secondary"
+            className="inline-flex h-10 items-center justify-center rounded-[10px] border border-input bg-background px-4 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
           >
             {L.cancel}
           </button>
           {blocked ? (
             <button
               onClick={onArchive}
-              className="inline-flex items-center gap-1.5 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90"
+              className="inline-flex items-center gap-1.5 inline-flex h-10 items-center justify-center rounded-[10px] bg-foreground px-4 text-sm font-medium text-background transition-colors hover:bg-foreground/90"
             >
               <Archive className="h-4 w-4" /> {L.archive}
             </button>
