@@ -158,7 +158,7 @@ function CustomersPage() {
   const [page, setPage] = useState(1);
   const [archiveFilter, setArchiveFilter] = useState<ArchiveFilter>("active");
   const [selectedId, setSelectedId] = useState<string | null>(customers[0]?.id ?? null);
-  const [viewTab, setViewTab] = useState<"list" | "map">("list");
+  const [viewTab, setViewTab] = useState<"table" | "cards" | "map">("table");
 
   const [addOpen, setAddOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
