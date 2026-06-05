@@ -59,6 +59,7 @@ import {
   ContextMenuSeparator,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
+import { CustomerMap } from "@/components/CustomerMap";
 
 export const Route = createFileRoute("/customers")({
   head: () => ({ meta: [{ title: "Customers · Construction Hub" }] }),
@@ -157,6 +158,7 @@ function CustomersPage() {
   const [page, setPage] = useState(1);
   const [archiveFilter, setArchiveFilter] = useState<ArchiveFilter>("active");
   const [selectedId, setSelectedId] = useState<string | null>(customers[0]?.id ?? null);
+  const [viewTab, setViewTab] = useState<"list" | "map">("list");
 
   const [addOpen, setAddOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -407,7 +409,32 @@ function CustomersPage() {
           </div>
         </div>
 
-        {/* Finder-style list + detail */}
+        {/* View tabs: List / Map */}
+        <div className="flex items-center gap-1 rounded-lg border border-border bg-card p-1 shadow-panel w-fit">
+          <button
+            onClick={() => setViewTab("list")}
+            className={
+              "rounded-md px-3 py-1.5 text-xs font-medium transition-colors " +
+              (viewTab === "list" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-secondary")
+            }
+          >
+            {locale === "zh" ? "客户列表" : "Customer List"}
+          </button>
+          <button
+            onClick={() => setViewTab("map")}
+            className={
+              "rounded-md px-3 py-1.5 text-xs font-medium transition-colors " +
+              (viewTab === "map" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-secondary")
+            }
+          >
+            {locale === "zh" ? "客户地图" : "Customer Map"}
+          </button>
+        </div>
+
+        {viewTab === "map" ? (
+          <CustomerMap rows={filtered.map((r) => ({ c: r.c, latest: r.latest, estTotal: r.estTotal, contractTotal: r.contractTotal, due: r.due }))} />
+        ) : (
+        /* Finder-style list + detail */
         <div className="grid gap-4 lg:grid-cols-[minmax(340px,400px)_1fr]">
           {/* Left: compact list */}
           <div className="flex flex-col rounded-lg border border-border bg-card shadow-panel overflow-hidden">
