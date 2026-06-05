@@ -460,15 +460,6 @@ function CustomersPage() {
             <div className="flex-1 overflow-y-auto">
               {paged.length === 0 && (
                 <div className="px-4 py-12 text-center text-sm text-muted-foreground">—</div>
-        <div className="grid gap-4 lg:grid-cols-[minmax(340px,400px)_1fr]">
-          {/* Left: compact list */}
-          <div className="flex flex-col rounded-lg border border-border bg-card shadow-panel overflow-hidden">
-            <div className="border-b border-border bg-secondary/40 px-3 py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-              {locale === "zh" ? "客户列表" : "Customer List"}
-            </div>
-            <div className="flex-1 overflow-y-auto">
-              {paged.length === 0 && (
-                <div className="px-4 py-12 text-center text-sm text-muted-foreground">—</div>
               )}
               {paged.map((row) => {
                 const c = row.c;
