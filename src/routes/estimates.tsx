@@ -68,13 +68,22 @@ function EstimatesPage() {
     toast.success(isZh ? "新建报价单已开启" : "New estimate started");
   };
 
-  // Pre-fill from ?customerId= when navigated from Customers page
+  // Pre-fill from ?customerId= when navigated from Customers page → enter create mode
   const appliedRef = useRef<string | null>(null);
   useEffect(() => {
     if (!prefillId || appliedRef.current === prefillId) return;
     const c = customers.find((x) => x.id === prefillId);
     if (c) {
-      applyCustomer(c);
+      clear();
+      setMeta({
+        customerId: c.id,
+        customerName: c.name,
+        projectAddress: `${c.address}, ${c.city}, ${c.state} ${c.zip}`,
+        estimateNumber: newEstimateNumber(),
+        date: new Date().toISOString().slice(0, 10),
+        globalDiscount: 0,
+      });
+      setMode("create");
       appliedRef.current = prefillId;
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
