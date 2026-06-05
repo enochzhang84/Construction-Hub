@@ -51,8 +51,7 @@ function EstimatesPage() {
     });
   };
 
-  const newEstimateNumber = () =>
-    `EST-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 9000) + 1000)}`;
+  const newEstimateNumber = () => nextEstimateNumber();
 
   const onNewEstimate = () => {
     clear();
