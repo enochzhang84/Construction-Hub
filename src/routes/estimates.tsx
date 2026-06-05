@@ -213,8 +213,11 @@ function EstimatesPage() {
           <div className="flex flex-wrap items-center gap-4">
             {/* 1. Estimate number */}
             <div>
+              <div className="text-[10px] font-medium uppercase tracking-[0.08em] text-muted-foreground">
+                {isZh ? "报价单编号" : "Estimate No."}
+              </div>
               <div className="flex items-center gap-2">
-                <div className="font-display text-base font-semibold tracking-tight" suppressHydrationWarning>
+                <div className="font-display font-mono text-base font-semibold tracking-tight" suppressHydrationWarning>
                   {meta.estimateNumber}
                 </div>
                 <span
