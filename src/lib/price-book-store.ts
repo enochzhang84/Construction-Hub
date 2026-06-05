@@ -78,8 +78,8 @@ export const usePriceBookStore = create<PriceBookState>()(
             updated++;
           } else {
             const item: PriceItem = {
-              hoursPerUnit: 0,
               ...row,
+              hoursPerUnit: row.hoursPerUnit ?? 0,
               id: row.id ?? makeId(row.categoryId),
             } as PriceItem;
             newCustoms.unshift(item);
