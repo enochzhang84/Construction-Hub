@@ -39,7 +39,7 @@ function AuthPage() {
     setBusy(true);
     try {
       if (mode === "signup") {
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email,
           password,
           options: {
@@ -48,16 +48,25 @@ function AuthPage() {
           },
         });
         if (error) throw error;
-        toast.success(
-          isZh
-            ? "注册成功，请检查邮箱完成验证后登录。"
-            : "Account created. Check your email to confirm, then sign in.",
-        );
-        setMode("signin");
+        if (data.user && data.user.identities && data.user.identities.length === 0) {
+          const m = isZh
+            ? "该邮箱已注册，请直接登录或重置密码。"
+            : "This email is already registered. Please sign in instead.";
+          setNotice(m);
+          toast.error(m, { duration: 5000 });
+          setMode("signin");
+        } else {
+          const m = isZh
+            ? "注册成功！请检查邮箱（含垃圾邮件）完成验证后再登录。"
+            : "Account created! Check your email (incl. spam) to confirm, then sign in.";
+          setNotice(m);
+          toast.success(m, { duration: 6000 });
+          setMode("signin");
+        }
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
-        toast.success(isZh ? "登录成功" : "Signed in");
+        toast.success(isZh ? "登录成功" : "Signed in", { duration: 3000 });
         navigate({ to: "/dashboard", replace: true });
       }
     } catch (err) {
