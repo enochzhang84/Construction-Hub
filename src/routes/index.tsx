@@ -1,8 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { FileText, DollarSign, Send, CheckCircle2, Clock, Users, ArrowUpRight } from "lucide-react";
+import { FileText, DollarSign, Send, CheckCircle2, Clock, Users, ArrowUpRight, HardHat, Wallet } from "lucide-react";
 import { SEED_CUSTOMERS } from "@/lib/data";
 import { useT, useLocale } from "@/lib/i18n";
 import { LanguageToggle } from "@/components/AppShell";
+import { useProjects, summarizeProjects } from "@/lib/project-store";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -17,6 +18,11 @@ export const Route = createFileRoute("/")({
 function Dashboard() {
   const t = useT();
   const locale = useLocale();
+  const isZh = locale === "zh";
+  const projects = useProjects((s) => s.projects);
+  const sum = summarizeProjects(projects);
+  const money = (n: number) => `$${n.toLocaleString()}`;
+
   const STATS = [
     { label: t("dash.stat.estimatesMonth"), value: "27", delta: "+12%", icon: FileText },
     { label: t("dash.stat.closedRevenue"), value: "$184,250", delta: "+8.4%", icon: DollarSign },
@@ -24,6 +30,39 @@ function Dashboard() {
     { label: t("dash.stat.sent"), value: "11", delta: t("dash.stat.avgDays"), icon: Send },
     { label: t("dash.stat.closed"), value: "9", delta: locale === "zh" ? "本月 +2" : "+2 vs last mo.", icon: CheckCircle2 },
     { label: t("dash.stat.customers"), value: "48", delta: locale === "zh" ? "+5 新增" : "+5 new", icon: Users },
+  ];
+
+  const PIPELINE = [
+    {
+      to: "/projects/estimate" as const,
+      title: isZh ? "施工报价单" : "Estimates",
+      count: sum.estimates.length,
+      amountLabel: isZh ? "总报价" : "Total Estimated",
+      amount: money(sum.estimateTotal),
+      status: isZh ? "等待客户确认" : "Awaiting customer approval",
+      icon: FileText,
+      tone: "info" as const,
+    },
+    {
+      to: "/projects/active" as const,
+      title: isZh ? "施工中工程" : "Active Projects",
+      count: sum.active.length,
+      amountLabel: isZh ? "合同金额" : "Contract Value",
+      amount: money(sum.contractTotal),
+      status: isZh ? "施工进行中" : "Construction in progress",
+      icon: HardHat,
+      tone: "warning" as const,
+    },
+    {
+      to: "/projects/pending" as const,
+      title: isZh ? "待结算单据" : "Pending Payment",
+      count: sum.pending.length,
+      amountLabel: isZh ? "待收款" : "Outstanding",
+      amount: money(sum.pendingDue),
+      status: isZh ? "等待尾款" : "Awaiting final payment",
+      icon: Wallet,
+      tone: "success" as const,
+    },
   ];
   return (
     <div className="h-full overflow-y-auto finder-scroll">
@@ -64,6 +103,74 @@ function Dashboard() {
             );
           })}
         </section>
+
+        <section>
+          <div className="mb-3 flex items-center justify-between">
+            <h2 className="font-display text-lg font-semibold">
+              {isZh ? "工程状态管理" : "Project Pipeline"}
+            </h2>
+            <span className="text-xs text-muted-foreground">
+              {isZh ? "报价 → 施工 → 结算" : "Estimate → Active → Pending Payment"}
+            </span>
+          </div>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+            {PIPELINE.map((p) => {
+              const Icon = p.icon;
+              const toneRing =
+                p.tone === "info"
+                  ? "before:bg-[oklch(0.62_0.18_240)]"
+                  : p.tone === "warning"
+                  ? "before:bg-[oklch(0.72_0.18_55)]"
+                  : "before:bg-[oklch(0.62_0.16_150)]";
+              const toneText =
+                p.tone === "info"
+                  ? "text-[oklch(0.55_0.18_240)]"
+                  : p.tone === "warning"
+                  ? "text-[oklch(0.58_0.18_50)]"
+                  : "text-[oklch(0.50_0.16_150)]";
+              return (
+                <Link
+                  key={p.to}
+                  to={p.to}
+                  className={
+                    "group relative overflow-hidden rounded-lg border border-border bg-card p-5 shadow-panel transition-all hover:shadow-md " +
+                    "before:absolute before:left-0 before:top-0 before:h-full before:w-1 " +
+                    toneRing
+                  }
+                >
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                        {p.title}
+                      </div>
+                      <div className="mt-2 flex items-baseline gap-2">
+                        <span className="font-display text-3xl font-semibold tracking-tight">
+                          {p.count}
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          {isZh ? "个项目" : "projects"}
+                        </span>
+                      </div>
+                    </div>
+                    <div className={"rounded-md bg-secondary p-2 " + toneText}>
+                      <Icon className="h-4 w-4" />
+                    </div>
+                  </div>
+                  <div className="mt-4 border-t border-border/60 pt-3">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-muted-foreground">{p.amountLabel}</span>
+                      <span className="font-mono font-semibold">{p.amount}</span>
+                    </div>
+                    <div className={"mt-2 text-xs " + toneText}>{p.status}</div>
+                  </div>
+                  <ArrowUpRight className="absolute right-4 top-4 h-4 w-4 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
+                </Link>
+              );
+            })}
+          </div>
+        </section>
+
+
 
         <section>
           <div className="mb-3 flex items-center justify-between">
