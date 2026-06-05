@@ -214,6 +214,102 @@ function CustomersPage() {
         </section>
       </div>
 
+      <Dialog open={!!detail} onOpenChange={(o) => !o && setDetail(null)}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>{detail?.name}</DialogTitle>
+          </DialogHeader>
+          {detail && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-3 text-sm">
+                <div>
+                  <div className="text-[11px] uppercase tracking-wider text-muted-foreground">{t("cust.f.phone")}</div>
+                  <div className="font-mono">{detail.phone}</div>
+                </div>
+                <div>
+                  <div className="text-[11px] uppercase tracking-wider text-muted-foreground">{t("cust.f.email")}</div>
+                  <div>{detail.email}</div>
+                </div>
+                <div className="col-span-2">
+                  <div className="text-[11px] uppercase tracking-wider text-muted-foreground">{t("cust.f.address")}</div>
+                  <div>{detail.address}, {detail.city}, {detail.state} {detail.zip}</div>
+                </div>
+                {detail.notes && (
+                  <div className="col-span-2">
+                    <div className="text-[11px] uppercase tracking-wider text-muted-foreground">{t("cust.f.notes")}</div>
+                    <div className="italic text-muted-foreground">{detail.notes}</div>
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <div className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                  {t("cust.history")}
+                </div>
+                <div className="overflow-hidden rounded-md border border-border">
+                  {detailEstimates.length === 0 ? (
+                    <div className="px-4 py-6 text-center text-xs text-muted-foreground">
+                      {t("cust.noHistory")}
+                    </div>
+                  ) : (
+                    <table className="w-full text-sm">
+                      <thead className="bg-secondary/60 text-left text-[10px] uppercase tracking-wider text-muted-foreground">
+                        <tr>
+                          <th className="px-3 py-2 font-medium">#</th>
+                          <th className="px-3 py-2 font-medium">{t("cust.col.lastDate")}</th>
+                          <th className="px-3 py-2 font-medium text-right">$</th>
+                          <th className="px-3 py-2 font-medium">{t("cust.col.lastStatus")}</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {detailEstimates.map((p) => (
+                          <tr key={p.id} className="border-t border-border/60">
+                            <td className="px-3 py-2 font-mono text-xs">
+                              <Link
+                                to="/projects/detail/$id"
+                                params={{ id: p.id }}
+                                onClick={() => setDetail(null)}
+                                className="hover:underline"
+                              >
+                                {p.estimateNumber}
+                              </Link>
+                            </td>
+                            <td className="px-3 py-2 font-mono text-xs">{formatDMY(p.estimateDate)}</td>
+                            <td className="px-3 py-2 text-right font-mono">${p.amount.toLocaleString()}</td>
+                            <td className="px-3 py-2">
+                              <span className={"rounded-md px-2 py-0.5 text-xs font-medium " + statusBadgeClass(p.status)}>
+                                {statusLabel(p.status, locale)}
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <button
+              onClick={() => setDetail(null)}
+              className="rounded-md border border-input bg-card px-4 py-2 text-sm font-medium hover:bg-secondary"
+            >
+              {t("common.cancel")}
+            </button>
+            {detail && (
+              <button
+                onClick={() => createEstimateFor(detail)}
+                className="inline-flex items-center gap-1.5 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90"
+              >
+                <FileText className="h-4 w-4" /> {t("cust.createEstimate")}
+              </button>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
