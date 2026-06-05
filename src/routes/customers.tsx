@@ -586,6 +586,30 @@ function CustomersPage() {
         onClose={() => setEditingId(null)}
         onSave={onSaveEdit}
       />
+
+      {/* Flag dialog */}
+      <FlagDialog
+        open={!!flagDialog}
+        customer={flagDialog?.customer ?? null}
+        onClose={() => setFlagDialog(null)}
+        onSave={(flag) => {
+          if (flagDialog) setFlag(flagDialog.customer.id, flag);
+          setFlagDialog(null);
+        }}
+      />
+
+      {/* Delete confirmation */}
+      <DeleteDialog
+        info={deleteDialog}
+        onClose={() => setDeleteDialog(null)}
+        onConfirm={confirmDelete}
+        onArchive={() => {
+          if (deleteDialog) {
+            setArchived(deleteDialog.customer.id, true);
+            setDeleteDialog(null);
+          }
+        }}
+      />
     </div>
   );
 }
