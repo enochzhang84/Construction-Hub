@@ -1,8 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useT } from "@/lib/i18n";
+import { useT, useLocale } from "@/lib/i18n";
 import { useCompany, type CompanyProfile } from "@/lib/company-store";
+import { useTerms, DEFAULT_TERMS_EN, DEFAULT_TERMS_ZH } from "@/lib/terms-store";
 import { toast } from "sonner";
-import { BookOpen, ChevronRight } from "lucide-react";
+import { BookOpen, ChevronRight, FileText, RotateCcw } from "lucide-react";
 
 export const Route = createFileRoute("/settings")({
   head: () => ({ meta: [{ title: "Settings · Construction Hub" }] }),
