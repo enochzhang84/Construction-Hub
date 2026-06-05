@@ -13,7 +13,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
-export const Route = createFileRoute("/price-book")({
+export const Route = createFileRoute("/_authenticated/price-book")({
   head: () => ({ meta: [{ title: "Construction Items · Construction Hub" }] }),
   component: PriceBookPage,
 });

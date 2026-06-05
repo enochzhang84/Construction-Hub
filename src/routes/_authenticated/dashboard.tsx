@@ -22,7 +22,7 @@ import { LanguageToggle } from "@/components/AppShell";
 import { useProjects, summarizeProjects } from "@/lib/project-store";
 import { useCustomers } from "@/lib/customer-store";
 
-export const Route = createFileRoute("/dashboard")({
+export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
     meta: [
       { title: "Dashboard · Construction Hub" },

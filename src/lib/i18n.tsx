@@ -44,6 +44,7 @@ const DICT: Dict = {
   "nav.suppliers": { en: "Suppliers", zh: "供货商" },
   "nav.reports": { en: "Reports", zh: "报表中心" },
   "nav.settings": { en: "Settings", zh: "系统设置" },
+  "auth.logout": { en: "Sign out", zh: "退出登录" },
 
   // App
   "app.subtitle": { en: "Estimating · v1", zh: "报价系统 · v1" },
