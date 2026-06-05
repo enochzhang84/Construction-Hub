@@ -22,6 +22,7 @@ function PublicHome() {
   const storeProfile = useCompany((s) => s.profile);
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
+  useCompanyHydration();
   // During SSR / before zustand persist rehydrates from localStorage,
   // render empty profile so the client can swap in the saved values
   // without a stale-cache mismatch.
