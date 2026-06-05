@@ -120,6 +120,21 @@ function SettingsPage() {
         <TermsSection />
 
         <section className="rounded-lg border border-border bg-card p-6 shadow-panel">
+          <h2 className="mb-1 font-display text-base font-semibold">
+            {/* @ts-ignore i18n key */}
+            {t("set.users") || "Users & Roles"}
+          </h2>
+          <p className="mb-3 text-xs text-muted-foreground">
+            用户管理与角色权限（Super Admin / Admin / Estimator）— 预留模块，下一版本上线。
+            <br />
+            User management and role-based permissions — reserved for the next release.
+          </p>
+          <div className="rounded-md border border-dashed border-border bg-background/50 px-4 py-3 text-xs text-muted-foreground">
+            首位注册用户已自动获得 Super Admin 权限。
+          </div>
+        </section>
+
+        <section className="rounded-lg border border-border bg-card p-6 shadow-panel">
           <h2 className="mb-2 font-display text-base font-semibold">{t("set.roadmap")}</h2>
           <p className="mb-3 text-xs text-muted-foreground">{t("set.roadmapHint")}</p>
           <ul className="space-y-1.5 text-sm">
