@@ -17,6 +17,8 @@ import { Route as EstimatesRouteImport } from './routes/estimates'
 import { Route as CustomersRouteImport } from './routes/customers'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProjectsStatusRouteImport } from './routes/projects.$status'
+import { Route as ProjectsDetailIdRouteImport } from './routes/projects.detail.$id'
+import { Route as ProjectsDetailIdAddonRouteImport } from './routes/projects.detail.$id.addon'
 
 const SettingsRoute = SettingsRouteImport.update({
   id: '/settings',
@@ -58,6 +60,16 @@ const ProjectsStatusRoute = ProjectsStatusRouteImport.update({
   path: '/projects/$status',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProjectsDetailIdRoute = ProjectsDetailIdRouteImport.update({
+  id: '/projects/detail/$id',
+  path: '/projects/detail/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProjectsDetailIdAddonRoute = ProjectsDetailIdAddonRouteImport.update({
+  id: '/addon',
+  path: '/addon',
+  getParentRoute: () => ProjectsDetailIdRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -68,6 +80,8 @@ export interface FileRoutesByFullPath {
   '/reports': typeof ReportsRoute
   '/settings': typeof SettingsRoute
   '/projects/$status': typeof ProjectsStatusRoute
+  '/projects/detail/$id': typeof ProjectsDetailIdRouteWithChildren
+  '/projects/detail/$id/addon': typeof ProjectsDetailIdAddonRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -78,6 +92,8 @@ export interface FileRoutesByTo {
   '/reports': typeof ReportsRoute
   '/settings': typeof SettingsRoute
   '/projects/$status': typeof ProjectsStatusRoute
+  '/projects/detail/$id': typeof ProjectsDetailIdRouteWithChildren
+  '/projects/detail/$id/addon': typeof ProjectsDetailIdAddonRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -89,6 +105,8 @@ export interface FileRoutesById {
   '/reports': typeof ReportsRoute
   '/settings': typeof SettingsRoute
   '/projects/$status': typeof ProjectsStatusRoute
+  '/projects/detail/$id': typeof ProjectsDetailIdRouteWithChildren
+  '/projects/detail/$id/addon': typeof ProjectsDetailIdAddonRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -101,6 +119,8 @@ export interface FileRouteTypes {
     | '/reports'
     | '/settings'
     | '/projects/$status'
+    | '/projects/detail/$id'
+    | '/projects/detail/$id/addon'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -111,6 +131,8 @@ export interface FileRouteTypes {
     | '/reports'
     | '/settings'
     | '/projects/$status'
+    | '/projects/detail/$id'
+    | '/projects/detail/$id/addon'
   id:
     | '__root__'
     | '/'
@@ -121,6 +143,8 @@ export interface FileRouteTypes {
     | '/reports'
     | '/settings'
     | '/projects/$status'
+    | '/projects/detail/$id'
+    | '/projects/detail/$id/addon'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -132,6 +156,7 @@ export interface RootRouteChildren {
   ReportsRoute: typeof ReportsRoute
   SettingsRoute: typeof SettingsRoute
   ProjectsStatusRoute: typeof ProjectsStatusRoute
+  ProjectsDetailIdRoute: typeof ProjectsDetailIdRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
@@ -192,8 +217,33 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProjectsStatusRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/projects/detail/$id': {
+      id: '/projects/detail/$id'
+      path: '/projects/detail/$id'
+      fullPath: '/projects/detail/$id'
+      preLoaderRoute: typeof ProjectsDetailIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/projects/detail/$id/addon': {
+      id: '/projects/detail/$id/addon'
+      path: '/addon'
+      fullPath: '/projects/detail/$id/addon'
+      preLoaderRoute: typeof ProjectsDetailIdAddonRouteImport
+      parentRoute: typeof ProjectsDetailIdRoute
+    }
   }
 }
+
+interface ProjectsDetailIdRouteChildren {
+  ProjectsDetailIdAddonRoute: typeof ProjectsDetailIdAddonRoute
+}
+
+const ProjectsDetailIdRouteChildren: ProjectsDetailIdRouteChildren = {
+  ProjectsDetailIdAddonRoute: ProjectsDetailIdAddonRoute,
+}
+
+const ProjectsDetailIdRouteWithChildren =
+  ProjectsDetailIdRoute._addFileChildren(ProjectsDetailIdRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
@@ -204,6 +254,7 @@ const rootRouteChildren: RootRouteChildren = {
   ReportsRoute: ReportsRoute,
   SettingsRoute: SettingsRoute,
   ProjectsStatusRoute: ProjectsStatusRoute,
+  ProjectsDetailIdRoute: ProjectsDetailIdRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
