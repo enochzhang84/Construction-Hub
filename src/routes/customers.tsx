@@ -18,6 +18,13 @@ import {
   CreditCard,
   ChevronLeft,
   ChevronRight,
+  Star,
+  Archive,
+  ArchiveRestore,
+  Trash2,
+  AlertTriangle,
+  Gem,
+  Crown,
 } from "lucide-react";
 import { useT, useLocale } from "@/lib/i18n";
 import { useCustomers } from "@/lib/customer-store";
@@ -30,7 +37,14 @@ import {
   type Project,
   type ProjectStatus,
 } from "@/lib/project-store";
-import { CUSTOMER_SOURCES, type Customer, type CustomerSource } from "@/lib/data";
+import {
+  CUSTOMER_SOURCES,
+  CUSTOMER_FLAG_TYPES,
+  type Customer,
+  type CustomerSource,
+  type CustomerFlag,
+  type CustomerFlagType,
+} from "@/lib/data";
 import {
   Dialog,
   DialogContent,
@@ -38,11 +52,54 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuSeparator,
+  ContextMenuTrigger,
+} from "@/components/ui/context-menu";
 
 export const Route = createFileRoute("/customers")({
   head: () => ({ meta: [{ title: "Customers · Construction Hub" }] }),
   component: CustomersPage,
 });
+
+type ArchiveFilter = "active" | "archived" | "all";
+
+function flagLabel(type: CustomerFlagType, locale: "en" | "zh"): string {
+  const map: Record<CustomerFlagType, { en: string; zh: string }> = {
+    VIP: { en: "VIP", zh: "VIP" },
+    Loyal: { en: "Loyal", zh: "老客户" },
+    Referral: { en: "Referral", zh: "推荐客户" },
+    HighRisk: { en: "High Risk", zh: "高风险" },
+    Custom: { en: "Custom", zh: "自定义" },
+  };
+  return map[type][locale];
+}
+
+function flagBadgeClass(type: CustomerFlagType): string {
+  switch (type) {
+    case "VIP":
+      return "bg-[oklch(0.95_0.08_85)] text-[oklch(0.45_0.16_75)] dark:bg-[oklch(0.32_0.10_85)] dark:text-[oklch(0.88_0.12_85)]";
+    case "Loyal":
+      return "bg-[oklch(0.94_0.06_200)] text-[oklch(0.40_0.14_220)] dark:bg-[oklch(0.30_0.10_220)] dark:text-[oklch(0.88_0.10_220)]";
+    case "Referral":
+      return "bg-[oklch(0.94_0.06_150)] text-[oklch(0.40_0.14_150)] dark:bg-[oklch(0.30_0.10_150)] dark:text-[oklch(0.88_0.10_150)]";
+    case "HighRisk":
+      return "bg-[oklch(0.95_0.08_25)] text-[oklch(0.48_0.18_25)] dark:bg-[oklch(0.32_0.10_25)] dark:text-[oklch(0.88_0.12_25)]";
+    case "Custom":
+      return "bg-secondary text-foreground";
+  }
+}
+
+function FlagIcon({ type, className }: { type: CustomerFlagType; className?: string }) {
+  if (type === "VIP") return <Crown className={className} />;
+  if (type === "HighRisk") return <AlertTriangle className={className} />;
+  if (type === "Loyal") return <Gem className={className} />;
+  return <Star className={className} />;
+}
+
 
 type FormState = {
   name: string;
@@ -87,6 +144,9 @@ function CustomersPage() {
   const customers = useCustomers((s) => s.customers);
   const addCustomer = useCustomers((s) => s.addCustomer);
   const updateCustomer = useCustomers((s) => s.updateCustomer);
+  const removeCustomer = useCustomers((s) => s.removeCustomer);
+  const setFlag = useCustomers((s) => s.setFlag);
+  const setArchived = useCustomers((s) => s.setArchived);
   const projects = useProjects((s) => s.projects);
 
   const [q, setQ] = useState("");
@@ -95,11 +155,14 @@ function CustomersPage() {
   const [sourceFilter, setSourceFilter] = useState<string>("all");
   const [pageSize, setPageSize] = useState(10);
   const [page, setPage] = useState(1);
+  const [archiveFilter, setArchiveFilter] = useState<ArchiveFilter>("active");
   const [selectedId, setSelectedId] = useState<string | null>(customers[0]?.id ?? null);
 
   const [addOpen, setAddOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<FormState>(EMPTY);
+  const [flagDialog, setFlagDialog] = useState<{ customer: Customer } | null>(null);
+  const [deleteDialog, setDeleteDialog] = useState<{ customer: Customer; projectCount: number } | null>(null);
 
   // Build enriched customer rows
   const enriched = useMemo(() => {
@@ -148,6 +211,8 @@ function CustomersPage() {
     const needle = q.toLowerCase();
     return enriched.filter((row) => {
       const c = row.c;
+      if (archiveFilter === "active" && c.isArchived) return false;
+      if (archiveFilter === "archived" && !c.isArchived) return false;
       if (needle) {
         const hay = [c.name, c.phone, c.email, c.address, c.city].join(" ").toLowerCase();
         if (!hay.includes(needle)) return false;
@@ -159,7 +224,7 @@ function CustomersPage() {
       if (sourceFilter !== "all" && (c.source ?? "Other") !== sourceFilter) return false;
       return true;
     });
-  }, [enriched, q, statusFilter, cityFilter, sourceFilter]);
+  }, [enriched, q, statusFilter, cityFilter, sourceFilter, archiveFilter]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
   const currentPage = Math.min(page, totalPages);
@@ -204,6 +269,29 @@ function CustomersPage() {
 
   const createEstimateFor = (c: Customer) =>
     navigate({ to: "/estimates", search: { customerId: c.id } });
+
+  const viewDetailFor = (c: Customer) => {
+    const row = enriched.find((r) => r.c.id === c.id);
+    const latest = row?.latest;
+    if (latest) navigate({ to: "/projects/detail/$id", params: { id: latest.id } });
+    else setSelectedId(c.id);
+  };
+
+  const projectCountFor = (c: Customer) =>
+    projects.filter((p) => matchesCustomer(p, c)).length;
+
+  const requestDelete = (c: Customer) => {
+    setDeleteDialog({ customer: c, projectCount: projectCountFor(c) });
+  };
+
+  const confirmDelete = () => {
+    if (!deleteDialog || deleteDialog.projectCount > 0) return;
+    removeCustomer(deleteDialog.customer.id);
+    if (selectedId === deleteDialog.customer.id) setSelectedId(null);
+    setDeleteDialog(null);
+  };
+
+  const toggleArchive = (c: Customer) => setArchived(c.id, !c.isArchived);
 
   return (
     <div className="flex h-full flex-col">
@@ -287,6 +375,19 @@ function CustomersPage() {
               ...CUSTOMER_SOURCES.map((s) => ({ value: s, label: s })),
             ]}
           />
+          <Select
+            value={archiveFilter}
+            onChange={(v) => {
+              setArchiveFilter(v as ArchiveFilter);
+              setPage(1);
+            }}
+            label={locale === "zh" ? "归档" : "View"}
+            options={[
+              { value: "active", label: locale === "zh" ? "活跃客户" : "Active" },
+              { value: "archived", label: locale === "zh" ? "已归档" : "Archived" },
+              { value: "all", label: locale === "zh" ? "全部" : "All" },
+            ]}
+          />
           <div className="ml-auto flex items-center gap-2">
             <span className="text-xs text-muted-foreground">{locale === "zh" ? "每页" : "Per page"}</span>
             <select
@@ -321,37 +422,103 @@ function CustomersPage() {
                 const c = row.c;
                 const isSel = selectedRow?.c.id === c.id;
                 return (
-                  <button
-                    key={c.id}
-                    type="button"
-                    onClick={() => setSelectedId(c.id)}
-                    className={
-                      "block w-full border-b border-border/60 px-3 py-2.5 text-left transition-colors " +
-                      (isSel ? "bg-primary/10" : "hover:bg-secondary/50")
-                    }
-                  >
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="truncate font-medium">{c.name}</div>
-                      {row.latest && (
-                        <span
-                          className={
-                            "shrink-0 rounded px-1.5 py-0.5 text-[10px] font-medium " +
-                            statusBadgeClass(row.latest.status)
-                          }
-                        >
-                          {statusLabel(row.latest.status, locale)}
-                        </span>
-                      )}
-                    </div>
-                    <div className="mt-0.5 flex items-center justify-between gap-2 text-xs text-muted-foreground">
-                      <span className="truncate">{c.city || "—"} · <span className="font-mono">{c.phone}</span></span>
-                      {row.due > 0 && (
-                        <span className="shrink-0 font-mono text-[oklch(0.48_0.16_50)]">
-                          {fmt$(row.due)}
-                        </span>
-                      )}
-                    </div>
-                  </button>
+                  <ContextMenu key={c.id}>
+                    <ContextMenuTrigger asChild>
+                      <div
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => setSelectedId(c.id)}
+                        onDoubleClick={() => viewDetailFor(c)}
+                        className={
+                          "block w-full cursor-default border-b border-border/60 px-3 py-2.5 text-left transition-colors " +
+                          (isSel ? "bg-primary/10" : "hover:bg-secondary/50") +
+                          (c.isArchived ? " opacity-60" : "")
+                        }
+                      >
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="flex min-w-0 items-center gap-1.5">
+                            <span className="truncate font-medium">{c.name}</span>
+                            {c.flag && (
+                              <span
+                                title={c.flag.note || flagLabel(c.flag.type, locale)}
+                                className={
+                                  "inline-flex shrink-0 items-center gap-0.5 rounded px-1 py-0.5 text-[10px] font-medium " +
+                                  flagBadgeClass(c.flag.type)
+                                }
+                              >
+                                <FlagIcon type={c.flag.type} className="h-3 w-3" />
+                                {flagLabel(c.flag.type, locale)}
+                              </span>
+                            )}
+                            {c.isArchived && (
+                              <span className="shrink-0 rounded bg-secondary px-1 py-0.5 text-[10px] font-medium text-muted-foreground">
+                                {locale === "zh" ? "已归档" : "Archived"}
+                              </span>
+                            )}
+                          </div>
+                          {row.latest && (
+                            <span
+                              className={
+                                "shrink-0 rounded px-1.5 py-0.5 text-[10px] font-medium " +
+                                statusBadgeClass(row.latest.status)
+                              }
+                            >
+                              {statusLabel(row.latest.status, locale)}
+                            </span>
+                          )}
+                        </div>
+                        <div className="mt-0.5 flex items-center justify-between gap-2 text-xs text-muted-foreground">
+                          <span className="truncate">{c.city || "—"} · <span className="font-mono">{c.phone}</span></span>
+                          {row.due > 0 && (
+                            <span className="shrink-0 font-mono text-[oklch(0.48_0.16_50)]">
+                              {fmt$(row.due)}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </ContextMenuTrigger>
+                    <ContextMenuContent className="w-52">
+                      <ContextMenuItem onSelect={() => viewDetailFor(c)}>
+                        <FileText className="mr-2 h-4 w-4" />
+                        {locale === "zh" ? "查看客户详情" : "View Detail"}
+                      </ContextMenuItem>
+                      <ContextMenuItem onSelect={() => openEdit(c)}>
+                        <Pencil className="mr-2 h-4 w-4" />
+                        {locale === "zh" ? "编辑客户" : "Edit Customer"}
+                      </ContextMenuItem>
+                      <ContextMenuItem onSelect={() => createEstimateFor(c)}>
+                        <Plus className="mr-2 h-4 w-4" />
+                        {locale === "zh" ? "新建报价单" : "New Estimate"}
+                      </ContextMenuItem>
+                      <ContextMenuSeparator />
+                      <ContextMenuItem onSelect={() => setFlagDialog({ customer: c })}>
+                        <Star className="mr-2 h-4 w-4" />
+                        {locale === "zh" ? "特别标记" : "Flag Customer"}
+                      </ContextMenuItem>
+                      <ContextMenuItem onSelect={() => toggleArchive(c)}>
+                        {c.isArchived ? (
+                          <ArchiveRestore className="mr-2 h-4 w-4" />
+                        ) : (
+                          <Archive className="mr-2 h-4 w-4" />
+                        )}
+                        {c.isArchived
+                          ? locale === "zh"
+                            ? "取消归档"
+                            : "Unarchive"
+                          : locale === "zh"
+                            ? "归档客户"
+                            : "Archive Customer"}
+                      </ContextMenuItem>
+                      <ContextMenuSeparator />
+                      <ContextMenuItem
+                        onSelect={() => requestDelete(c)}
+                        className="text-[oklch(0.48_0.18_25)] focus:text-[oklch(0.48_0.18_25)]"
+                      >
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        {locale === "zh" ? "删除客户" : "Delete Customer"}
+                      </ContextMenuItem>
+                    </ContextMenuContent>
+                  </ContextMenu>
                 );
               })}
             </div>
@@ -418,6 +585,30 @@ function CustomersPage() {
         setForm={setForm}
         onClose={() => setEditingId(null)}
         onSave={onSaveEdit}
+      />
+
+      {/* Flag dialog */}
+      <FlagDialog
+        open={!!flagDialog}
+        customer={flagDialog?.customer ?? null}
+        onClose={() => setFlagDialog(null)}
+        onSave={(flag) => {
+          if (flagDialog) setFlag(flagDialog.customer.id, flag);
+          setFlagDialog(null);
+        }}
+      />
+
+      {/* Delete confirmation */}
+      <DeleteDialog
+        info={deleteDialog}
+        onClose={() => setDeleteDialog(null)}
+        onConfirm={confirmDelete}
+        onArchive={() => {
+          if (deleteDialog) {
+            setArchived(deleteDialog.customer.id, true);
+            setDeleteDialog(null);
+          }
+        }}
       />
     </div>
   );
@@ -857,5 +1048,194 @@ function Input({ value, onChange }: { value: string; onChange: (v: string) => vo
       onChange={(e) => onChange(e.target.value)}
       className="w-full rounded-md border border-input bg-card px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring/40"
     />
+  );
+}
+
+// ---------------- Flag dialog ----------------
+
+function FlagDialog({
+  open,
+  customer,
+  onClose,
+  onSave,
+}: {
+  open: boolean;
+  customer: Customer | null;
+  onClose: () => void;
+  onSave: (flag: CustomerFlag | null) => void;
+}) {
+  const locale = useLocale();
+  const [type, setType] = useState<CustomerFlagType>("VIP");
+  const [note, setNote] = useState("");
+
+  // Sync when opening a new customer
+  const currentId = customer?.id ?? null;
+  const [syncedFor, setSyncedFor] = useState<string | null>(null);
+  if (open && currentId !== syncedFor) {
+    setType(customer?.flag?.type ?? "VIP");
+    setNote(customer?.flag?.note ?? "");
+    setSyncedFor(currentId);
+  }
+  if (!open && syncedFor !== null) {
+    // Reset sync when closed
+    setTimeout(() => setSyncedFor(null), 0);
+  }
+
+  const L = locale === "zh"
+    ? { title: "特别标记", type: "标记类型", note: "备注", clear: "清除标记", cancel: "取消", save: "保存", ph: "例如：客户经常临时修改施工范围" }
+    : { title: "Flag Customer", type: "Flag Type", note: "Note", clear: "Clear Flag", cancel: "Cancel", save: "Save", ph: "e.g. Frequently changes scope mid-project" };
+
+  return (
+    <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <Star className="h-4 w-4" /> {L.title}
+            {customer && <span className="text-sm font-normal text-muted-foreground">— {customer.name}</span>}
+          </DialogTitle>
+        </DialogHeader>
+        <div className="space-y-3">
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium">{L.type}</label>
+            <div className="grid grid-cols-2 gap-2">
+              {CUSTOMER_FLAG_TYPES.map((ft) => (
+                <button
+                  key={ft}
+                  type="button"
+                  onClick={() => setType(ft)}
+                  className={
+                    "inline-flex items-center gap-1.5 rounded-md border px-3 py-2 text-sm transition-colors " +
+                    (type === ft
+                      ? "border-primary bg-primary/10 text-foreground"
+                      : "border-input bg-card hover:bg-secondary")
+                  }
+                >
+                  <FlagIcon type={ft} className="h-3.5 w-3.5" />
+                  {flagLabel(ft, locale)}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium">{L.note}</label>
+            <textarea
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              rows={3}
+              placeholder={L.ph}
+              className="w-full rounded-md border border-input bg-card px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring/40"
+            />
+          </div>
+        </div>
+        <DialogFooter className="flex items-center justify-between sm:justify-between">
+          <button
+            onClick={() => onSave(null)}
+            className="rounded-md border border-input bg-card px-3 py-2 text-xs font-medium text-muted-foreground hover:bg-secondary"
+          >
+            {L.clear}
+          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={onClose}
+              className="rounded-md border border-input bg-card px-4 py-2 text-sm font-medium hover:bg-secondary"
+            >
+              {L.cancel}
+            </button>
+            <button
+              onClick={() => onSave({ type, note: note.trim() || undefined })}
+              className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90"
+            >
+              {L.save}
+            </button>
+          </div>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// ---------------- Delete dialog ----------------
+
+function DeleteDialog({
+  info,
+  onClose,
+  onConfirm,
+  onArchive,
+}: {
+  info: { customer: Customer; projectCount: number } | null;
+  onClose: () => void;
+  onConfirm: () => void;
+  onArchive: () => void;
+}) {
+  const locale = useLocale();
+  const open = !!info;
+  const blocked = (info?.projectCount ?? 0) > 0;
+
+  const L = locale === "zh"
+    ? {
+        title: "删除客户",
+        confirm: `确定要删除客户 "${info?.customer.name ?? ""}" 吗？此操作无法撤销。`,
+        blocked: "该客户存在关联的报价单或工程记录，无法直接删除。",
+        suggest: "请改用「归档客户」以保留历史数据。",
+        cancel: "取消",
+        del: "删除",
+        archive: "归档客户",
+      }
+    : {
+        title: "Delete Customer",
+        confirm: `Are you sure you want to delete "${info?.customer.name ?? ""}"? This cannot be undone.`,
+        blocked: "This customer has related estimates or projects.",
+        suggest: "Please archive this customer instead to preserve history.",
+        cancel: "Cancel",
+        del: "Delete",
+        archive: "Archive",
+      };
+
+  return (
+    <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2 text-[oklch(0.48_0.18_25)]">
+            <Trash2 className="h-4 w-4" /> {L.title}
+          </DialogTitle>
+        </DialogHeader>
+        {blocked ? (
+          <div className="space-y-2 text-sm">
+            <div className="flex items-start gap-2 rounded-md border border-[oklch(0.85_0.10_25)] bg-[oklch(0.97_0.04_25)] p-3 text-[oklch(0.40_0.18_25)] dark:bg-[oklch(0.25_0.08_25)] dark:text-[oklch(0.88_0.12_25)]">
+              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+              <div>
+                <div className="font-medium">{L.blocked}</div>
+                <div className="mt-1 text-xs opacity-80">{L.suggest}</div>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <p className="text-sm text-muted-foreground">{L.confirm}</p>
+        )}
+        <DialogFooter>
+          <button
+            onClick={onClose}
+            className="rounded-md border border-input bg-card px-4 py-2 text-sm font-medium hover:bg-secondary"
+          >
+            {L.cancel}
+          </button>
+          {blocked ? (
+            <button
+              onClick={onArchive}
+              className="inline-flex items-center gap-1.5 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90"
+            >
+              <Archive className="h-4 w-4" /> {L.archive}
+            </button>
+          ) : (
+            <button
+              onClick={onConfirm}
+              className="inline-flex items-center gap-1.5 rounded-md bg-[oklch(0.55_0.20_25)] px-4 py-2 text-sm font-medium text-white hover:opacity-90"
+            >
+              <Trash2 className="h-4 w-4" /> {L.del}
+            </button>
+          )}
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
