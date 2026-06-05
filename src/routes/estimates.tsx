@@ -834,6 +834,7 @@ function exportPDF(
   totals: ReturnType<typeof estimateTotals>,
   company: CompanyProfile,
   customer: Customer | null,
+  terms: { termsEn: string; termsZh: string },
   autoPrint: boolean,
 ) {
   const mode = meta.quoteLanguage;
