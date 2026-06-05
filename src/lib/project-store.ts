@@ -221,11 +221,10 @@ export function summarizeProjects(projects: Project[]) {
 
 export function formatDMY(isoDate?: string | null): string {
   if (!isoDate) return "—";
-  const d = new Date(isoDate);
-  if (Number.isNaN(d.getTime())) return "—";
-  const dd = String(d.getDate()).padStart(2, "0");
-  const mm = String(d.getMonth() + 1).padStart(2, "0");
-  return `${dd}-${mm}-${d.getFullYear()}`;
+  // Parse YYYY-MM-DD literally to avoid timezone shifts (SSR/client mismatch).
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(isoDate);
+  if (!m) return "—";
+  return `${m[3]}-${m[2]}-${m[1]}`;
 }
 
 export const STATUS_OPTIONS: ProjectStatus[] = [

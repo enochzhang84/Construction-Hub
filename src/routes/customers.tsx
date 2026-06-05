@@ -1,9 +1,10 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { Search, Plus, Mail, Phone, MapPin } from "lucide-react";
+import { Search, Plus, Mail, Phone, MapPin, FileText } from "lucide-react";
 import { useT, useLocale } from "@/lib/i18n";
 import { useCustomers } from "@/lib/customer-store";
 import { useProjects, formatDMY, statusBadgeClass, statusLabel } from "@/lib/project-store";
+import type { Customer } from "@/lib/data";
 import {
   Dialog,
   DialogContent,
@@ -31,12 +32,31 @@ const EMPTY = {
 function CustomersPage() {
   const t = useT();
   const locale = useLocale();
+  const navigate = useNavigate();
   const customers = useCustomers((s) => s.customers);
   const addCustomer = useCustomers((s) => s.addCustomer);
   const projects = useProjects((s) => s.projects);
   const [q, setQ] = useState("");
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState(EMPTY);
+  const [detail, setDetail] = useState<Customer | null>(null);
+
+  const detailEstimates = useMemo(() => {
+    if (!detail) return [];
+    return projects
+      .filter(
+        (p) =>
+          !p.parentProjectId &&
+          (p.customerName === detail.name ||
+            (detail.phone && p.customerPhone === detail.phone)),
+      )
+      .sort((a, b) => (b.estimateDate || "").localeCompare(a.estimateDate || ""));
+  }, [projects, detail]);
+
+  const createEstimateFor = (c: Customer) => {
+    setDetail(null);
+    navigate({ to: "/estimates", search: { customerId: c.id } });
+  };
 
   const filtered = customers.filter((c) =>
     [c.name, c.email, c.address, c.city].join(" ").toLowerCase().includes(q.toLowerCase()),
@@ -105,40 +125,51 @@ function CustomersPage() {
           {filtered.map((c) => (
             <div
               key={c.id}
-              className="rounded-lg border border-border bg-card p-5 shadow-panel transition-shadow hover:shadow-soft"
+              className="group flex flex-col rounded-lg border border-border bg-card p-5 shadow-panel transition-shadow hover:shadow-soft"
             >
-              <div className="flex items-start justify-between">
-                <div>
-                  <div className="font-display text-base font-semibold">{c.name}</div>
-                  <div className="mt-0.5 text-xs text-muted-foreground">
-                    {t("cust.added")} {c.createdAt}
+              <button type="button" onClick={() => setDetail(c)} className="flex-1 text-left">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <div className="font-display text-base font-semibold hover:underline">{c.name}</div>
+                    <div className="mt-0.5 text-xs text-muted-foreground">
+                      {t("cust.added")} {c.createdAt}
+                    </div>
                   </div>
-                </div>
-                <span className="rounded-full bg-secondary px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-                  {c.state}
-                </span>
-              </div>
-              <div className="mt-4 space-y-1.5 text-sm">
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  <Phone className="h-3.5 w-3.5" />
-                  <span className="font-mono text-xs">{c.phone}</span>
-                </div>
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  <Mail className="h-3.5 w-3.5" />
-                  <span className="text-xs">{c.email}</span>
-                </div>
-                <div className="flex items-start gap-2 text-muted-foreground">
-                  <MapPin className="h-3.5 w-3.5 mt-0.5" />
-                  <span className="text-xs">
-                    {c.address}, {c.city}, {c.state} {c.zip}
+                  <span className="rounded-full bg-secondary px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+                    {c.state}
                   </span>
                 </div>
+                <div className="mt-4 space-y-1.5 text-sm">
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                    <Phone className="h-3.5 w-3.5" />
+                    <span className="font-mono text-xs">{c.phone}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                    <Mail className="h-3.5 w-3.5" />
+                    <span className="text-xs">{c.email}</span>
+                  </div>
+                  <div className="flex items-start gap-2 text-muted-foreground">
+                    <MapPin className="h-3.5 w-3.5 mt-0.5" />
+                    <span className="text-xs">
+                      {c.address}, {c.city}, {c.state} {c.zip}
+                    </span>
+                  </div>
+                </div>
+                {c.notes && (
+                  <p className="mt-3 border-t border-border/60 pt-3 text-xs italic text-muted-foreground">
+                    "{c.notes}"
+                  </p>
+                )}
+              </button>
+              <div className="mt-4 flex justify-end border-t border-border/60 pt-3">
+                <button
+                  type="button"
+                  onClick={() => createEstimateFor(c)}
+                  className="inline-flex items-center gap-1.5 rounded-md border border-input bg-card px-3 py-1.5 text-xs font-medium hover:bg-secondary"
+                >
+                  <FileText className="h-3.5 w-3.5" /> {t("cust.createEstimate")}
+                </button>
               </div>
-              {c.notes && (
-                <p className="mt-3 border-t border-border/60 pt-3 text-xs italic text-muted-foreground">
-                  "{c.notes}"
-                </p>
-              )}
             </div>
           ))}
         </div>
@@ -182,6 +213,102 @@ function CustomersPage() {
           </div>
         </section>
       </div>
+
+      <Dialog open={!!detail} onOpenChange={(o) => !o && setDetail(null)}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>{detail?.name}</DialogTitle>
+          </DialogHeader>
+          {detail && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-3 text-sm">
+                <div>
+                  <div className="text-[11px] uppercase tracking-wider text-muted-foreground">{t("cust.f.phone")}</div>
+                  <div className="font-mono">{detail.phone}</div>
+                </div>
+                <div>
+                  <div className="text-[11px] uppercase tracking-wider text-muted-foreground">{t("cust.f.email")}</div>
+                  <div>{detail.email}</div>
+                </div>
+                <div className="col-span-2">
+                  <div className="text-[11px] uppercase tracking-wider text-muted-foreground">{t("cust.f.address")}</div>
+                  <div>{detail.address}, {detail.city}, {detail.state} {detail.zip}</div>
+                </div>
+                {detail.notes && (
+                  <div className="col-span-2">
+                    <div className="text-[11px] uppercase tracking-wider text-muted-foreground">{t("cust.f.notes")}</div>
+                    <div className="italic text-muted-foreground">{detail.notes}</div>
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <div className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                  {t("cust.history")}
+                </div>
+                <div className="overflow-hidden rounded-md border border-border">
+                  {detailEstimates.length === 0 ? (
+                    <div className="px-4 py-6 text-center text-xs text-muted-foreground">
+                      {t("cust.noHistory")}
+                    </div>
+                  ) : (
+                    <table className="w-full text-sm">
+                      <thead className="bg-secondary/60 text-left text-[10px] uppercase tracking-wider text-muted-foreground">
+                        <tr>
+                          <th className="px-3 py-2 font-medium">#</th>
+                          <th className="px-3 py-2 font-medium">{t("cust.col.lastDate")}</th>
+                          <th className="px-3 py-2 font-medium text-right">$</th>
+                          <th className="px-3 py-2 font-medium">{t("cust.col.lastStatus")}</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {detailEstimates.map((p) => (
+                          <tr key={p.id} className="border-t border-border/60">
+                            <td className="px-3 py-2 font-mono text-xs">
+                              <Link
+                                to="/projects/detail/$id"
+                                params={{ id: p.id }}
+                                onClick={() => setDetail(null)}
+                                className="hover:underline"
+                              >
+                                {p.estimateNumber}
+                              </Link>
+                            </td>
+                            <td className="px-3 py-2 font-mono text-xs">{formatDMY(p.estimateDate)}</td>
+                            <td className="px-3 py-2 text-right font-mono">${p.amount.toLocaleString()}</td>
+                            <td className="px-3 py-2">
+                              <span className={"rounded-md px-2 py-0.5 text-xs font-medium " + statusBadgeClass(p.status)}>
+                                {statusLabel(p.status, locale)}
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <button
+              onClick={() => setDetail(null)}
+              className="rounded-md border border-input bg-card px-4 py-2 text-sm font-medium hover:bg-secondary"
+            >
+              {t("common.cancel")}
+            </button>
+            {detail && (
+              <button
+                onClick={() => createEstimateFor(detail)}
+                className="inline-flex items-center gap-1.5 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90"
+              >
+                <FileText className="h-4 w-4" /> {t("cust.createEstimate")}
+              </button>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-lg">
