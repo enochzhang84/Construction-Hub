@@ -14,6 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
+      company_profile: {
+        Row: {
+          address: string
+          created_at: string
+          email: string
+          id: boolean
+          license: string
+          logo_url: string
+          name: string
+          phone: string
+          tax_rate: string
+          updated_at: string
+          website: string
+        }
+        Insert: {
+          address?: string
+          created_at?: string
+          email?: string
+          id?: boolean
+          license?: string
+          logo_url?: string
+          name?: string
+          phone?: string
+          tax_rate?: string
+          updated_at?: string
+          website?: string
+        }
+        Update: {
+          address?: string
+          created_at?: string
+          email?: string
+          id?: boolean
+          license?: string
+          logo_url?: string
+          name?: string
+          phone?: string
+          tax_rate?: string
+          updated_at?: string
+          website?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
