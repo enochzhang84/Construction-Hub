@@ -144,6 +144,9 @@ function CustomersPage() {
   const customers = useCustomers((s) => s.customers);
   const addCustomer = useCustomers((s) => s.addCustomer);
   const updateCustomer = useCustomers((s) => s.updateCustomer);
+  const removeCustomer = useCustomers((s) => s.removeCustomer);
+  const setFlag = useCustomers((s) => s.setFlag);
+  const setArchived = useCustomers((s) => s.setArchived);
   const projects = useProjects((s) => s.projects);
 
   const [q, setQ] = useState("");
