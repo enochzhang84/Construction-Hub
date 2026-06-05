@@ -575,8 +575,9 @@ function EstimatesPage() {
                   <input
                     type="number" min={0} step="1"
                     value={meta.globalDiscount}
+                    disabled={isView}
                     onChange={(e) => setMeta({ globalDiscount: Number(e.target.value) })}
-                    className="w-24 rounded border border-input bg-card px-2 py-1 text-right font-mono text-xs outline-none"
+                    className="w-24 rounded border border-input bg-card px-2 py-1 text-right font-mono text-xs outline-none disabled:opacity-60"
                   />
                 </div>
                 <div className="mt-2 flex items-center justify-between border-t border-border pt-2">
