@@ -155,11 +155,14 @@ function CustomersPage() {
   const [sourceFilter, setSourceFilter] = useState<string>("all");
   const [pageSize, setPageSize] = useState(10);
   const [page, setPage] = useState(1);
+  const [archiveFilter, setArchiveFilter] = useState<ArchiveFilter>("active");
   const [selectedId, setSelectedId] = useState<string | null>(customers[0]?.id ?? null);
 
   const [addOpen, setAddOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<FormState>(EMPTY);
+  const [flagDialog, setFlagDialog] = useState<{ customer: Customer } | null>(null);
+  const [deleteDialog, setDeleteDialog] = useState<{ customer: Customer; projectCount: number } | null>(null);
 
   // Build enriched customer rows
   const enriched = useMemo(() => {
