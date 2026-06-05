@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { Category, PriceItem, PricingType } from "./data";
@@ -16,9 +17,20 @@ export const useLocaleStore = create<LocaleState>()(
       locale: "en",
       setLocale: (locale) => set({ locale }),
     }),
-    { name: "construction-hub-locale" },
+    { name: "construction-hub-locale", skipHydration: true },
   ),
 );
+
+// Rehydrate from localStorage only after the client mounts, so SSR/CSR markup matches.
+function useHydratedLocale(): Locale {
+  const locale = useLocaleStore((s) => s.locale);
+  const [hydrated, setHydrated] = useState(false);
+  useEffect(() => {
+    void useLocaleStore.persist.rehydrate();
+    setHydrated(true);
+  }, []);
+  return hydrated ? locale : "en";
+}
 
 // ---------------- Dictionary ----------------
 
@@ -176,7 +188,7 @@ const DICT: Dict = {
 // ---------------- Hook / helpers ----------------
 
 export function useT() {
-  const locale = useLocaleStore((s) => s.locale);
+  const locale = useHydratedLocale();
   return (key: keyof typeof DICT | string) => {
     const entry = DICT[key as string];
     if (!entry) return key as string;
@@ -185,7 +197,7 @@ export function useT() {
 }
 
 export function useLocale() {
-  return useLocaleStore((s) => s.locale);
+  return useHydratedLocale();
 }
 
 export function tCategory(cat: Category, locale: Locale): string {

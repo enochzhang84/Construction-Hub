@@ -11,7 +11,7 @@ import {
   HardHat,
   Globe,
 } from "lucide-react";
-import { useLocaleStore, useT } from "@/lib/i18n";
+import { useLocaleStore, useLocale, useT } from "@/lib/i18n";
 
 const NAV = [
   { to: "/", labelKey: "nav.dashboard", icon: LayoutDashboard },
@@ -24,7 +24,7 @@ const NAV = [
 ] as const;
 
 export function LanguageToggle({ className = "" }: { className?: string }) {
-  const locale = useLocaleStore((s) => s.locale);
+  const locale = useLocale();
   const setLocale = useLocaleStore((s) => s.setLocale);
   return (
     <div
