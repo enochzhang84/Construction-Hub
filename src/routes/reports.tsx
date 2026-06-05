@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useMemo } from "react";
 import { FileText, HardHat, Wallet, CheckCircle2, ArrowUpRight, CalendarIcon } from "lucide-react";
 import { useT, useLocale } from "@/lib/i18n";
 import {
@@ -14,6 +15,7 @@ import {
   type ProjectStatus,
   type PaymentMethod,
 } from "@/lib/project-store";
+import { useCustomers } from "@/lib/customer-store";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
@@ -69,6 +71,22 @@ function ReportsPage() {
   const isZh = locale === "zh";
   const projects = useProjects((s) => s.projects);
   const update = useProjects((s) => s.update);
+  const customers = useCustomers((s) => s.customers);
+  const customerById = useMemo(() => {
+    const m = new Map<string, typeof customers[number]>();
+    for (const c of customers) m.set(c.id, c);
+    return m;
+  }, [customers]);
+  // Resolve live customer info via customerId (source of truth = Customers store);
+  // fall back to snapshot fields when no link exists.
+  const liveInfo = (p: Project) => {
+    const c = p.customerId ? customerById.get(p.customerId) : null;
+    return {
+      name: c?.name ?? p.customerName,
+      phone: c?.phone ?? p.customerPhone ?? "",
+      address: c ? `${c.address}, ${c.city}, ${c.state} ${c.zip}` : p.projectAddress,
+    };
+  };
   const sum = summarizeProjects(projects);
 
   const STAGES: Array<{
@@ -219,16 +237,18 @@ function ReportsPage() {
                 </tr>
               </thead>
               <tbody>
-                {records.map((p) => (
+                {records.map((p) => {
+                  const info = liveInfo(p);
+                  return (
                   <tr key={p.id} className="border-b border-border/60 last:border-0 hover:bg-secondary/40">
                     <td className="px-3 py-2 font-mono text-xs">{formatDMY(p.estimateDate)}</td>
                     <td className="px-3 py-2">
                       <Link to="/projects/detail/$id" params={{ id: p.id }} className="font-medium hover:underline">
-                        {p.customerName}
+                        {info.name}
                       </Link>
-                      <div className="font-mono text-[11px] text-muted-foreground">{p.customerPhone || "—"}</div>
+                      <div className="font-mono text-[11px] text-muted-foreground">{info.phone || "—"}</div>
                     </td>
-                    <td className="px-3 py-2 text-xs text-muted-foreground">{p.projectAddress}</td>
+                    <td className="px-3 py-2 text-xs text-muted-foreground">{info.address}</td>
                     <td className="px-3 py-2">
                       <DatePickerCell
                         value={p.issueDate}
@@ -293,7 +313,8 @@ function ReportsPage() {
                       />
                     </td>
                   </tr>
-                ))}
+                  );
+                })}
                 {records.length === 0 && (
                   <tr>
                     <td colSpan={9} className="px-4 py-10 text-center text-muted-foreground">
