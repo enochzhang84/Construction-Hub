@@ -171,6 +171,7 @@ function EstimatesPage() {
       })),
     });
     toast.success(isZh ? "保存成功" : "Saved successfully");
+    setMode("view");
   };
 
   const onExport = () => {
