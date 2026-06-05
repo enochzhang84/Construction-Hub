@@ -42,6 +42,8 @@ function EstimatesPage() {
     seedEstimateNumberFrom(allProjects.map((p) => p.estimateNumber));
   }, [allProjects]);
   const company = useCompany((s) => s.profile);
+  const termsEn = useTerms((s) => s.termsEn);
+  const termsZh = useTerms((s) => s.termsZh);
   const [activeCat, setActiveCat] = useState(CATEGORIES[4].id); // Flooring
   const [itemQ, setItemQ] = useState("");
   const [mode, setMode] = useState<"view" | "create">("view");
