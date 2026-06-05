@@ -28,6 +28,7 @@ export interface PriceItem {
   id: string;
   categoryId: string;
   name: string;
+  nameZh: string;
   unit: string;
   defaultPricing: PricingType;
   laborRate: number; // per unit
@@ -35,6 +36,59 @@ export interface PriceItem {
   hoursPerUnit: number;
   notes?: string;
 }
+
+// Chinese names for all price items, keyed by id
+const PRICE_ITEM_ZH: Record<string, string> = {
+  "demo-1": "室内拆除",
+  "demo-2": "厨房橱柜拆除",
+  "demo-3": "地砖拆除",
+  "demo-4": "浴缸拆除",
+  "framing-1": "室内墙体框架",
+  "framing-2": "门梁安装",
+  "drywall-1": "石膏板安装 (1/2\")",
+  "drywall-2": "石膏板接缝与喷涂",
+  "paint-1": "室内墙面油漆（两遍）",
+  "paint-2": "橱柜翻新",
+  "paint-3": "外墙拉毛漆",
+  "flooring-1": "LVP 地板安装",
+  "flooring-2": "SPC 地板安装",
+  "flooring-3": "实木地板安装",
+  "flooring-4": "瓷砖安装",
+  "flooring-5": "自流平垫层",
+  "flooring-6": "踢脚线安装",
+  "electrical-1": "插座安装",
+  "electrical-2": "嵌入式筒灯 (6\")",
+  "electrical-3": "200A 电箱升级",
+  "electrical-4": "EV 充电桩电路",
+  "plumbing-1": "马桶安装",
+  "plumbing-2": "热水器 (50加仑)",
+  "plumbing-3": "淋浴阀门粗装",
+  "hvac-1": "分体空调 (12k BTU)",
+  "hvac-2": "风管铺设",
+  "kitchen-1": "厨柜安装（成品柜）",
+  "kitchen-2": "石英石台面",
+  "kitchen-3": "厨房墙砖",
+  "bath-1": "整体卫浴翻新（标准）",
+  "bath-2": "瓷砖淋浴墙",
+  "bath-3": "浴室柜安装 (36\")",
+  "doorwindow-1": "室内门（成品门）",
+  "doorwindow-2": "塑钢窗更换",
+  "doorwindow-3": "推拉玻璃门",
+  "roof-1": "沥青瓦屋顶翻新",
+  "roof-2": "雨水槽安装",
+  "siding-1": "拉毛墙修补",
+  "siding-2": "Hardie 板外墙",
+  "concrete-1": "混凝土地坪 (4\")",
+  "concrete-2": "车道延伸",
+  "landscape-1": "草皮铺设",
+  "landscape-2": "滴灌系统分区",
+  "fence-1": "木质围栏 (6')",
+  "fence-2": "塑料围栏",
+  "deck-1": "复合材料露台",
+  "deck-2": "混凝土露台",
+  "adu-1": "独立 ADU（按平方英尺）",
+  "adu-2": "车库改 ADU",
+};
 
 export const CATEGORIES: Category[] = [
   { id: "demo", name: "Demolition", nameZh: "拆除工程", icon: "Hammer" },
