@@ -28,9 +28,31 @@ function fmt(n: number) {
 function EstimatesPage() {
   const t = useT();
   const locale = useLocale();
+  const { customerId: prefillId } = Route.useSearch();
+  const customers = useCustomers((s) => s.customers);
   const [activeCat, setActiveCat] = useState(CATEGORIES[4].id); // Flooring
   const [itemQ, setItemQ] = useState("");
   const { meta, lines, addLine, updateLine, removeLine, setMeta } = useEstimate();
+
+  const applyCustomer = (c: Customer | null) => {
+    setMeta({
+      customerId: c?.id ?? null,
+      customerName: c?.name ?? "",
+      projectAddress: c ? `${c.address}, ${c.city}, ${c.state} ${c.zip}` : "",
+    });
+  };
+
+  // Pre-fill from ?customerId= when navigated from Customers page
+  const appliedRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!prefillId || appliedRef.current === prefillId) return;
+    const c = customers.find((x) => x.id === prefillId);
+    if (c) {
+      applyCustomer(c);
+      appliedRef.current = prefillId;
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [prefillId, customers]);
 
   const items = useMemo(() => {
     const needle = itemQ.toLowerCase();
