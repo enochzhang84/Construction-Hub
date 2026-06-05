@@ -1,5 +1,4 @@
 import { createFileRoute, Link, useParams, Navigate } from "@tanstack/react-router";
-import { AppShell } from "@/components/AppShell";
 import { useProjects, type ProjectStatus } from "@/lib/project-store";
 import { useT, useLocale } from "@/lib/i18n";
 import { ArrowLeft } from "lucide-react";
