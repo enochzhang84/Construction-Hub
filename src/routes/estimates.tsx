@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Search, Plus, Trash2, Download, ChevronRight, Tag, Save, Printer, User, FileText } from "lucide-react";
+import { Search, Plus, Trash2, Download, ChevronRight, Tag, Save, Printer, User, FileText, FilePlus, Eye } from "lucide-react";
 import { toast } from "sonner";
 import * as Icons from "lucide-react";
 import { CATEGORIES, PRICE_ITEMS, PRICING_TYPES, type PricingType, type Customer } from "@/lib/data";
@@ -37,10 +37,13 @@ function EstimatesPage() {
   const company = useCompany((s) => s.profile);
   const [activeCat, setActiveCat] = useState(CATEGORIES[4].id); // Flooring
   const [itemQ, setItemQ] = useState("");
-  const { meta, lines, addLine, updateLine, removeLine, setMeta } = useEstimate();
+  const [mode, setMode] = useState<"view" | "create">("view");
+  const isView = mode === "view";
+  const { meta, lines, addLine, updateLine, removeLine, setMeta, clear } = useEstimate();
   const linesScrollRef = useRef<HTMLDivElement>(null);
 
   const applyCustomer = (c: Customer | null) => {
+    if (isView) return;
     setMeta({
       customerId: c?.id ?? null,
       customerName: c?.name ?? "",
@@ -48,13 +51,39 @@ function EstimatesPage() {
     });
   };
 
-  // Pre-fill from ?customerId= when navigated from Customers page
+  const newEstimateNumber = () =>
+    `EST-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 9000) + 1000)}`;
+
+  const onNewEstimate = () => {
+    clear();
+    setMeta({
+      customerId: null,
+      customerName: "",
+      projectAddress: "",
+      estimateNumber: newEstimateNumber(),
+      date: new Date().toISOString().slice(0, 10),
+      globalDiscount: 0,
+    });
+    setMode("create");
+    toast.success(isZh ? "新建报价单已开启" : "New estimate started");
+  };
+
+  // Pre-fill from ?customerId= when navigated from Customers page → enter create mode
   const appliedRef = useRef<string | null>(null);
   useEffect(() => {
     if (!prefillId || appliedRef.current === prefillId) return;
     const c = customers.find((x) => x.id === prefillId);
     if (c) {
-      applyCustomer(c);
+      clear();
+      setMeta({
+        customerId: c.id,
+        customerName: c.name,
+        projectAddress: `${c.address}, ${c.city}, ${c.state} ${c.zip}`,
+        estimateNumber: newEstimateNumber(),
+        date: new Date().toISOString().slice(0, 10),
+        globalDiscount: 0,
+      });
+      setMode("create");
       appliedRef.current = prefillId;
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -87,6 +116,10 @@ function EstimatesPage() {
   };
 
   const handleAddItem = (it: typeof PRICE_ITEMS[number]) => {
+    if (isView) {
+      toast.error(isZh ? "请先点击「新增报价单」" : "Click '+ New Estimate' first");
+      return;
+    }
     const cat = CATEGORIES.find((c) => c.id === it.categoryId)!;
     addLine({
       categoryId: cat.id,
@@ -105,6 +138,7 @@ function EstimatesPage() {
   };
 
   const onSave = () => {
+    if (isView) return;
     if (!hasCustomer) {
       toast.error(isZh ? "请先选择客户" : "Please select a customer first");
       return;
@@ -137,6 +171,7 @@ function EstimatesPage() {
       })),
     });
     toast.success(isZh ? "保存成功" : "Saved successfully");
+    setMode("view");
   };
 
   const onExport = () => {
@@ -171,13 +206,38 @@ function EstimatesPage() {
       <header className="border-b border-border bg-card px-6 py-4 shadow-[0_1px_0_0_oklch(0.92_0.005_240)]">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="flex flex-wrap items-center gap-4">
+            {/* 1. Estimate number */}
             <div>
-              <div className="font-display text-base font-semibold tracking-tight" suppressHydrationWarning>
-                {meta.estimateNumber}
+              <div className="flex items-center gap-2">
+                <div className="font-display text-base font-semibold tracking-tight" suppressHydrationWarning>
+                  {meta.estimateNumber}
+                </div>
+                <span
+                  className={
+                    "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider " +
+                    (isView
+                      ? "bg-secondary text-muted-foreground"
+                      : "bg-[oklch(0.95_0.06_150)] text-[oklch(0.40_0.14_150)] dark:bg-[oklch(0.30_0.10_150)] dark:text-[oklch(0.88_0.10_150)]")
+                  }
+                >
+                  {isView ? <Eye className="h-3 w-3" /> : <FilePlus className="h-3 w-3" />}
+                  {isView ? (isZh ? "查看模式" : "View") : (isZh ? "新建模式" : "Create")}
+                </span>
               </div>
               <div className="mt-0.5 font-mono text-[11px] text-muted-foreground">{meta.date}</div>
             </div>
             <div className="hidden h-10 w-px bg-border sm:block" />
+
+            {/* 2. New estimate button */}
+            <button
+              onClick={onNewEstimate}
+              className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3.5 py-2 text-sm font-medium text-primary-foreground shadow-sm hover:opacity-90"
+            >
+              <Plus className="h-4 w-4" /> {isZh ? "新增报价单" : "New Estimate"}
+            </button>
+            <div className="hidden h-10 w-px bg-border sm:block" />
+
+            {/* 3. Customer */}
             <div className="flex flex-col gap-1">
               <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
                 {isZh ? "客户" : "Customer"}
@@ -186,8 +246,9 @@ function EstimatesPage() {
                 customers={customers}
                 value={meta.customerId}
                 valueLabel={meta.customerName}
-                placeholder={t("est.selectCustomer")}
+                placeholder={isView ? (isZh ? "查看模式，无法选择" : "View mode — locked") : t("est.selectCustomer")}
                 onSelect={applyCustomer}
+                disabled={isView}
               />
               {selectedCustomer && (
                 <div className="mt-0.5 flex items-center gap-3 text-[11px] text-muted-foreground">
@@ -204,7 +265,8 @@ function EstimatesPage() {
               <select
                 value={meta.quoteLanguage}
                 onChange={(e) => setMeta({ quoteLanguage: e.target.value as QuoteLanguage })}
-                className="rounded-md border border-input bg-card px-2.5 py-1.5 text-xs outline-none focus:ring-2 focus:ring-ring/40"
+                disabled={isView}
+                className="rounded-md border border-input bg-card px-2.5 py-1.5 text-xs outline-none focus:ring-2 focus:ring-ring/40 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <option value="en">{t("est.lang.en")}</option>
                 <option value="zh">{t("est.lang.zh")}</option>
@@ -216,8 +278,8 @@ function EstimatesPage() {
           <div className="flex items-center gap-2">
             <button
               onClick={onSave}
-              disabled={!hasCustomer || lines.length === 0}
-              title={lockReason || undefined}
+              disabled={isView || !hasCustomer || lines.length === 0}
+              title={isView ? (isZh ? "请先点击「新增报价单」" : "Click '+ New Estimate' first") : (lockReason || undefined)}
               className="inline-flex items-center gap-1.5 rounded-md border border-input bg-card px-3.5 py-2 text-sm font-medium hover:bg-secondary disabled:cursor-not-allowed disabled:opacity-40"
             >
               <Save className="h-4 w-4" /> {t("common.save")}
@@ -319,7 +381,9 @@ function EstimatesPage() {
                   </div>
                   <button
                     onClick={() => handleAddItem(it)}
-                    className="inline-flex shrink-0 items-center gap-1 rounded-md bg-primary px-2 py-1 text-xs font-medium text-primary-foreground hover:opacity-90"
+                    disabled={isView}
+                    title={isView ? (isZh ? "请先点击「新增报价单」" : "Click '+ New Estimate' first") : undefined}
+                    className="inline-flex shrink-0 items-center gap-1 rounded-md bg-primary px-2 py-1 text-xs font-medium text-primary-foreground hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
                   >
                     <Plus className="h-3 w-3" /> Add
                   </button>
@@ -357,7 +421,7 @@ function EstimatesPage() {
                 {lines.length} {lines.length === 1 ? "item" : "items"}
               </div>
             </div>
-            {lines.length > 0 && (
+            {lines.length > 0 && !isView && (
               <button
                 onClick={() => useEstimate.getState().clear()}
                 className="text-xs text-muted-foreground hover:text-destructive"
@@ -375,20 +439,33 @@ function EstimatesPage() {
                     <FileText className="h-6 w-6" />
                   </div>
                   <div className="font-display text-base font-semibold">
-                    {isZh ? "尚未添加项目" : "No items added yet"}
+                    {isView
+                      ? (isZh ? "暂无报价单" : "No estimate to display")
+                      : (isZh ? "尚未添加项目" : "No items added yet")}
                   </div>
                   <div className="mt-1.5 text-xs text-muted-foreground">
-                    {isZh ? "选择左侧分类并点击 Add 来构建报价单。" : "Select a trade and click Add to build this estimate."}
+                    {isView
+                      ? (isZh ? "点击上方「+ 新增报价单」开始创建。" : "Click '+ New Estimate' above to begin.")
+                      : (isZh ? "选择左侧分类并点击 Add 来构建报价单。" : "Select a trade and click Add to build this estimate.")}
                   </div>
-                  <button
-                    onClick={() => {
-                      const first = PRICE_ITEMS.find((p) => p.categoryId === activeCat);
-                      if (first) handleAddItem(first);
-                    }}
-                    className="mt-4 inline-flex items-center gap-1.5 rounded-md bg-primary px-3.5 py-2 text-sm font-medium text-primary-foreground hover:opacity-90"
-                  >
-                    <Plus className="h-4 w-4" /> {isZh ? "添加第一个项目" : "Add first item"}
-                  </button>
+                  {isView ? (
+                    <button
+                      onClick={onNewEstimate}
+                      className="mt-4 inline-flex items-center gap-1.5 rounded-md bg-primary px-3.5 py-2 text-sm font-medium text-primary-foreground hover:opacity-90"
+                    >
+                      <Plus className="h-4 w-4" /> {isZh ? "新增报价单" : "New Estimate"}
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => {
+                        const first = PRICE_ITEMS.find((p) => p.categoryId === activeCat);
+                        if (first) handleAddItem(first);
+                      }}
+                      className="mt-4 inline-flex items-center gap-1.5 rounded-md bg-primary px-3.5 py-2 text-sm font-medium text-primary-foreground hover:opacity-90"
+                    >
+                      <Plus className="h-4 w-4" /> {isZh ? "添加第一个项目" : "Add first item"}
+                    </button>
+                  )}
                 </div>
               </div>
             ) : (
@@ -419,8 +496,9 @@ function EstimatesPage() {
                         <td className="px-2 py-2">
                           <select
                             value={l.pricingType}
+                            disabled={isView}
                             onChange={(e) => updateLine(l.id, { pricingType: e.target.value as PricingType })}
-                            className="rounded border border-input bg-card px-1.5 py-1 text-xs outline-none"
+                            className="rounded border border-input bg-card px-1.5 py-1 text-xs outline-none disabled:opacity-60"
                           >
                             {PRICING_TYPES.map((p) => (
                               <option key={p} value={p}>{tPricing(p, locale)}</option>
@@ -431,8 +509,9 @@ function EstimatesPage() {
                           <input
                             type="number" min={0} step="0.01"
                             value={l.quantity}
+                            disabled={isView}
                             onChange={(e) => updateLine(l.id, { quantity: Number(e.target.value) })}
-                            className="w-20 rounded border border-input bg-card px-2 py-1 text-right text-xs outline-none"
+                            className="w-20 rounded border border-input bg-card px-2 py-1 text-right text-xs outline-none disabled:opacity-60"
                           />
                         </td>
                         <td className="px-2 py-2 font-mono text-xs text-muted-foreground">{tUnit(l.unit, locale)}</td>
@@ -440,31 +519,36 @@ function EstimatesPage() {
                           <input
                             type="number" min={0} step="0.01"
                             value={l.laborRate}
+                            disabled={isView}
                             onChange={(e) => updateLine(l.id, { laborRate: Number(e.target.value) })}
-                            className="w-20 rounded border border-input bg-card px-2 py-1 text-right text-xs outline-none"
+                            className="w-20 rounded border border-input bg-card px-2 py-1 text-right text-xs outline-none disabled:opacity-60"
                           />
                         </td>
                         <td className="px-2 py-2 text-right">
                           <input
                             type="number" min={0} step="0.01"
                             value={l.materialRate}
+                            disabled={isView}
                             onChange={(e) => updateLine(l.id, { materialRate: Number(e.target.value) })}
-                            className="w-20 rounded border border-input bg-card px-2 py-1 text-right text-xs outline-none"
+                            className="w-20 rounded border border-input bg-card px-2 py-1 text-right text-xs outline-none disabled:opacity-60"
                           />
                         </td>
                         <td className="px-2 py-2 text-right">
                           <input
                             type="number" min={0} step="0.01"
                             value={l.discount}
+                            disabled={isView}
                             onChange={(e) => updateLine(l.id, { discount: Number(e.target.value) })}
-                            className="w-20 rounded border border-input bg-card px-2 py-1 text-right text-xs outline-none"
+                            className="w-20 rounded border border-input bg-card px-2 py-1 text-right text-xs outline-none disabled:opacity-60"
                           />
                         </td>
                         <td className="px-3 py-2 text-right font-mono font-medium">{fmt(lineTotal(l))}</td>
                         <td className="px-2 py-2">
-                          <button onClick={() => removeLine(l.id)} className="rounded p-1 text-muted-foreground hover:bg-destructive/10 hover:text-destructive">
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </button>
+                          {!isView && (
+                            <button onClick={() => removeLine(l.id)} className="rounded p-1 text-muted-foreground hover:bg-destructive/10 hover:text-destructive">
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </button>
+                          )}
                         </td>
                       </tr>
                     );
@@ -491,8 +575,9 @@ function EstimatesPage() {
                   <input
                     type="number" min={0} step="1"
                     value={meta.globalDiscount}
+                    disabled={isView}
                     onChange={(e) => setMeta({ globalDiscount: Number(e.target.value) })}
-                    className="w-24 rounded border border-input bg-card px-2 py-1 text-right font-mono text-xs outline-none"
+                    className="w-24 rounded border border-input bg-card px-2 py-1 text-right font-mono text-xs outline-none disabled:opacity-60"
                   />
                 </div>
                 <div className="mt-2 flex items-center justify-between border-t border-border pt-2">
@@ -524,12 +609,14 @@ function CustomerPicker({
   valueLabel,
   placeholder,
   onSelect,
+  disabled,
 }: {
   customers: Customer[];
   value: string | null;
   valueLabel: string;
   placeholder: string;
   onSelect: (c: Customer | null) => void;
+  disabled?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState("");
@@ -558,8 +645,14 @@ function CustomerPicker({
     <div ref={wrapRef} className="relative">
       <button
         type="button"
-        onClick={() => setOpen((v) => !v)}
-        className="inline-flex min-w-[220px] items-center gap-2 rounded-md border border-input bg-card px-2.5 py-1.5 text-left text-sm outline-none hover:bg-secondary/60 focus:ring-2 focus:ring-ring/40"
+        disabled={disabled}
+        onClick={() => !disabled && setOpen((v) => !v)}
+        className={
+          "inline-flex min-w-[220px] items-center gap-2 rounded-md border border-input px-2.5 py-1.5 text-left text-sm outline-none focus:ring-2 focus:ring-ring/40 " +
+          (disabled
+            ? "cursor-not-allowed bg-secondary/60 text-muted-foreground opacity-70"
+            : "bg-card hover:bg-secondary/60")
+        }
       >
         <User className="h-3.5 w-3.5 text-muted-foreground" />
         <span className={value ? "truncate" : "text-muted-foreground truncate"}>
