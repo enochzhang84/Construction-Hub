@@ -56,8 +56,19 @@ function rowToProfile(r: Row): CompanyProfile {
   };
 }
 
-function profileToRow(p: Partial<CompanyProfile>) {
-  const out: Record<string, string> = {};
+type UpdateRow = {
+  name?: string;
+  logo_url?: string;
+  phone?: string;
+  email?: string;
+  address?: string;
+  license?: string;
+  website?: string;
+  tax_rate?: string;
+};
+
+function profileToRow(p: Partial<CompanyProfile>): UpdateRow {
+  const out: UpdateRow = {};
   if (p.name !== undefined) out.name = p.name;
   if (p.logoUrl !== undefined) out.logo_url = p.logoUrl;
   if (p.phone !== undefined) out.phone = p.phone;
@@ -77,12 +88,10 @@ function schedulePush(patch: Partial<CompanyProfile>) {
   pending = { ...pending, ...patch };
   if (pushTimer) clearTimeout(pushTimer);
   pushTimer = setTimeout(async () => {
-    const payload = profileToRow(pending) as Parameters<
-      ReturnType<typeof supabase.from<"company_profile">>["update"]
-    >[0];
+    const payload = profileToRow(pending);
     pending = {};
     pushTimer = null;
-    if (Object.keys(payload as object).length === 0) return;
+    if (Object.keys(payload).length === 0) return;
     const { error } = await supabase
       .from("company_profile")
       .update(payload)
