@@ -60,6 +60,7 @@ import {
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
 import { CustomerMap } from "@/components/CustomerMap";
+import { CustomerTableView } from "@/components/CustomerTableView";
 
 export const Route = createFileRoute("/customers")({
   head: () => ({ meta: [{ title: "Customers · Construction Hub" }] }),
