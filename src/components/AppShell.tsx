@@ -1,5 +1,6 @@
-import { Link, useRouterState } from "@tanstack/react-router";
+import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import type { ReactNode } from "react";
+import { useEffect, useState } from "react";
 import {
   LayoutDashboard,
   Users,
@@ -9,9 +10,12 @@ import {
   Settings,
   HardHat,
   Globe,
+  LogOut,
 } from "lucide-react";
 import { useLocaleStore, useLocale, useT } from "@/lib/i18n";
 import { Toaster } from "@/components/ui/sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const NAV = [
   { to: "/dashboard", labelKey: "nav.dashboard", icon: LayoutDashboard },
