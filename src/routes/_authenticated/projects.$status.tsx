@@ -3,7 +3,7 @@ import { useProjects, type ProjectStatus, formatDMY, statusBadgeClass, statusLab
 import { useT, useLocale } from "@/lib/i18n";
 import { ArrowLeft } from "lucide-react";
 
-export const Route = createFileRoute("/_authenticated/_authenticated/projects/$status")({
+export const Route = createFileRoute("/_authenticated/projects/$status")({
   component: ProjectsByStatus,
 });
 

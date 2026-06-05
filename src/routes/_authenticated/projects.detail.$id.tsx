@@ -9,7 +9,7 @@ import {
   paymentLabel,
 } from "@/lib/project-store";
 
-export const Route = createFileRoute("/_authenticated/_authenticated/projects/detail/$id")({
+export const Route = createFileRoute("/_authenticated/projects/detail/$id")({
   component: ProjectDetail,
 });
 

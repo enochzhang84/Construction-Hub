@@ -62,7 +62,7 @@ import {
 import { CustomerMap } from "@/components/CustomerMap";
 import { CustomerTableView } from "@/components/CustomerTableView";
 
-export const Route = createFileRoute("/_authenticated/_authenticated/customers")({
+export const Route = createFileRoute("/_authenticated/customers")({
   head: () => ({ meta: [{ title: "Customers · Construction Hub" }] }),
   component: CustomersPage,
 });

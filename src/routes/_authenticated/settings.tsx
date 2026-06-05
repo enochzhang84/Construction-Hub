@@ -5,7 +5,7 @@ import { useTerms, DEFAULT_TERMS_EN, DEFAULT_TERMS_ZH } from "@/lib/terms-store"
 import { toast } from "sonner";
 import { BookOpen, ChevronRight, FileText, RotateCcw } from "lucide-react";
 
-export const Route = createFileRoute("/_authenticated/_authenticated/settings")({
+export const Route = createFileRoute("/_authenticated/settings")({
   head: () => ({ meta: [{ title: "Settings · Construction Hub" }] }),
   component: SettingsPage,
 });

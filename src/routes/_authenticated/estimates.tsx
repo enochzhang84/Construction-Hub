@@ -12,7 +12,7 @@ import { nextEstimateNumber, seedEstimateNumberFrom } from "@/lib/estimate-numbe
 import { useTerms } from "@/lib/terms-store";
 import { useT, useLocale, tCategory, tItem, tPricing, tUnit, type QuoteLanguage } from "@/lib/i18n";
 
-export const Route = createFileRoute("/_authenticated/_authenticated/estimates")({
+export const Route = createFileRoute("/_authenticated/estimates")({
   validateSearch: (s: Record<string, unknown>) => ({
     customerId: typeof s.customerId === "string" ? s.customerId : undefined,
   }),
