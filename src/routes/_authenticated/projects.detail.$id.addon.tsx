@@ -7,7 +7,7 @@ import { useProjects, type ProjectLineItem } from "@/lib/project-store";
 import { CATEGORIES } from "@/lib/data";
 import { tCategory } from "@/lib/i18n";
 
-export const Route = createFileRoute("/_authenticated/projects/detail/$id/addon")({
+export const Route = createFileRoute("/_authenticated/_authenticated/projects/detail/$id/addon")({
   component: AddonPage,
 });
 

@@ -9,51 +9,46 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as SettingsRouteImport } from './routes/settings'
-import { Route as ReportsRouteImport } from './routes/reports'
-import { Route as PriceBookRouteImport } from './routes/price-book'
-import { Route as MaterialsRouteImport } from './routes/materials'
-import { Route as EstimatesRouteImport } from './routes/estimates'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as ProjectsStatusRouteImport } from './routes/projects.$status'
+import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
+import { Route as AuthenticatedReportsRouteImport } from './routes/_authenticated/reports'
+import { Route as AuthenticatedPriceBookRouteImport } from './routes/_authenticated/price-book'
+import { Route as AuthenticatedMaterialsRouteImport } from './routes/_authenticated/materials'
+import { Route as AuthenticatedEstimatesRouteImport } from './routes/_authenticated/estimates'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedCustomersRouteImport } from './routes/_authenticated/customers'
-import { Route as ProjectsDetailIdRouteImport } from './routes/projects.detail.$id'
-import { Route as ProjectsDetailIdAddonRouteImport } from './routes/projects.detail.$id.addon'
+import { Route as AuthenticatedProjectsStatusRouteImport } from './routes/_authenticated/projects.$status'
+import { Route as AuthenticatedProjectsDetailIdRouteImport } from './routes/_authenticated/projects.detail.$id'
+import { Route as AuthenticatedProjectsDetailIdAddonRouteImport } from './routes/_authenticated/projects.detail.$id.addon'
 
-const SettingsRoute = SettingsRouteImport.update({
-  id: '/settings',
-  path: '/settings',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ReportsRoute = ReportsRouteImport.update({
-  id: '/reports',
-  path: '/reports',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PriceBookRoute = PriceBookRouteImport.update({
-  id: '/price-book',
-  path: '/price-book',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const MaterialsRoute = MaterialsRouteImport.update({
-  id: '/materials',
-  path: '/materials',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const EstimatesRoute = EstimatesRouteImport.update({
-  id: '/estimates',
-  path: '/estimates',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ProjectsStatusRoute = ProjectsStatusRouteImport.update({
-  id: '/projects/$status',
-  path: '/projects/$status',
+const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
+  id: '/_authenticated/settings',
+  path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedReportsRoute = AuthenticatedReportsRouteImport.update({
+  id: '/_authenticated/reports',
+  path: '/reports',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedPriceBookRoute = AuthenticatedPriceBookRouteImport.update({
+  id: '/_authenticated/price-book',
+  path: '/price-book',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedMaterialsRoute = AuthenticatedMaterialsRouteImport.update({
+  id: '/_authenticated/materials',
+  path: '/materials',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedEstimatesRoute = AuthenticatedEstimatesRouteImport.update({
+  id: '/_authenticated/estimates',
+  path: '/estimates',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
@@ -66,149 +61,122 @@ const AuthenticatedCustomersRoute = AuthenticatedCustomersRouteImport.update({
   path: '/customers',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ProjectsDetailIdRoute = ProjectsDetailIdRouteImport.update({
-  id: '/projects/detail/$id',
-  path: '/projects/detail/$id',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ProjectsDetailIdAddonRoute = ProjectsDetailIdAddonRouteImport.update({
-  id: '/addon',
-  path: '/addon',
-  getParentRoute: () => ProjectsDetailIdRoute,
-} as any)
+const AuthenticatedProjectsStatusRoute =
+  AuthenticatedProjectsStatusRouteImport.update({
+    id: '/_authenticated/projects/$status',
+    path: '/projects/$status',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const AuthenticatedProjectsDetailIdRoute =
+  AuthenticatedProjectsDetailIdRouteImport.update({
+    id: '/_authenticated/projects/detail/$id',
+    path: '/projects/detail/$id',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const AuthenticatedProjectsDetailIdAddonRoute =
+  AuthenticatedProjectsDetailIdAddonRouteImport.update({
+    id: '/addon',
+    path: '/addon',
+    getParentRoute: () => AuthenticatedProjectsDetailIdRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/estimates': typeof EstimatesRoute
-  '/materials': typeof MaterialsRoute
-  '/price-book': typeof PriceBookRoute
-  '/reports': typeof ReportsRoute
-  '/settings': typeof SettingsRoute
   '/customers': typeof AuthenticatedCustomersRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
-  '/projects/$status': typeof ProjectsStatusRoute
-  '/projects/detail/$id': typeof ProjectsDetailIdRouteWithChildren
-  '/projects/detail/$id/addon': typeof ProjectsDetailIdAddonRoute
+  '/estimates': typeof AuthenticatedEstimatesRoute
+  '/materials': typeof AuthenticatedMaterialsRoute
+  '/price-book': typeof AuthenticatedPriceBookRoute
+  '/reports': typeof AuthenticatedReportsRoute
+  '/settings': typeof AuthenticatedSettingsRoute
+  '/projects/$status': typeof AuthenticatedProjectsStatusRoute
+  '/projects/detail/$id': typeof AuthenticatedProjectsDetailIdRouteWithChildren
+  '/projects/detail/$id/addon': typeof AuthenticatedProjectsDetailIdAddonRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/estimates': typeof EstimatesRoute
-  '/materials': typeof MaterialsRoute
-  '/price-book': typeof PriceBookRoute
-  '/reports': typeof ReportsRoute
-  '/settings': typeof SettingsRoute
   '/customers': typeof AuthenticatedCustomersRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
-  '/projects/$status': typeof ProjectsStatusRoute
-  '/projects/detail/$id': typeof ProjectsDetailIdRouteWithChildren
-  '/projects/detail/$id/addon': typeof ProjectsDetailIdAddonRoute
+  '/estimates': typeof AuthenticatedEstimatesRoute
+  '/materials': typeof AuthenticatedMaterialsRoute
+  '/price-book': typeof AuthenticatedPriceBookRoute
+  '/reports': typeof AuthenticatedReportsRoute
+  '/settings': typeof AuthenticatedSettingsRoute
+  '/projects/$status': typeof AuthenticatedProjectsStatusRoute
+  '/projects/detail/$id': typeof AuthenticatedProjectsDetailIdRouteWithChildren
+  '/projects/detail/$id/addon': typeof AuthenticatedProjectsDetailIdAddonRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/estimates': typeof EstimatesRoute
-  '/materials': typeof MaterialsRoute
-  '/price-book': typeof PriceBookRoute
-  '/reports': typeof ReportsRoute
-  '/settings': typeof SettingsRoute
   '/_authenticated/customers': typeof AuthenticatedCustomersRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
-  '/projects/$status': typeof ProjectsStatusRoute
-  '/projects/detail/$id': typeof ProjectsDetailIdRouteWithChildren
-  '/projects/detail/$id/addon': typeof ProjectsDetailIdAddonRoute
+  '/_authenticated/estimates': typeof AuthenticatedEstimatesRoute
+  '/_authenticated/materials': typeof AuthenticatedMaterialsRoute
+  '/_authenticated/price-book': typeof AuthenticatedPriceBookRoute
+  '/_authenticated/reports': typeof AuthenticatedReportsRoute
+  '/_authenticated/settings': typeof AuthenticatedSettingsRoute
+  '/_authenticated/projects/$status': typeof AuthenticatedProjectsStatusRoute
+  '/_authenticated/projects/detail/$id': typeof AuthenticatedProjectsDetailIdRouteWithChildren
+  '/_authenticated/projects/detail/$id/addon': typeof AuthenticatedProjectsDetailIdAddonRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/customers'
+    | '/dashboard'
     | '/estimates'
     | '/materials'
     | '/price-book'
     | '/reports'
     | '/settings'
-    | '/customers'
-    | '/dashboard'
     | '/projects/$status'
     | '/projects/detail/$id'
     | '/projects/detail/$id/addon'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/customers'
+    | '/dashboard'
     | '/estimates'
     | '/materials'
     | '/price-book'
     | '/reports'
     | '/settings'
-    | '/customers'
-    | '/dashboard'
     | '/projects/$status'
     | '/projects/detail/$id'
     | '/projects/detail/$id/addon'
   id:
     | '__root__'
     | '/'
-    | '/estimates'
-    | '/materials'
-    | '/price-book'
-    | '/reports'
-    | '/settings'
     | '/_authenticated/customers'
     | '/_authenticated/dashboard'
-    | '/projects/$status'
-    | '/projects/detail/$id'
-    | '/projects/detail/$id/addon'
+    | '/_authenticated/estimates'
+    | '/_authenticated/materials'
+    | '/_authenticated/price-book'
+    | '/_authenticated/reports'
+    | '/_authenticated/settings'
+    | '/_authenticated/projects/$status'
+    | '/_authenticated/projects/detail/$id'
+    | '/_authenticated/projects/detail/$id/addon'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  EstimatesRoute: typeof EstimatesRoute
-  MaterialsRoute: typeof MaterialsRoute
-  PriceBookRoute: typeof PriceBookRoute
-  ReportsRoute: typeof ReportsRoute
-  SettingsRoute: typeof SettingsRoute
   AuthenticatedCustomersRoute: typeof AuthenticatedCustomersRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
-  ProjectsStatusRoute: typeof ProjectsStatusRoute
-  ProjectsDetailIdRoute: typeof ProjectsDetailIdRouteWithChildren
+  AuthenticatedEstimatesRoute: typeof AuthenticatedEstimatesRoute
+  AuthenticatedMaterialsRoute: typeof AuthenticatedMaterialsRoute
+  AuthenticatedPriceBookRoute: typeof AuthenticatedPriceBookRoute
+  AuthenticatedReportsRoute: typeof AuthenticatedReportsRoute
+  AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
+  AuthenticatedProjectsStatusRoute: typeof AuthenticatedProjectsStatusRoute
+  AuthenticatedProjectsDetailIdRoute: typeof AuthenticatedProjectsDetailIdRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/settings': {
-      id: '/settings'
-      path: '/settings'
-      fullPath: '/settings'
-      preLoaderRoute: typeof SettingsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/reports': {
-      id: '/reports'
-      path: '/reports'
-      fullPath: '/reports'
-      preLoaderRoute: typeof ReportsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/price-book': {
-      id: '/price-book'
-      path: '/price-book'
-      fullPath: '/price-book'
-      preLoaderRoute: typeof PriceBookRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/materials': {
-      id: '/materials'
-      path: '/materials'
-      fullPath: '/materials'
-      preLoaderRoute: typeof MaterialsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/estimates': {
-      id: '/estimates'
-      path: '/estimates'
-      fullPath: '/estimates'
-      preLoaderRoute: typeof EstimatesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/': {
       id: '/'
       path: '/'
@@ -216,11 +184,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/projects/$status': {
-      id: '/projects/$status'
-      path: '/projects/$status'
-      fullPath: '/projects/$status'
-      preLoaderRoute: typeof ProjectsStatusRouteImport
+    '/_authenticated/settings': {
+      id: '/_authenticated/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof AuthenticatedSettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/reports': {
+      id: '/_authenticated/reports'
+      path: '/reports'
+      fullPath: '/reports'
+      preLoaderRoute: typeof AuthenticatedReportsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/price-book': {
+      id: '/_authenticated/price-book'
+      path: '/price-book'
+      fullPath: '/price-book'
+      preLoaderRoute: typeof AuthenticatedPriceBookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/materials': {
+      id: '/_authenticated/materials'
+      path: '/materials'
+      fullPath: '/materials'
+      preLoaderRoute: typeof AuthenticatedMaterialsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/estimates': {
+      id: '/_authenticated/estimates'
+      path: '/estimates'
+      fullPath: '/estimates'
+      preLoaderRoute: typeof AuthenticatedEstimatesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/dashboard': {
@@ -237,45 +233,57 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCustomersRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/projects/detail/$id': {
-      id: '/projects/detail/$id'
-      path: '/projects/detail/$id'
-      fullPath: '/projects/detail/$id'
-      preLoaderRoute: typeof ProjectsDetailIdRouteImport
+    '/_authenticated/projects/$status': {
+      id: '/_authenticated/projects/$status'
+      path: '/projects/$status'
+      fullPath: '/projects/$status'
+      preLoaderRoute: typeof AuthenticatedProjectsStatusRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/projects/detail/$id/addon': {
-      id: '/projects/detail/$id/addon'
+    '/_authenticated/projects/detail/$id': {
+      id: '/_authenticated/projects/detail/$id'
+      path: '/projects/detail/$id'
+      fullPath: '/projects/detail/$id'
+      preLoaderRoute: typeof AuthenticatedProjectsDetailIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/projects/detail/$id/addon': {
+      id: '/_authenticated/projects/detail/$id/addon'
       path: '/addon'
       fullPath: '/projects/detail/$id/addon'
-      preLoaderRoute: typeof ProjectsDetailIdAddonRouteImport
-      parentRoute: typeof ProjectsDetailIdRoute
+      preLoaderRoute: typeof AuthenticatedProjectsDetailIdAddonRouteImport
+      parentRoute: typeof AuthenticatedProjectsDetailIdRoute
     }
   }
 }
 
-interface ProjectsDetailIdRouteChildren {
-  ProjectsDetailIdAddonRoute: typeof ProjectsDetailIdAddonRoute
+interface AuthenticatedProjectsDetailIdRouteChildren {
+  AuthenticatedProjectsDetailIdAddonRoute: typeof AuthenticatedProjectsDetailIdAddonRoute
 }
 
-const ProjectsDetailIdRouteChildren: ProjectsDetailIdRouteChildren = {
-  ProjectsDetailIdAddonRoute: ProjectsDetailIdAddonRoute,
-}
+const AuthenticatedProjectsDetailIdRouteChildren: AuthenticatedProjectsDetailIdRouteChildren =
+  {
+    AuthenticatedProjectsDetailIdAddonRoute:
+      AuthenticatedProjectsDetailIdAddonRoute,
+  }
 
-const ProjectsDetailIdRouteWithChildren =
-  ProjectsDetailIdRoute._addFileChildren(ProjectsDetailIdRouteChildren)
+const AuthenticatedProjectsDetailIdRouteWithChildren =
+  AuthenticatedProjectsDetailIdRoute._addFileChildren(
+    AuthenticatedProjectsDetailIdRouteChildren,
+  )
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  EstimatesRoute: EstimatesRoute,
-  MaterialsRoute: MaterialsRoute,
-  PriceBookRoute: PriceBookRoute,
-  ReportsRoute: ReportsRoute,
-  SettingsRoute: SettingsRoute,
   AuthenticatedCustomersRoute: AuthenticatedCustomersRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
-  ProjectsStatusRoute: ProjectsStatusRoute,
-  ProjectsDetailIdRoute: ProjectsDetailIdRouteWithChildren,
+  AuthenticatedEstimatesRoute: AuthenticatedEstimatesRoute,
+  AuthenticatedMaterialsRoute: AuthenticatedMaterialsRoute,
+  AuthenticatedPriceBookRoute: AuthenticatedPriceBookRoute,
+  AuthenticatedReportsRoute: AuthenticatedReportsRoute,
+  AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
+  AuthenticatedProjectsStatusRoute: AuthenticatedProjectsStatusRoute,
+  AuthenticatedProjectsDetailIdRoute:
+    AuthenticatedProjectsDetailIdRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
