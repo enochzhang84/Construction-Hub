@@ -72,23 +72,15 @@ function EstimatesPage() {
             <div className="text-[11px] text-muted-foreground">{meta.date}</div>
           </div>
           <div className="h-8 w-px bg-border" />
-          <select
-            value={meta.customerId ?? ""}
-            onChange={(e) => {
-              const c = SEED_CUSTOMERS.find((x) => x.id === e.target.value);
-              setMeta({
-                customerId: c?.id ?? null,
-                customerName: c?.name ?? "",
-                projectAddress: c ? `${c.address}, ${c.city}, ${c.state} ${c.zip}` : "",
-              });
-            }}
-            className="rounded-md border border-input bg-card px-2.5 py-1.5 text-sm outline-none focus:ring-2 focus:ring-ring/40"
-          >
-            <option value="">{t("est.selectCustomer")}</option>
-            {SEED_CUSTOMERS.map((c) => (
-              <option key={c.id} value={c.id}>{c.name} · {c.city}</option>
-            ))}
-          </select>
+          <CustomerPicker
+            customers={customers}
+            value={meta.customerId}
+            valueLabel={meta.customerName}
+            placeholder={t("est.selectCustomer")}
+            onSelect={applyCustomer}
+          />
+
+
 
           <div className="h-8 w-px bg-border" />
           <label className="flex items-center gap-2 text-xs text-muted-foreground">
