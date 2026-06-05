@@ -1,5 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useT } from "@/lib/i18n";
+import { useCompany, type CompanyProfile } from "@/lib/company-store";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/settings")({
   head: () => ({ meta: [{ title: "Settings · Construction Hub" }] }),
@@ -8,20 +10,39 @@ export const Route = createFileRoute("/settings")({
 
 function SettingsPage() {
   const t = useT();
-  const FIELDS = [
-    { label: t("set.field.company"), value: "Bay Area Remodel Co." },
-    { label: t("set.field.license"), value: "CSLB 1042918" },
-    { label: t("set.field.address"), value: "1245 Industrial Way, Hayward, CA 94545" },
-    { label: t("set.field.phone"), value: "(510) 555-0100" },
-    { label: t("set.field.email"), value: "estimates@bayarearemodel.com" },
-    { label: t("set.field.tax"), value: "9.25%" },
-  ];
+  const profile = useCompany((s) => s.profile);
+  const setProfile = useCompany((s) => s.setProfile);
+
+  const Field = ({
+    label,
+    field,
+    placeholder,
+    type = "text",
+  }: {
+    label: string;
+    field: keyof CompanyProfile;
+    placeholder?: string;
+    type?: string;
+  }) => (
+    <label className="block">
+      <div className="mb-1 text-xs font-medium text-muted-foreground">{label}</div>
+      <input
+        type={type}
+        value={profile[field]}
+        placeholder={placeholder}
+        onChange={(e) => setProfile({ [field]: e.target.value } as Partial<CompanyProfile>)}
+        className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring/40"
+      />
+    </label>
+  );
+
   const ROLES = [
     { name: t("set.role.admin"), desc: t("set.role.admin.desc") },
     { name: t("set.role.estimator"), desc: t("set.role.estimator.desc") },
     { name: t("set.role.sales"), desc: t("set.role.sales.desc") },
     { name: t("set.role.viewer"), desc: t("set.role.viewer.desc") },
   ];
+
   return (
     <div className="flex h-full flex-col">
       <header className="border-b border-border px-8 py-5">
@@ -30,17 +51,35 @@ function SettingsPage() {
       </header>
       <div className="flex-1 overflow-y-auto finder-scroll p-8 space-y-6 max-w-3xl">
         <section className="rounded-lg border border-border bg-card p-6 shadow-panel">
-          <h2 className="mb-4 font-display text-base font-semibold">{t("set.company")}</h2>
+          <h2 className="mb-1 font-display text-base font-semibold">Company Profile</h2>
+          <p className="mb-4 text-xs text-muted-foreground">
+            Shown on estimates, printouts, and PDFs sent to your customers.
+          </p>
           <div className="grid gap-4 sm:grid-cols-2">
-            {FIELDS.map((f) => (
-              <label key={f.label} className="block">
-                <div className="mb-1 text-xs font-medium text-muted-foreground">{f.label}</div>
-                <input
-                  defaultValue={f.value}
-                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring/40"
-                />
-              </label>
-            ))}
+            <Field label="Company Name" field="name" placeholder="Your Company Name" />
+            <Field label="License Number" field="license" placeholder="CSLB 0000000" />
+            <Field label="Phone" field="phone" placeholder="(510) 555-0100" />
+            <Field label="Email" field="email" type="email" placeholder="info@company.com" />
+            <div className="sm:col-span-2">
+              <Field label="Address" field="address" placeholder="Street, City, State ZIP" />
+            </div>
+            <Field label="Website" field="website" placeholder="www.company.com" />
+            <Field label="Logo URL" field="logoUrl" placeholder="https://…/logo.png" />
+            <Field label="Default Tax Rate (%)" field="taxRate" type="number" placeholder="0" />
+          </div>
+          {profile.logoUrl && (
+            <div className="mt-4 flex items-center gap-3 rounded-md border border-dashed border-border bg-secondary/30 p-3">
+              <img src={profile.logoUrl} alt="Logo preview" className="h-12 w-12 rounded object-contain" />
+              <span className="text-xs text-muted-foreground">Logo preview</span>
+            </div>
+          )}
+          <div className="mt-5 flex justify-end">
+            <button
+              onClick={() => toast.success("Company profile saved")}
+              className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90"
+            >
+              Save Changes
+            </button>
           </div>
         </section>
 
