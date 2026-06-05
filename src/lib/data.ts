@@ -198,6 +198,13 @@ export const PRICE_ITEMS: PriceItem[] = [
   { id: "adu-2", categoryId: "adu", name: "Garage Conversion ADU", unit: "sqft", defaultPricing: "Turnkey", laborRate: 140, materialRate: 160, hoursPerUnit: 0.9 },
 ];
 
+// Attach Chinese names from the localized map
+PRICE_ITEMS.forEach((i) => {
+  i.nameZh = PRICE_ITEM_ZH[i.id] ?? i.name;
+});
+
+
+
 export interface Customer {
   id: string;
   name: string;
