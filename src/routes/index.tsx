@@ -1,69 +1,46 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { FileText, DollarSign, Send, CheckCircle2, Clock, Users, ArrowUpRight, HardHat, Wallet } from "lucide-react";
-import { SEED_CUSTOMERS } from "@/lib/data";
-import { useT, useLocale } from "@/lib/i18n";
+import { FileText, DollarSign, Send, CheckCircle2, Clock, Users, ArrowUpRight } from "lucide-react";
+import { CATEGORIES, SEED_CUSTOMERS } from "@/lib/data";
+import { useT, useLocale, tCategory } from "@/lib/i18n";
 import { LanguageToggle } from "@/components/AppShell";
-import { useProjects, summarizeProjects } from "@/lib/project-store";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "Dashboard · Construction Hub" },
-      { name: "description", content: "Monthly estimate metrics, pipeline, and recent customers." },
+      { name: "description", content: "Monthly estimate metrics, revenue stats, and recent customers." },
     ],
   }),
   component: Dashboard,
 });
 
+const AMOUNTS = [42000, 31500, 28000, 24500, 22000, 18500, 15500, 12000, 9500, 7200];
+
+function fmtUSD(n: number) {
+  return n.toLocaleString("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
+}
+
 function Dashboard() {
   const t = useT();
   const locale = useLocale();
   const isZh = locale === "zh";
-  const projects = useProjects((s) => s.projects);
-  const sum = summarizeProjects(projects);
-  const money = (n: number) => `$${n.toLocaleString()}`;
 
   const STATS = [
     { label: t("dash.stat.estimatesMonth"), value: "27", delta: "+12%", icon: FileText },
     { label: t("dash.stat.closedRevenue"), value: "$184,250", delta: "+8.4%", icon: DollarSign },
     { label: t("dash.stat.awaiting"), value: "6", delta: t("dash.stat.actionNeeded"), icon: Clock, warn: true },
     { label: t("dash.stat.sent"), value: "11", delta: t("dash.stat.avgDays"), icon: Send },
-    { label: t("dash.stat.closed"), value: "9", delta: locale === "zh" ? "本月 +2" : "+2 vs last mo.", icon: CheckCircle2 },
-    { label: t("dash.stat.customers"), value: "48", delta: locale === "zh" ? "+5 新增" : "+5 new", icon: Users },
+    { label: t("dash.stat.closed"), value: "9", delta: isZh ? "本月 +2" : "+2 vs last mo.", icon: CheckCircle2 },
+    { label: t("dash.stat.customers"), value: "48", delta: isZh ? "+5 新增" : "+5 new", icon: Users },
   ];
 
-  const PIPELINE = [
-    {
-      to: "/projects/estimate" as const,
-      title: isZh ? "施工报价单" : "Estimates",
-      count: sum.estimates.length,
-      amountLabel: isZh ? "总报价" : "Total Estimated",
-      amount: money(sum.estimateTotal),
-      status: isZh ? "等待客户确认" : "Awaiting customer approval",
-      icon: FileText,
-      tone: "info" as const,
-    },
-    {
-      to: "/projects/active" as const,
-      title: isZh ? "施工中工程" : "Active Projects",
-      count: sum.active.length,
-      amountLabel: isZh ? "合同金额" : "Contract Value",
-      amount: money(sum.contractTotal),
-      status: isZh ? "施工进行中" : "Construction in progress",
-      icon: HardHat,
-      tone: "warning" as const,
-    },
-    {
-      to: "/projects/pending" as const,
-      title: isZh ? "待结算单据" : "Pending Payment",
-      count: sum.pending.length,
-      amountLabel: isZh ? "待收款" : "Outstanding",
-      amount: money(sum.pendingDue),
-      status: isZh ? "等待尾款" : "Awaiting final payment",
-      icon: Wallet,
-      tone: "success" as const,
-    },
-  ];
+  const tradeRows = CATEGORIES.slice(0, 10).map((c, i) => ({
+    name: tCategory(c, locale),
+    amount: AMOUNTS[i],
+  }));
+  const max = Math.max(...tradeRows.map((r) => r.amount));
+  const ytdTotal = tradeRows.reduce((s, r) => s + r.amount, 0);
+
   return (
     <div className="h-full overflow-y-auto finder-scroll">
       <header className="flex items-center justify-between border-b border-border bg-background/80 px-8 py-5 backdrop-blur">
@@ -71,7 +48,7 @@ function Dashboard() {
           <h1 className="font-display text-2xl font-semibold tracking-tight">{t("dash.title")}</h1>
           <p className="text-sm text-muted-foreground">
             {t("dash.overview")} ·{" "}
-            {new Date().toLocaleDateString(locale === "zh" ? "zh-CN" : "en-US", { month: "long", year: "numeric" })}
+            {new Date().toLocaleDateString(isZh ? "zh-CN" : "en-US", { month: "long", year: "numeric" })}
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -104,73 +81,29 @@ function Dashboard() {
           })}
         </section>
 
-        <section>
-          <div className="mb-3 flex items-center justify-between">
-            <h2 className="font-display text-lg font-semibold">
-              {isZh ? "工程状态管理" : "Project Pipeline"}
-            </h2>
-            <span className="text-xs text-muted-foreground">
-              {isZh ? "报价 → 施工 → 结算" : "Estimate → Active → Pending Payment"}
-            </span>
+        <section className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+          <div className="rounded-lg border border-border bg-card p-6 shadow-panel">
+            <div className="text-xs uppercase tracking-wider text-muted-foreground">{t("rep.ytd")}</div>
+            <div className="mt-2 font-display text-4xl font-semibold tracking-tight">{fmtUSD(ytdTotal)}</div>
+            <div className="mt-2 text-xs text-success">{t("rep.vsLast")}</div>
           </div>
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-            {PIPELINE.map((p) => {
-              const Icon = p.icon;
-              const toneRing =
-                p.tone === "info"
-                  ? "before:bg-[oklch(0.62_0.18_240)]"
-                  : p.tone === "warning"
-                  ? "before:bg-[oklch(0.72_0.18_55)]"
-                  : "before:bg-[oklch(0.62_0.16_150)]";
-              const toneText =
-                p.tone === "info"
-                  ? "text-[oklch(0.55_0.18_240)]"
-                  : p.tone === "warning"
-                  ? "text-[oklch(0.58_0.18_50)]"
-                  : "text-[oklch(0.50_0.16_150)]";
-              return (
-                <Link
-                  key={p.to}
-                  to={p.to}
-                  className={
-                    "group relative overflow-hidden rounded-lg border border-border bg-card p-5 shadow-panel transition-all hover:shadow-md " +
-                    "before:absolute before:left-0 before:top-0 before:h-full before:w-1 " +
-                    toneRing
-                  }
-                >
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                        {p.title}
-                      </div>
-                      <div className="mt-2 flex items-baseline gap-2">
-                        <span className="font-display text-3xl font-semibold tracking-tight">
-                          {p.count}
-                        </span>
-                        <span className="text-xs text-muted-foreground">
-                          {isZh ? "个项目" : "projects"}
-                        </span>
-                      </div>
-                    </div>
-                    <div className={"rounded-md bg-secondary p-2 " + toneText}>
-                      <Icon className="h-4 w-4" />
-                    </div>
+          <div className="rounded-lg border border-border bg-card p-6 shadow-panel lg:col-span-2">
+            <h2 className="mb-4 font-display text-base font-semibold">{t("rep.byTrade")}</h2>
+            <div className="space-y-3">
+              {tradeRows.map((r) => (
+                <div key={r.name}>
+                  <div className="mb-1 flex justify-between text-xs">
+                    <span className="font-medium">{r.name}</span>
+                    <span className="font-mono text-muted-foreground">{fmtUSD(r.amount)}</span>
                   </div>
-                  <div className="mt-4 border-t border-border/60 pt-3">
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="text-muted-foreground">{p.amountLabel}</span>
-                      <span className="font-mono font-semibold">{p.amount}</span>
-                    </div>
-                    <div className={"mt-2 text-xs " + toneText}>{p.status}</div>
+                  <div className="h-2 overflow-hidden rounded-full bg-secondary">
+                    <div className="h-full bg-primary" style={{ width: `${(r.amount / max) * 100}%` }} />
                   </div>
-                  <ArrowUpRight className="absolute right-4 top-4 h-4 w-4 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
-                </Link>
-              );
-            })}
+                </div>
+              ))}
+            </div>
           </div>
         </section>
-
-
 
         <section>
           <div className="mb-3 flex items-center justify-between">

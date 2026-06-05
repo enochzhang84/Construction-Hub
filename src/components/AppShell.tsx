@@ -12,14 +12,15 @@ import {
   Globe,
 } from "lucide-react";
 import { useLocaleStore, useLocale, useT } from "@/lib/i18n";
+import { Toaster } from "@/components/ui/sonner";
 
 const NAV = [
   { to: "/", labelKey: "nav.dashboard", icon: LayoutDashboard },
-  { to: "/customers", labelKey: "nav.customers", icon: Users },
-  { to: "/estimates", labelKey: "nav.estimates", icon: FileText },
-  { to: "/price-book", labelKey: "nav.priceBook", icon: BookOpen },
-  { to: "/materials", labelKey: "nav.materials", icon: Package },
   { to: "/reports", labelKey: "nav.reports", icon: BarChart3 },
+  { to: "/estimates", labelKey: "nav.estimates", icon: FileText },
+  { to: "/materials", labelKey: "nav.materials", icon: Package },
+  { to: "/price-book", labelKey: "nav.priceBook", icon: BookOpen },
+  { to: "/customers", labelKey: "nav.customers", icon: Users },
   { to: "/settings", labelKey: "nav.settings", icon: Settings },
 ] as const;
 
@@ -115,6 +116,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       </aside>
 
       <main className="flex-1 overflow-hidden">{children}</main>
+      <Toaster />
     </div>
   );
 }
