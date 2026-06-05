@@ -129,6 +129,12 @@ function AuthPage() {
               : "Contractor Estimating System"}
           </p>
 
+          {notice && (
+            <div className="mt-4 rounded-md border border-primary/30 bg-primary/5 px-3 py-2 text-sm text-foreground">
+              {notice}
+            </div>
+          )}
+
           <form onSubmit={onSubmit} className="mt-6 space-y-4">
             {mode === "signup" && (
               <Field
