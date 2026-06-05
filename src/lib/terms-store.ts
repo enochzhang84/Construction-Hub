@@ -77,19 +77,6 @@ export const useTerms = create<TermsState>()(
       resetDefaults: () =>
         set({ termsEn: DEFAULT_TERMS_EN, termsZh: DEFAULT_TERMS_ZH }),
     }),
-    {
-      name: "construction-hub-terms",
-      version: 2,
-      migrate: (persisted) => {
-        // Reset stored content to the v2 defaults so existing users pick up
-        // the expanded 10-section terms instead of the v1 9-section text.
-        return {
-          termsEn: DEFAULT_TERMS_EN,
-          termsZh: DEFAULT_TERMS_ZH,
-          ...(persisted as object),
-          // If users edited their terms, keep them; otherwise overwrite with v2 defaults.
-        } as TermsState;
-      },
-    },
+    { name: "construction-hub-terms.v2" },
   ),
 );
