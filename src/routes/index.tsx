@@ -19,7 +19,15 @@ export const Route = createFileRoute("/")({
 });
 
 function PublicHome() {
-  const profile = useCompany((s) => s.profile);
+  const storeProfile = useCompany((s) => s.profile);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  // During SSR / before zustand persist rehydrates from localStorage,
+  // render empty profile so the client can swap in the saved values
+  // without a stale-cache mismatch.
+  const profile = mounted
+    ? storeProfile
+    : { name: "", logoUrl: "", phone: "", email: "", address: "", license: "", website: "", taxRate: "0" };
   const locale = useLocale();
   const setLocale = useLocaleStore((s) => s.setLocale);
   const isZh = locale === "zh";
