@@ -36,8 +36,7 @@ function ProjectsByStatus() {
   const money = (n: number) => `$${n.toLocaleString()}`;
 
   return (
-    <AppShell>
-      <div className="h-full overflow-y-auto finder-scroll">
+    <div className="h-full overflow-y-auto finder-scroll">
         <header className="flex items-center justify-between border-b border-border bg-background/80 px-8 py-5 backdrop-blur">
           <div>
             <Link to="/" className="mb-1 inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
