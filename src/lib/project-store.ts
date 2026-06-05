@@ -28,6 +28,7 @@ export interface ProjectLineItem {
 
 export interface Project {
   id: string;
+  customerId?: string | null;
   customerName: string;
   customerPhone?: string;
   projectAddress: string;
@@ -56,6 +57,7 @@ interface ProjectsState {
   update: (id: string, patch: Partial<Project>) => void;
   remove: (id: string) => void;
   setStatus: (id: string, status: ProjectStatus, subStatus?: string) => void;
+  upsertByEstimateNumber: (p: Omit<Project, "id">) => Project;
 }
 
 const today = new Date();
