@@ -588,12 +588,14 @@ function CustomerPicker({
   valueLabel,
   placeholder,
   onSelect,
+  disabled,
 }: {
   customers: Customer[];
   value: string | null;
   valueLabel: string;
   placeholder: string;
   onSelect: (c: Customer | null) => void;
+  disabled?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState("");
@@ -622,8 +624,14 @@ function CustomerPicker({
     <div ref={wrapRef} className="relative">
       <button
         type="button"
-        onClick={() => setOpen((v) => !v)}
-        className="inline-flex min-w-[220px] items-center gap-2 rounded-md border border-input bg-card px-2.5 py-1.5 text-left text-sm outline-none hover:bg-secondary/60 focus:ring-2 focus:ring-ring/40"
+        disabled={disabled}
+        onClick={() => !disabled && setOpen((v) => !v)}
+        className={
+          "inline-flex min-w-[220px] items-center gap-2 rounded-md border border-input px-2.5 py-1.5 text-left text-sm outline-none focus:ring-2 focus:ring-ring/40 " +
+          (disabled
+            ? "cursor-not-allowed bg-secondary/60 text-muted-foreground opacity-70"
+            : "bg-card hover:bg-secondary/60")
+        }
       >
         <User className="h-3.5 w-3.5 text-muted-foreground" />
         <span className={value ? "truncate" : "text-muted-foreground truncate"}>
