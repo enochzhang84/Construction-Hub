@@ -13,7 +13,7 @@ import {
   LogOut,
 } from "lucide-react";
 import { useLocaleStore, useLocale, useT } from "@/lib/i18n";
-import { Toaster } from "@/components/ui/sonner";
+
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
