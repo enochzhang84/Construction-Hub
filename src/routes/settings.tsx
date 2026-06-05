@@ -117,6 +117,8 @@ function SettingsPage() {
           </Link>
         </section>
 
+        <TermsSection />
+
         <section className="rounded-lg border border-border bg-card p-6 shadow-panel">
           <h2 className="mb-2 font-display text-base font-semibold">{t("set.roadmap")}</h2>
           <p className="mb-3 text-xs text-muted-foreground">{t("set.roadmapHint")}</p>
