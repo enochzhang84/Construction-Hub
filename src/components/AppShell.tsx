@@ -18,9 +18,8 @@ const NAV = [
   { to: "/", labelKey: "nav.dashboard", icon: LayoutDashboard },
   { to: "/reports", labelKey: "nav.reports", icon: BarChart3 },
   { to: "/estimates", labelKey: "nav.estimates", icon: FileText },
-  { to: "/materials", labelKey: "nav.materials", icon: Package },
-  { to: "/price-book", labelKey: "nav.priceBook", icon: BookOpen },
   { to: "/customers", labelKey: "nav.customers", icon: Users },
+  { to: "/materials", labelKey: "nav.suppliers", icon: Package },
   { to: "/settings", labelKey: "nav.settings", icon: Settings },
 ] as const;
 
