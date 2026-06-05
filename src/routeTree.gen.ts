@@ -14,10 +14,10 @@ import { Route as ReportsRouteImport } from './routes/reports'
 import { Route as PriceBookRouteImport } from './routes/price-book'
 import { Route as MaterialsRouteImport } from './routes/materials'
 import { Route as EstimatesRouteImport } from './routes/estimates'
-import { Route as DashboardRouteImport } from './routes/dashboard'
-import { Route as CustomersRouteImport } from './routes/customers'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProjectsStatusRouteImport } from './routes/projects.$status'
+import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedCustomersRouteImport } from './routes/_authenticated/customers'
 import { Route as ProjectsDetailIdRouteImport } from './routes/projects.detail.$id'
 import { Route as ProjectsDetailIdAddonRouteImport } from './routes/projects.detail.$id.addon'
 
@@ -46,16 +46,6 @@ const EstimatesRoute = EstimatesRouteImport.update({
   path: '/estimates',
   getParentRoute: () => rootRouteImport,
 } as any)
-const DashboardRoute = DashboardRouteImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CustomersRoute = CustomersRouteImport.update({
-  id: '/customers',
-  path: '/customers',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -64,6 +54,16 @@ const IndexRoute = IndexRouteImport.update({
 const ProjectsStatusRoute = ProjectsStatusRouteImport.update({
   id: '/projects/$status',
   path: '/projects/$status',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
+  id: '/_authenticated/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedCustomersRoute = AuthenticatedCustomersRouteImport.update({
+  id: '/_authenticated/customers',
+  path: '/customers',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProjectsDetailIdRoute = ProjectsDetailIdRouteImport.update({
@@ -79,26 +79,26 @@ const ProjectsDetailIdAddonRoute = ProjectsDetailIdAddonRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/customers': typeof CustomersRoute
-  '/dashboard': typeof DashboardRoute
   '/estimates': typeof EstimatesRoute
   '/materials': typeof MaterialsRoute
   '/price-book': typeof PriceBookRoute
   '/reports': typeof ReportsRoute
   '/settings': typeof SettingsRoute
+  '/customers': typeof AuthenticatedCustomersRoute
+  '/dashboard': typeof AuthenticatedDashboardRoute
   '/projects/$status': typeof ProjectsStatusRoute
   '/projects/detail/$id': typeof ProjectsDetailIdRouteWithChildren
   '/projects/detail/$id/addon': typeof ProjectsDetailIdAddonRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/customers': typeof CustomersRoute
-  '/dashboard': typeof DashboardRoute
   '/estimates': typeof EstimatesRoute
   '/materials': typeof MaterialsRoute
   '/price-book': typeof PriceBookRoute
   '/reports': typeof ReportsRoute
   '/settings': typeof SettingsRoute
+  '/customers': typeof AuthenticatedCustomersRoute
+  '/dashboard': typeof AuthenticatedDashboardRoute
   '/projects/$status': typeof ProjectsStatusRoute
   '/projects/detail/$id': typeof ProjectsDetailIdRouteWithChildren
   '/projects/detail/$id/addon': typeof ProjectsDetailIdAddonRoute
@@ -106,13 +106,13 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/customers': typeof CustomersRoute
-  '/dashboard': typeof DashboardRoute
   '/estimates': typeof EstimatesRoute
   '/materials': typeof MaterialsRoute
   '/price-book': typeof PriceBookRoute
   '/reports': typeof ReportsRoute
   '/settings': typeof SettingsRoute
+  '/_authenticated/customers': typeof AuthenticatedCustomersRoute
+  '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/projects/$status': typeof ProjectsStatusRoute
   '/projects/detail/$id': typeof ProjectsDetailIdRouteWithChildren
   '/projects/detail/$id/addon': typeof ProjectsDetailIdAddonRoute
@@ -121,39 +121,39 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/customers'
-    | '/dashboard'
     | '/estimates'
     | '/materials'
     | '/price-book'
     | '/reports'
     | '/settings'
+    | '/customers'
+    | '/dashboard'
     | '/projects/$status'
     | '/projects/detail/$id'
     | '/projects/detail/$id/addon'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/customers'
-    | '/dashboard'
     | '/estimates'
     | '/materials'
     | '/price-book'
     | '/reports'
     | '/settings'
+    | '/customers'
+    | '/dashboard'
     | '/projects/$status'
     | '/projects/detail/$id'
     | '/projects/detail/$id/addon'
   id:
     | '__root__'
     | '/'
-    | '/customers'
-    | '/dashboard'
     | '/estimates'
     | '/materials'
     | '/price-book'
     | '/reports'
     | '/settings'
+    | '/_authenticated/customers'
+    | '/_authenticated/dashboard'
     | '/projects/$status'
     | '/projects/detail/$id'
     | '/projects/detail/$id/addon'
@@ -161,13 +161,13 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  CustomersRoute: typeof CustomersRoute
-  DashboardRoute: typeof DashboardRoute
   EstimatesRoute: typeof EstimatesRoute
   MaterialsRoute: typeof MaterialsRoute
   PriceBookRoute: typeof PriceBookRoute
   ReportsRoute: typeof ReportsRoute
   SettingsRoute: typeof SettingsRoute
+  AuthenticatedCustomersRoute: typeof AuthenticatedCustomersRoute
+  AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   ProjectsStatusRoute: typeof ProjectsStatusRoute
   ProjectsDetailIdRoute: typeof ProjectsDetailIdRouteWithChildren
 }
@@ -209,20 +209,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EstimatesRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/dashboard': {
-      id: '/dashboard'
-      path: '/dashboard'
-      fullPath: '/dashboard'
-      preLoaderRoute: typeof DashboardRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/customers': {
-      id: '/customers'
-      path: '/customers'
-      fullPath: '/customers'
-      preLoaderRoute: typeof CustomersRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/': {
       id: '/'
       path: '/'
@@ -235,6 +221,20 @@ declare module '@tanstack/react-router' {
       path: '/projects/$status'
       fullPath: '/projects/$status'
       preLoaderRoute: typeof ProjectsStatusRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/dashboard': {
+      id: '/_authenticated/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AuthenticatedDashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/customers': {
+      id: '/_authenticated/customers'
+      path: '/customers'
+      fullPath: '/customers'
+      preLoaderRoute: typeof AuthenticatedCustomersRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/projects/detail/$id': {
@@ -267,16 +267,26 @@ const ProjectsDetailIdRouteWithChildren =
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  CustomersRoute: CustomersRoute,
-  DashboardRoute: DashboardRoute,
   EstimatesRoute: EstimatesRoute,
   MaterialsRoute: MaterialsRoute,
   PriceBookRoute: PriceBookRoute,
   ReportsRoute: ReportsRoute,
   SettingsRoute: SettingsRoute,
+  AuthenticatedCustomersRoute: AuthenticatedCustomersRoute,
+  AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   ProjectsStatusRoute: ProjectsStatusRoute,
   ProjectsDetailIdRoute: ProjectsDetailIdRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
