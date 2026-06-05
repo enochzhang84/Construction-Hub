@@ -32,12 +32,31 @@ const EMPTY = {
 function CustomersPage() {
   const t = useT();
   const locale = useLocale();
+  const navigate = useNavigate();
   const customers = useCustomers((s) => s.customers);
   const addCustomer = useCustomers((s) => s.addCustomer);
   const projects = useProjects((s) => s.projects);
   const [q, setQ] = useState("");
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState(EMPTY);
+  const [detail, setDetail] = useState<Customer | null>(null);
+
+  const detailEstimates = useMemo(() => {
+    if (!detail) return [];
+    return projects
+      .filter(
+        (p) =>
+          !p.parentProjectId &&
+          (p.customerName === detail.name ||
+            (detail.phone && p.customerPhone === detail.phone)),
+      )
+      .sort((a, b) => (b.estimateDate || "").localeCompare(a.estimateDate || ""));
+  }, [projects, detail]);
+
+  const createEstimateFor = (c: Customer) => {
+    setDetail(null);
+    navigate({ to: "/estimates", search: { customerId: c.id } });
+  };
 
   const filtered = customers.filter((c) =>
     [c.name, c.email, c.address, c.city].join(" ").toLowerCase().includes(q.toLowerCase()),
