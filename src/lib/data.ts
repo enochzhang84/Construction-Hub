@@ -224,6 +224,21 @@ export const CUSTOMER_SOURCES: CustomerSource[] = [
   "Other",
 ];
 
+export type CustomerFlagType = "VIP" | "Loyal" | "Referral" | "HighRisk" | "Custom";
+
+export const CUSTOMER_FLAG_TYPES: CustomerFlagType[] = [
+  "VIP",
+  "Loyal",
+  "Referral",
+  "HighRisk",
+  "Custom",
+];
+
+export interface CustomerFlag {
+  type: CustomerFlagType;
+  note?: string;
+}
+
 export interface Customer {
   id: string;
   name: string;
@@ -236,6 +251,8 @@ export interface Customer {
   notes?: string;
   source?: CustomerSource;
   createdAt: string;
+  flag?: CustomerFlag | null;
+  isArchived?: boolean;
 }
 
 export const SEED_CUSTOMERS: Customer[] = [
