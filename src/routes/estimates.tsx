@@ -1,10 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Search, Plus, Trash2, Download, ChevronRight, Tag, Save, Printer, User } from "lucide-react";
+import { Search, Plus, Trash2, Download, ChevronRight, Tag, Save, Printer, User, FileText } from "lucide-react";
 import { toast } from "sonner";
 import * as Icons from "lucide-react";
 import { CATEGORIES, PRICE_ITEMS, PRICING_TYPES, type PricingType, type Customer } from "@/lib/data";
 import { useCustomers } from "@/lib/customer-store";
+import { useProjects } from "@/lib/project-store";
 import { useEstimate, lineTotal, estimateTotals, type EstimateLine, type EstimateMeta } from "@/lib/estimate-store";
 import { useT, useLocale, tCategory, tItem, tPricing, tUnit, type QuoteLanguage } from "@/lib/i18n";
 
