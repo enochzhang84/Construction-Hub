@@ -422,37 +422,103 @@ function CustomersPage() {
                 const c = row.c;
                 const isSel = selectedRow?.c.id === c.id;
                 return (
-                  <button
-                    key={c.id}
-                    type="button"
-                    onClick={() => setSelectedId(c.id)}
-                    className={
-                      "block w-full border-b border-border/60 px-3 py-2.5 text-left transition-colors " +
-                      (isSel ? "bg-primary/10" : "hover:bg-secondary/50")
-                    }
-                  >
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="truncate font-medium">{c.name}</div>
-                      {row.latest && (
-                        <span
-                          className={
-                            "shrink-0 rounded px-1.5 py-0.5 text-[10px] font-medium " +
-                            statusBadgeClass(row.latest.status)
-                          }
-                        >
-                          {statusLabel(row.latest.status, locale)}
-                        </span>
-                      )}
-                    </div>
-                    <div className="mt-0.5 flex items-center justify-between gap-2 text-xs text-muted-foreground">
-                      <span className="truncate">{c.city || "—"} · <span className="font-mono">{c.phone}</span></span>
-                      {row.due > 0 && (
-                        <span className="shrink-0 font-mono text-[oklch(0.48_0.16_50)]">
-                          {fmt$(row.due)}
-                        </span>
-                      )}
-                    </div>
-                  </button>
+                  <ContextMenu key={c.id}>
+                    <ContextMenuTrigger asChild>
+                      <div
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => setSelectedId(c.id)}
+                        onDoubleClick={() => viewDetailFor(c)}
+                        className={
+                          "block w-full cursor-default border-b border-border/60 px-3 py-2.5 text-left transition-colors " +
+                          (isSel ? "bg-primary/10" : "hover:bg-secondary/50") +
+                          (c.isArchived ? " opacity-60" : "")
+                        }
+                      >
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="flex min-w-0 items-center gap-1.5">
+                            <span className="truncate font-medium">{c.name}</span>
+                            {c.flag && (
+                              <span
+                                title={c.flag.note || flagLabel(c.flag.type, locale)}
+                                className={
+                                  "inline-flex shrink-0 items-center gap-0.5 rounded px-1 py-0.5 text-[10px] font-medium " +
+                                  flagBadgeClass(c.flag.type)
+                                }
+                              >
+                                <FlagIcon type={c.flag.type} className="h-3 w-3" />
+                                {flagLabel(c.flag.type, locale)}
+                              </span>
+                            )}
+                            {c.isArchived && (
+                              <span className="shrink-0 rounded bg-secondary px-1 py-0.5 text-[10px] font-medium text-muted-foreground">
+                                {locale === "zh" ? "已归档" : "Archived"}
+                              </span>
+                            )}
+                          </div>
+                          {row.latest && (
+                            <span
+                              className={
+                                "shrink-0 rounded px-1.5 py-0.5 text-[10px] font-medium " +
+                                statusBadgeClass(row.latest.status)
+                              }
+                            >
+                              {statusLabel(row.latest.status, locale)}
+                            </span>
+                          )}
+                        </div>
+                        <div className="mt-0.5 flex items-center justify-between gap-2 text-xs text-muted-foreground">
+                          <span className="truncate">{c.city || "—"} · <span className="font-mono">{c.phone}</span></span>
+                          {row.due > 0 && (
+                            <span className="shrink-0 font-mono text-[oklch(0.48_0.16_50)]">
+                              {fmt$(row.due)}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </ContextMenuTrigger>
+                    <ContextMenuContent className="w-52">
+                      <ContextMenuItem onSelect={() => viewDetailFor(c)}>
+                        <FileText className="mr-2 h-4 w-4" />
+                        {locale === "zh" ? "查看客户详情" : "View Detail"}
+                      </ContextMenuItem>
+                      <ContextMenuItem onSelect={() => openEdit(c)}>
+                        <Pencil className="mr-2 h-4 w-4" />
+                        {locale === "zh" ? "编辑客户" : "Edit Customer"}
+                      </ContextMenuItem>
+                      <ContextMenuItem onSelect={() => createEstimateFor(c)}>
+                        <Plus className="mr-2 h-4 w-4" />
+                        {locale === "zh" ? "新建报价单" : "New Estimate"}
+                      </ContextMenuItem>
+                      <ContextMenuSeparator />
+                      <ContextMenuItem onSelect={() => setFlagDialog({ customer: c })}>
+                        <Star className="mr-2 h-4 w-4" />
+                        {locale === "zh" ? "特别标记" : "Flag Customer"}
+                      </ContextMenuItem>
+                      <ContextMenuItem onSelect={() => toggleArchive(c)}>
+                        {c.isArchived ? (
+                          <ArchiveRestore className="mr-2 h-4 w-4" />
+                        ) : (
+                          <Archive className="mr-2 h-4 w-4" />
+                        )}
+                        {c.isArchived
+                          ? locale === "zh"
+                            ? "取消归档"
+                            : "Unarchive"
+                          : locale === "zh"
+                            ? "归档客户"
+                            : "Archive Customer"}
+                      </ContextMenuItem>
+                      <ContextMenuSeparator />
+                      <ContextMenuItem
+                        onSelect={() => requestDelete(c)}
+                        className="text-[oklch(0.48_0.18_25)] focus:text-[oklch(0.48_0.18_25)]"
+                      >
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        {locale === "zh" ? "删除客户" : "Delete Customer"}
+                      </ContextMenuItem>
+                    </ContextMenuContent>
+                  </ContextMenu>
                 );
               })}
             </div>
