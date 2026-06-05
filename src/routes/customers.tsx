@@ -1,9 +1,10 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { Search, Plus, Mail, Phone, MapPin } from "lucide-react";
+import { Search, Plus, Mail, Phone, MapPin, FileText } from "lucide-react";
 import { useT, useLocale } from "@/lib/i18n";
 import { useCustomers } from "@/lib/customer-store";
 import { useProjects, formatDMY, statusBadgeClass, statusLabel } from "@/lib/project-store";
+import type { Customer } from "@/lib/data";
 import {
   Dialog,
   DialogContent,
