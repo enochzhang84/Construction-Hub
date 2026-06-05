@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useT, useLocale } from "@/lib/i18n";
-import { useCompany, type CompanyProfile } from "@/lib/company-store";
+import { useCompany, useCompanyHydration, type CompanyProfile } from "@/lib/company-store";
 import { useTerms, DEFAULT_TERMS_EN, DEFAULT_TERMS_ZH } from "@/lib/terms-store";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
