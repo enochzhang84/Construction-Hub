@@ -188,7 +188,7 @@ const DICT: Dict = {
 // ---------------- Hook / helpers ----------------
 
 export function useT() {
-  const locale = useLocaleStore((s) => s.locale);
+  const locale = useHydratedLocale();
   return (key: keyof typeof DICT | string) => {
     const entry = DICT[key as string];
     if (!entry) return key as string;
@@ -197,7 +197,7 @@ export function useT() {
 }
 
 export function useLocale() {
-  return useLocaleStore((s) => s.locale);
+  return useHydratedLocale();
 }
 
 export function tCategory(cat: Category, locale: Locale): string {
