@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import { HardHat, Phone, Mail, MapPin, BadgeCheck, Globe2, ArrowRight } from "lucide-react";
 import { useCompany } from "@/lib/company-store";
 import { useLocale, useLocaleStore } from "@/lib/i18n";
@@ -18,7 +19,15 @@ export const Route = createFileRoute("/")({
 });
 
 function PublicHome() {
-  const profile = useCompany((s) => s.profile);
+  const storeProfile = useCompany((s) => s.profile);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  // During SSR / before zustand persist rehydrates from localStorage,
+  // render empty profile so the client can swap in the saved values
+  // without a stale-cache mismatch.
+  const profile = mounted
+    ? storeProfile
+    : { name: "", logoUrl: "", phone: "", email: "", address: "", license: "", website: "", taxRate: "0" };
   const locale = useLocale();
   const setLocale = useLocaleStore((s) => s.setLocale);
   const isZh = locale === "zh";
