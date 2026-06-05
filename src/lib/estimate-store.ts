@@ -25,6 +25,7 @@ export interface EstimateMeta {
   estimateNumber: string;
   date: string;
   globalDiscount: number;
+  quoteLanguage: "en" | "zh" | "bilingual";
 }
 
 interface EstimateState {
