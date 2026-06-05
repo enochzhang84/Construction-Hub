@@ -25,6 +25,7 @@ export interface EstimateMeta {
   estimateNumber: string;
   date: string;
   globalDiscount: number;
+  quoteLanguage: "en" | "zh" | "bilingual";
 }
 
 interface EstimateState {
@@ -44,6 +45,7 @@ const initialMeta: EstimateMeta = {
   estimateNumber: `EST-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 9000) + 1000)}`,
   date: new Date().toISOString().slice(0, 10),
   globalDiscount: 0,
+  quoteLanguage: "en",
 };
 
 export const useEstimate = create<EstimateState>()(

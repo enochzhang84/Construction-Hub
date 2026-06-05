@@ -9,25 +9,64 @@ import {
   BarChart3,
   Settings,
   HardHat,
+  Globe,
 } from "lucide-react";
+import { useLocaleStore, useT } from "@/lib/i18n";
 
 const NAV = [
-  { to: "/", label: "Dashboard", icon: LayoutDashboard },
-  { to: "/customers", label: "Customers", icon: Users },
-  { to: "/estimates", label: "Estimates", icon: FileText },
-  { to: "/price-book", label: "Price Book", icon: BookOpen },
-  { to: "/materials", label: "Materials", icon: Package },
-  { to: "/reports", label: "Reports", icon: BarChart3 },
-  { to: "/settings", label: "Settings", icon: Settings },
+  { to: "/", labelKey: "nav.dashboard", icon: LayoutDashboard },
+  { to: "/customers", labelKey: "nav.customers", icon: Users },
+  { to: "/estimates", labelKey: "nav.estimates", icon: FileText },
+  { to: "/price-book", labelKey: "nav.priceBook", icon: BookOpen },
+  { to: "/materials", labelKey: "nav.materials", icon: Package },
+  { to: "/reports", labelKey: "nav.reports", icon: BarChart3 },
+  { to: "/settings", labelKey: "nav.settings", icon: Settings },
 ] as const;
+
+export function LanguageToggle({ className = "" }: { className?: string }) {
+  const locale = useLocaleStore((s) => s.locale);
+  const setLocale = useLocaleStore((s) => s.setLocale);
+  return (
+    <div
+      className={
+        "inline-flex items-center gap-1 rounded-md border border-input bg-card px-1.5 py-1 text-xs " +
+        className
+      }
+    >
+      <Globe className="h-3.5 w-3.5 text-muted-foreground" />
+      <button
+        onClick={() => setLocale("en")}
+        className={
+          "rounded px-2 py-0.5 transition-colors " +
+          (locale === "en"
+            ? "bg-primary text-primary-foreground font-medium"
+            : "text-muted-foreground hover:text-foreground")
+        }
+      >
+        🇺🇸 English
+      </button>
+      <span className="text-muted-foreground/50">|</span>
+      <button
+        onClick={() => setLocale("zh")}
+        className={
+          "rounded px-2 py-0.5 transition-colors " +
+          (locale === "zh"
+            ? "bg-primary text-primary-foreground font-medium"
+            : "text-muted-foreground hover:text-foreground")
+        }
+      >
+        🇨🇳 中文
+      </button>
+    </div>
+  );
+}
 
 export function AppShell({ children }: { children: ReactNode }) {
   const path = useRouterState({ select: (s) => s.location.pathname });
+  const t = useT();
   return (
     <div className="flex h-screen w-full overflow-hidden bg-background text-foreground">
-      {/* Sidebar */}
       <aside className="flex w-60 shrink-0 flex-col border-r border-sidebar-border bg-sidebar">
-        {/* Traffic-light dots (Finder vibe) */}
         <div className="flex items-center gap-1.5 px-4 pt-4">
           <span className="h-3 w-3 rounded-full bg-[oklch(0.72_0.18_28)]" />
           <span className="h-3 w-3 rounded-full bg-[oklch(0.82_0.16_85)]" />
@@ -40,7 +79,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           </div>
           <div className="leading-tight">
             <div className="font-display text-[15px] font-semibold">Construction Hub</div>
-            <div className="text-[11px] text-muted-foreground">Estimating · v1</div>
+            <div className="text-[11px] text-muted-foreground">{t("app.subtitle")}</div>
           </div>
         </div>
 
@@ -60,21 +99,21 @@ export function AppShell({ children }: { children: ReactNode }) {
                 }
               >
                 <Icon className="h-4 w-4 shrink-0" />
-                <span>{n.label}</span>
+                <span>{t(n.labelKey)}</span>
               </Link>
             );
           })}
         </nav>
 
-        <div className="border-t border-sidebar-border p-3">
+        <div className="border-t border-sidebar-border p-3 space-y-2">
+          <LanguageToggle className="w-full justify-center" />
           <div className="rounded-md bg-card/60 px-3 py-2 text-[11px] text-muted-foreground">
-            <div className="font-medium text-foreground">Demo workspace</div>
-            <div>California · Local data only</div>
+            <div className="font-medium text-foreground">{t("app.workspace")}</div>
+            <div>{t("app.workspaceMeta")}</div>
           </div>
         </div>
       </aside>
 
-      {/* Main */}
       <main className="flex-1 overflow-hidden">{children}</main>
     </div>
   );
