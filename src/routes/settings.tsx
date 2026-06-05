@@ -8,33 +8,37 @@ export const Route = createFileRoute("/settings")({
   component: SettingsPage,
 });
 
-function SettingsPage() {
-  const t = useT();
-  const profile = useCompany((s) => s.profile);
+function Field({
+  label,
+  field,
+  placeholder,
+  type = "text",
+}: {
+  label: string;
+  field: keyof CompanyProfile;
+  placeholder?: string;
+  type?: string;
+}) {
+  const value = useCompany((s) => s.profile[field]);
   const setProfile = useCompany((s) => s.setProfile);
-
-  const Field = ({
-    label,
-    field,
-    placeholder,
-    type = "text",
-  }: {
-    label: string;
-    field: keyof CompanyProfile;
-    placeholder?: string;
-    type?: string;
-  }) => (
+  return (
     <label className="block">
       <div className="mb-1 text-xs font-medium text-muted-foreground">{label}</div>
       <input
         type={type}
-        value={profile[field]}
+        value={value}
         placeholder={placeholder}
         onChange={(e) => setProfile({ [field]: e.target.value } as Partial<CompanyProfile>)}
         className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring/40"
       />
     </label>
   );
+}
+
+function SettingsPage() {
+  const t = useT();
+  const profile = useCompany((s) => s.profile);
+
 
   const ROLES = [
     { name: t("set.role.admin"), desc: t("set.role.admin.desc") },
