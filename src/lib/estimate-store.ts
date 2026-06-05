@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { PricingType } from "./data";
+import { nextEstimateNumber } from "./estimate-number";
 
 export interface EstimateLine {
   id: string;
@@ -42,7 +43,7 @@ const initialMeta: EstimateMeta = {
   customerId: null,
   customerName: "",
   projectAddress: "",
-  estimateNumber: `EST-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 9000) + 1000)}`,
+  estimateNumber: nextEstimateNumber(),
   date: new Date().toISOString().slice(0, 10),
   globalDiscount: 0,
   quoteLanguage: "en",
@@ -62,7 +63,7 @@ export const useEstimate = create<EstimateState>()(
       clear: () =>
         set({
           lines: [],
-          meta: { ...initialMeta, estimateNumber: `EST-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 9000) + 1000)}` },
+          meta: { ...initialMeta, estimateNumber: nextEstimateNumber() },
         }),
     }),
     { name: "construction-hub-estimate" },

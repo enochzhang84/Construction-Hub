@@ -8,6 +8,7 @@ import { useCustomers } from "@/lib/customer-store";
 import { useProjects } from "@/lib/project-store";
 import { useCompany, type CompanyProfile } from "@/lib/company-store";
 import { useEstimate, lineTotal, estimateTotals, type EstimateLine, type EstimateMeta } from "@/lib/estimate-store";
+import { nextEstimateNumber, seedEstimateNumberFrom } from "@/lib/estimate-number";
 import { useT, useLocale, tCategory, tItem, tPricing, tUnit, type QuoteLanguage } from "@/lib/i18n";
 
 export const Route = createFileRoute("/estimates")({
@@ -34,6 +35,11 @@ function EstimatesPage() {
   const { customerId: prefillId } = Route.useSearch();
   const customers = useCustomers((s) => s.customers);
   const upsertProject = useProjects((s) => s.upsertByEstimateNumber);
+  const allProjects = useProjects((s) => s.projects);
+  // Keep today's daily counter in sync with any estimate numbers already in the projects store
+  useEffect(() => {
+    seedEstimateNumberFrom(allProjects.map((p) => p.estimateNumber));
+  }, [allProjects]);
   const company = useCompany((s) => s.profile);
   const [activeCat, setActiveCat] = useState(CATEGORIES[4].id); // Flooring
   const [itemQ, setItemQ] = useState("");
@@ -51,8 +57,7 @@ function EstimatesPage() {
     });
   };
 
-  const newEstimateNumber = () =>
-    `EST-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 9000) + 1000)}`;
+  const newEstimateNumber = () => nextEstimateNumber();
 
   const onNewEstimate = () => {
     clear();
@@ -208,8 +213,11 @@ function EstimatesPage() {
           <div className="flex flex-wrap items-center gap-4">
             {/* 1. Estimate number */}
             <div>
+              <div className="text-[10px] font-medium uppercase tracking-[0.08em] text-muted-foreground">
+                {isZh ? "报价单编号" : "Estimate No."}
+              </div>
               <div className="flex items-center gap-2">
-                <div className="font-display text-base font-semibold tracking-tight" suppressHydrationWarning>
+                <div className="font-display font-mono text-base font-semibold tracking-tight" suppressHydrationWarning>
                   {meta.estimateNumber}
                 </div>
                 <span
