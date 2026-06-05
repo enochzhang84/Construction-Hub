@@ -434,7 +434,6 @@ function CustomersPage() {
         {viewTab === "map" ? (
           <CustomerMap rows={filtered.map((r) => ({ c: r.c, latest: r.latest, estTotal: r.estTotal, contractTotal: r.contractTotal, due: r.due }))} />
         ) : (
-        /* Finder-style list + detail */
         <div className="grid gap-4 lg:grid-cols-[minmax(340px,400px)_1fr]">
           {/* Left: compact list */}
           <div className="flex flex-col rounded-lg border border-border bg-card shadow-panel overflow-hidden">
