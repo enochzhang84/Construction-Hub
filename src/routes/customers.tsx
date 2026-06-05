@@ -409,31 +409,57 @@ function CustomersPage() {
           </div>
         </div>
 
-        {/* View tabs: List / Map */}
+        {/* View tabs: Table / Cards / Map */}
         <div className="flex items-center gap-1 rounded-lg border border-border bg-card p-1 shadow-panel w-fit">
-          <button
-            onClick={() => setViewTab("list")}
-            className={
-              "rounded-md px-3 py-1.5 text-xs font-medium transition-colors " +
-              (viewTab === "list" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-secondary")
-            }
-          >
-            {locale === "zh" ? "客户列表" : "Customer List"}
-          </button>
-          <button
-            onClick={() => setViewTab("map")}
-            className={
-              "rounded-md px-3 py-1.5 text-xs font-medium transition-colors " +
-              (viewTab === "map" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-secondary")
-            }
-          >
-            {locale === "zh" ? "客户地图" : "Customer Map"}
-          </button>
+          {([
+            ["table", locale === "zh" ? "列表" : "List"],
+            ["cards", locale === "zh" ? "卡片" : "Cards"],
+            ["map", locale === "zh" ? "地图" : "Map"],
+          ] as const).map(([key, label]) => (
+            <button
+              key={key}
+              onClick={() => setViewTab(key)}
+              className={
+                "rounded-md px-3 py-1.5 text-xs font-medium transition-colors " +
+                (viewTab === key
+                  ? "bg-primary text-primary-foreground"
+                  : "text-muted-foreground hover:bg-secondary")
+              }
+            >
+              {label}
+            </button>
+          ))}
         </div>
 
         {viewTab === "map" ? (
           <CustomerMap rows={filtered.map((r) => ({ c: r.c, latest: r.latest, estTotal: r.estTotal, contractTotal: r.contractTotal, due: r.due }))} />
+        ) : viewTab === "table" ? (
+          <CustomerTableView
+            rows={paged}
+            locale={locale}
+            currentPage={currentPage}
+            totalPages={totalPages}
+            pageSize={pageSize}
+            totalCount={filtered.length}
+            onPage={setPage}
+            onSelect={(c) => setSelectedId(c.id)}
+            onView={viewDetailFor}
+            onEdit={openEdit}
+            onNewEstimate={createEstimateFor}
+            onFlag={(c) => setFlagDialog({ customer: c })}
+            onToggleArchive={toggleArchive}
+            onDelete={requestDelete}
+          />
         ) : (
+        <div className="grid gap-4 lg:grid-cols-[minmax(340px,400px)_1fr]">
+          {/* Left: compact list */}
+          <div className="flex flex-col rounded-lg border border-border bg-card shadow-panel overflow-hidden">
+            <div className="border-b border-border bg-secondary/40 px-3 py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+              {locale === "zh" ? "客户列表" : "Customer List"}
+            </div>
+            <div className="flex-1 overflow-y-auto">
+              {paged.length === 0 && (
+                <div className="px-4 py-12 text-center text-sm text-muted-foreground">—</div>
         <div className="grid gap-4 lg:grid-cols-[minmax(340px,400px)_1fr]">
           {/* Left: compact list */}
           <div className="flex flex-col rounded-lg border border-border bg-card shadow-panel overflow-hidden">
