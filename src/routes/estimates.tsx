@@ -223,8 +223,9 @@ function EstimatesPage() {
               <Save className="h-4 w-4" /> {t("common.save")}
             </button>
             <button
-              onClick={() => window.print()}
-              disabled={lines.length === 0}
+              onClick={onPrint}
+              disabled={!hasCustomer || lines.length === 0}
+              title={lockReason || undefined}
               className="inline-flex items-center gap-1.5 rounded-md border border-input bg-card px-3.5 py-2 text-sm font-medium hover:bg-secondary disabled:cursor-not-allowed disabled:opacity-40"
             >
               <Printer className="h-4 w-4" /> {isZh ? "打印报价" : "Print Estimate"}
