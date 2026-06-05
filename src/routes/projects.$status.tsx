@@ -21,7 +21,7 @@ function ProjectsByStatus() {
   const projects = useProjects((s) => s.projects);
 
   const target = STATUS_MAP[status];
-  if (!target) return <Navigate to="/" />;
+  if (!target) return <Navigate to="/dashboard" />;
 
   const list = projects.filter((p) => p.status === target && !p.parentProjectId);
   const isZh = locale === "zh";
