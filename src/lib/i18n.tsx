@@ -41,8 +41,7 @@ const DICT: Dict = {
   "nav.dashboard": { en: "Dashboard", zh: "仪表板" },
   "nav.customers": { en: "Customers", zh: "客户管理" },
   "nav.estimates": { en: "Estimates", zh: "报价单" },
-  "nav.priceBook": { en: "Price Book", zh: "价格库" },
-  "nav.materials": { en: "Materials", zh: "材料库" },
+  "nav.suppliers": { en: "Suppliers", zh: "供货商" },
   "nav.reports": { en: "Reports", zh: "报表中心" },
   "nav.settings": { en: "Settings", zh: "系统设置" },
 
@@ -143,8 +142,8 @@ const DICT: Dict = {
   "est.lang.zh": { en: "中文", zh: "中文" },
   "est.lang.bilingual": { en: "Bilingual", zh: "中英双语" },
 
-  // Price Book
-  "pb.title": { en: "Price Book", zh: "价格库" },
+  // Construction Items (Price Book)
+  "pb.title": { en: "Construction Items", zh: "施工项目" },
   "pb.items": { en: "items across", zh: "个项目，共" },
   "pb.trades": { en: "trades", zh: "个施工分类" },
   "pb.col.trade": { en: "Trade", zh: "施工分类" },
@@ -155,10 +154,10 @@ const DICT: Dict = {
   "pb.col.material": { en: "Material", zh: "材料" },
   "pb.col.combined": { en: "Combined", zh: "合计" },
 
-  // Materials
-  "mat.title": { en: "Materials & Suppliers", zh: "材料与供应商" },
+  // Suppliers
+  "mat.title": { en: "Suppliers", zh: "供货商" },
   "mat.subtitle": {
-    en: "Vendor accounts and material cost references.",
+    en: "Supplier accounts and material cost references.",
     zh: "供应商账户与材料成本参考。",
   },
   "mat.account": { en: "Account", zh: "账户" },
