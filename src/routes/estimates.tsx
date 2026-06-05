@@ -37,15 +37,35 @@ function EstimatesPage() {
   const company = useCompany((s) => s.profile);
   const [activeCat, setActiveCat] = useState(CATEGORIES[4].id); // Flooring
   const [itemQ, setItemQ] = useState("");
-  const { meta, lines, addLine, updateLine, removeLine, setMeta } = useEstimate();
+  const [mode, setMode] = useState<"view" | "create">("view");
+  const isView = mode === "view";
+  const { meta, lines, addLine, updateLine, removeLine, setMeta, clear } = useEstimate();
   const linesScrollRef = useRef<HTMLDivElement>(null);
 
   const applyCustomer = (c: Customer | null) => {
+    if (isView) return;
     setMeta({
       customerId: c?.id ?? null,
       customerName: c?.name ?? "",
       projectAddress: c ? `${c.address}, ${c.city}, ${c.state} ${c.zip}` : "",
     });
+  };
+
+  const newEstimateNumber = () =>
+    `EST-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 9000) + 1000)}`;
+
+  const onNewEstimate = () => {
+    clear();
+    setMeta({
+      customerId: null,
+      customerName: "",
+      projectAddress: "",
+      estimateNumber: newEstimateNumber(),
+      date: new Date().toISOString().slice(0, 10),
+      globalDiscount: 0,
+    });
+    setMode("create");
+    toast.success(isZh ? "新建报价单已开启" : "New estimate started");
   };
 
   // Pre-fill from ?customerId= when navigated from Customers page
