@@ -14,7 +14,7 @@ import { useLocaleStore, useLocale, useT } from "@/lib/i18n";
 import { Toaster } from "@/components/ui/sonner";
 
 const NAV = [
-  { to: "/", labelKey: "nav.dashboard", icon: LayoutDashboard },
+  { to: "/dashboard", labelKey: "nav.dashboard", icon: LayoutDashboard },
   { to: "/reports", labelKey: "nav.reports", icon: BarChart3 },
   { to: "/estimates", labelKey: "nav.estimates", icon: FileText },
   { to: "/customers", labelKey: "nav.customers", icon: Users },
@@ -84,7 +84,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
         <nav className="flex-1 space-y-0.5 px-2 py-2 finder-scroll overflow-y-auto">
           {NAV.map((n) => {
-            const active = n.to === "/" ? path === "/" : path.startsWith(n.to);
+            const active = path === n.to || path.startsWith(n.to + "/");
             const Icon = n.icon;
             return (
               <Link

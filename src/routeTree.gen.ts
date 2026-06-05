@@ -14,6 +14,7 @@ import { Route as ReportsRouteImport } from './routes/reports'
 import { Route as PriceBookRouteImport } from './routes/price-book'
 import { Route as MaterialsRouteImport } from './routes/materials'
 import { Route as EstimatesRouteImport } from './routes/estimates'
+import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as CustomersRouteImport } from './routes/customers'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProjectsStatusRouteImport } from './routes/projects.$status'
@@ -45,6 +46,11 @@ const EstimatesRoute = EstimatesRouteImport.update({
   path: '/estimates',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CustomersRoute = CustomersRouteImport.update({
   id: '/customers',
   path: '/customers',
@@ -74,6 +80,7 @@ const ProjectsDetailIdAddonRoute = ProjectsDetailIdAddonRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/customers': typeof CustomersRoute
+  '/dashboard': typeof DashboardRoute
   '/estimates': typeof EstimatesRoute
   '/materials': typeof MaterialsRoute
   '/price-book': typeof PriceBookRoute
@@ -86,6 +93,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/customers': typeof CustomersRoute
+  '/dashboard': typeof DashboardRoute
   '/estimates': typeof EstimatesRoute
   '/materials': typeof MaterialsRoute
   '/price-book': typeof PriceBookRoute
@@ -99,6 +107,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/customers': typeof CustomersRoute
+  '/dashboard': typeof DashboardRoute
   '/estimates': typeof EstimatesRoute
   '/materials': typeof MaterialsRoute
   '/price-book': typeof PriceBookRoute
@@ -113,6 +122,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/customers'
+    | '/dashboard'
     | '/estimates'
     | '/materials'
     | '/price-book'
@@ -125,6 +135,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/customers'
+    | '/dashboard'
     | '/estimates'
     | '/materials'
     | '/price-book'
@@ -137,6 +148,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/customers'
+    | '/dashboard'
     | '/estimates'
     | '/materials'
     | '/price-book'
@@ -150,6 +162,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   CustomersRoute: typeof CustomersRoute
+  DashboardRoute: typeof DashboardRoute
   EstimatesRoute: typeof EstimatesRoute
   MaterialsRoute: typeof MaterialsRoute
   PriceBookRoute: typeof PriceBookRoute
@@ -194,6 +207,13 @@ declare module '@tanstack/react-router' {
       path: '/estimates'
       fullPath: '/estimates'
       preLoaderRoute: typeof EstimatesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/customers': {
@@ -248,6 +268,7 @@ const ProjectsDetailIdRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CustomersRoute: CustomersRoute,
+  DashboardRoute: DashboardRoute,
   EstimatesRoute: EstimatesRoute,
   MaterialsRoute: MaterialsRoute,
   PriceBookRoute: PriceBookRoute,
@@ -259,3 +280,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
