@@ -270,6 +270,29 @@ function CustomersPage() {
   const createEstimateFor = (c: Customer) =>
     navigate({ to: "/estimates", search: { customerId: c.id } });
 
+  const viewDetailFor = (c: Customer) => {
+    const row = enriched.find((r) => r.c.id === c.id);
+    const latest = row?.latest;
+    if (latest) navigate({ to: "/projects/detail/$id", params: { id: latest.id } });
+    else setSelectedId(c.id);
+  };
+
+  const projectCountFor = (c: Customer) =>
+    projects.filter((p) => matchesCustomer(p, c)).length;
+
+  const requestDelete = (c: Customer) => {
+    setDeleteDialog({ customer: c, projectCount: projectCountFor(c) });
+  };
+
+  const confirmDelete = () => {
+    if (!deleteDialog || deleteDialog.projectCount > 0) return;
+    removeCustomer(deleteDialog.customer.id);
+    if (selectedId === deleteDialog.customer.id) setSelectedId(null);
+    setDeleteDialog(null);
+  };
+
+  const toggleArchive = (c: Customer) => setArchived(c.id, !c.isArchived);
+
   return (
     <div className="flex h-full flex-col">
       <header className="flex items-center justify-between border-b border-border px-8 py-5">
