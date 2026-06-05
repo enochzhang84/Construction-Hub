@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useMemo } from "react";
 import { FileText, HardHat, Wallet, CheckCircle2, ArrowUpRight, CalendarIcon } from "lucide-react";
 import { useT, useLocale } from "@/lib/i18n";
 import {
@@ -14,6 +15,7 @@ import {
   type ProjectStatus,
   type PaymentMethod,
 } from "@/lib/project-store";
+import { useCustomers } from "@/lib/customer-store";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
