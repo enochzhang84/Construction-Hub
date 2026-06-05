@@ -116,6 +116,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       </aside>
 
       <main className="flex-1 overflow-hidden">{children}</main>
+      <Toaster />
     </div>
   );
 }
