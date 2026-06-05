@@ -211,6 +211,8 @@ function CustomersPage() {
     const needle = q.toLowerCase();
     return enriched.filter((row) => {
       const c = row.c;
+      if (archiveFilter === "active" && c.isArchived) return false;
+      if (archiveFilter === "archived" && !c.isArchived) return false;
       if (needle) {
         const hay = [c.name, c.phone, c.email, c.address, c.city].join(" ").toLowerCase();
         if (!hay.includes(needle)) return false;
@@ -222,7 +224,7 @@ function CustomersPage() {
       if (sourceFilter !== "all" && (c.source ?? "Other") !== sourceFilter) return false;
       return true;
     });
-  }, [enriched, q, statusFilter, cityFilter, sourceFilter]);
+  }, [enriched, q, statusFilter, cityFilter, sourceFilter, archiveFilter]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
   const currentPage = Math.min(page, totalPages);
