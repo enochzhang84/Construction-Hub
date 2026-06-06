@@ -782,6 +782,7 @@ const LABELS_EN: PDFLabels = {
   subtitle: "Contractor Estimate",
   estimate: "Estimate #",
   date: "Date",
+  validUntil: "Valid Until",
   billTo: "Bill To",
   projectAddress: "Project Address",
   item: "Item",
