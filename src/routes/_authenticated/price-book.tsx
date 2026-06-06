@@ -626,10 +626,12 @@ function AddDialog({
 
 function ImportPreviewDialog({
   rows,
+  existingItems,
   onClose,
   onConfirm,
 }: {
   rows: ImportRow[] | null;
+  existingItems: PriceItem[];
   onClose: () => void;
   onConfirm: (rows: Array<ImportRow["data"]>) => void;
 }) {
@@ -641,8 +643,13 @@ function ImportPreviewDialog({
       </Dialog>
     );
   }
+  const keyOf = (i: { categoryId: string; name: string; nameZh?: string; unit: string }) =>
+    `${i.categoryId}__${(i.name ?? "").trim().toLowerCase()}__${(i.nameZh ?? "").trim().toLowerCase()}__${(i.unit ?? "").trim().toLowerCase()}`;
+  const existingKeys = new Set(existingItems.map((i) => keyOf(i)));
   const ok = rows.filter((r) => r.ok);
   const bad = rows.filter((r) => !r.ok);
+  const dup = ok.filter((r) => existingKeys.has(keyOf(r.data)));
+  const fresh = ok.filter((r) => !existingKeys.has(keyOf(r.data)));
 
   return (
     <Dialog open={!!rows} onOpenChange={(o) => !o && onClose()}>
@@ -651,7 +658,11 @@ function ImportPreviewDialog({
           <DialogTitle>{t("pb.import.preview")}</DialogTitle>
         </DialogHeader>
         <div className="text-xs text-muted-foreground">
-          {t("pb.import.valid")}: <span className="font-semibold text-foreground">{ok.length}</span>
+          {t("pb.import.total")}: <span className="font-semibold text-foreground">{rows.length}</span>
+          {"  ·  "}
+          {t("pb.import.new")}: <span className="font-semibold text-emerald-600">{fresh.length}</span>
+          {"  ·  "}
+          {t("pb.import.skipped")}: <span className="font-semibold text-amber-600">{dup.length}</span>
           {"  ·  "}
           {t("pb.import.invalid")}: <span className="font-semibold text-destructive">{bad.length}</span>
         </div>
