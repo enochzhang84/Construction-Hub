@@ -39,6 +39,113 @@ function Field({
   );
 }
 
+const ACCEPTED_LOGO_TYPES = "image/svg+xml,image/png,image/jpeg,image/webp,image/gif,image/avif,image/x-icon,image/vnd.microsoft.icon";
+const MAX_LOGO_BYTES = 2 * 1024 * 1024; // 2MB
+
+function readFileAsDataURL(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => resolve(String(r.result));
+    r.onerror = () => reject(r.error);
+    r.readAsDataURL(file);
+  });
+}
+
+async function readSvgAsInlineDataURL(file: File): Promise<string> {
+  // For SVG, inline as utf-8 data URL so it renders as a true vector.
+  const text = await file.text();
+  return `data:image/svg+xml;utf8,${encodeURIComponent(text)}`;
+}
+
+function LogoUploader() {
+  const logoUrl = useCompany((s) => s.profile.logoUrl);
+  const setProfile = useCompany((s) => s.setProfile);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+
+  const handleFile = async (file: File) => {
+    if (!file.type.startsWith("image/")) {
+      toast.error("请选择图片文件 (Please pick an image file)");
+      return;
+    }
+    if (file.size > MAX_LOGO_BYTES) {
+      toast.error("图片过大，请选择 2MB 以内的图片");
+      return;
+    }
+    try {
+      setUploading(true);
+      const dataUrl =
+        file.type === "image/svg+xml"
+          ? await readSvgAsInlineDataURL(file)
+          : await readFileAsDataURL(file);
+      setProfile({ logoUrl: dataUrl });
+      toast.success("Logo 已上传");
+    } catch (e) {
+      console.error(e);
+      toast.error("上传失败");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  return (
+    <div>
+      <div className="mb-1 text-xs font-medium text-muted-foreground">Company Logo</div>
+      <div className="flex items-center gap-4 rounded-md border border-dashed border-border bg-secondary/30 p-4">
+        <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-md border border-border bg-background overflow-hidden">
+          {logoUrl ? (
+            <img
+              src={logoUrl}
+              alt="Logo preview"
+              className="h-full w-full object-contain"
+              style={{ imageRendering: "auto" }}
+            />
+          ) : (
+            <span className="text-[10px] text-muted-foreground">No logo</span>
+          )}
+        </div>
+        <div className="flex-1 min-w-0">
+          <input
+            ref={inputRef}
+            type="file"
+            accept={ACCEPTED_LOGO_TYPES}
+            className="hidden"
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              if (f) void handleFile(f);
+              e.target.value = "";
+            }}
+          />
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              disabled={uploading}
+              onClick={() => inputRef.current?.click()}
+              className="inline-flex items-center gap-1.5 rounded-md border border-input bg-background px-3 py-1.5 text-xs font-medium hover:bg-secondary disabled:opacity-50"
+            >
+              <Upload className="h-3.5 w-3.5" />
+              {uploading ? "上传中…" : logoUrl ? "更换 Logo" : "上传 Logo"}
+            </button>
+            {logoUrl && (
+              <button
+                type="button"
+                onClick={() => setProfile({ logoUrl: "" })}
+                className="inline-flex items-center gap-1.5 rounded-md border border-input bg-background px-3 py-1.5 text-xs font-medium text-destructive hover:bg-destructive/10"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+                移除
+              </button>
+            )}
+          </div>
+          <p className="mt-2 text-[11px] leading-relaxed text-muted-foreground">
+            支持 SVG、PNG、JPG、WebP、GIF、AVIF、ICO 等格式。推荐使用 SVG 以获得无损矢量显示；位图建议使用透明背景的高分辨率图片。最大 2MB。
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function SettingsPage() {
   const t = useT();
   const profile = useCompany((s) => s.profile);
