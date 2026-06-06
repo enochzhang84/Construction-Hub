@@ -73,15 +73,11 @@ function SettingsPage() {
               <Field label="Address" field="address" placeholder="Street, City, State ZIP" />
             </div>
             <Field label="Website" field="website" placeholder="www.company.com" />
-            <Field label="Logo URL" field="logoUrl" placeholder="https://…/logo.png" />
             <Field label="Default Tax Rate (%)" field="taxRate" type="number" placeholder="0" />
-          </div>
-          {profile.logoUrl && (
-            <div className="mt-4 flex items-center gap-3 rounded-md border border-dashed border-border bg-secondary/30 p-3">
-              <img src={profile.logoUrl} alt="Logo preview" className="h-12 w-12 rounded object-contain" />
-              <span className="text-xs text-muted-foreground">Logo preview</span>
+            <div className="sm:col-span-2">
+              <LogoUploader />
             </div>
-          )}
+          </div>
           <div className="mt-5 flex justify-end">
             <button
               onClick={() => toast.success("Company profile saved")}
