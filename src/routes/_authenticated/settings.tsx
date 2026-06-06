@@ -158,8 +158,7 @@ function LogoUploader() {
 
 function SettingsPage() {
   const t = useT();
-  const profile = useCompany((s) => s.profile);
-  useCompanyHydration();
+
 
 
   const ROLES = [
