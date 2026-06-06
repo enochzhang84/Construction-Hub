@@ -5,7 +5,17 @@ import { useCompany, useCompanyHydration, type CompanyProfile } from "@/lib/comp
 import { useTerms, DEFAULT_TERMS_EN, DEFAULT_TERMS_ZH } from "@/lib/terms-store";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { BookOpen, ChevronRight, FileText, RotateCcw, Upload, Trash2, UserCircle2, ShieldCheck } from "lucide-react";
+import { BookOpen, ChevronRight, FileText, RotateCcw, Upload, Trash2, UserCircle2, ShieldCheck, Database, Download, RefreshCw, PlayCircle } from "lucide-react";
+import {
+  CATALOG_TABLES,
+  type CatalogCounts,
+  exportSeedSql,
+  fetchSchemaSql,
+  downloadText,
+  getCatalogCounts,
+  restoreDefaultConstructionItems,
+  initializeDefaultData,
+} from "@/lib/system-data";
 
 export const Route = createFileRoute("/_authenticated/settings")({
   head: () => ({ meta: [{ title: "Settings · Construction Hub" }] }),
@@ -226,6 +236,9 @@ function SettingsPage() {
         <TermsSection />
 
         <UsersAndRolesSection />
+
+        <SystemDataSection />
+
 
 
         <section className="rounded-lg border border-border bg-card p-6 shadow-panel">
@@ -547,6 +560,162 @@ function TermsSection() {
           {isZh ? "保存条款" : "Save Terms"}
         </button>
       </div>
+    </section>
+  );
+}
+
+function SystemDataSection() {
+  const locale = useLocale();
+  const isZh = locale === "zh";
+  const [counts, setCounts] = useState<CatalogCounts | null>(null);
+  const [loadingCounts, setLoadingCounts] = useState(true);
+  const [busy, setBusy] = useState<string | null>(null);
+
+  const refreshCounts = async () => {
+    setLoadingCounts(true);
+    try {
+      const c = await getCatalogCounts();
+      setCounts(c);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      toast.error((isZh ? "读取数据计数失败：" : "Failed to read counts: ") + msg);
+    } finally {
+      setLoadingCounts(false);
+    }
+  };
+
+  useEffect(() => {
+    void refreshCounts();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const allEmpty = counts && CATALOG_TABLES.every((t) => counts[t] === 0);
+
+  const handleExportSchema = async () => {
+    setBusy("schema");
+    try {
+      const sql = await fetchSchemaSql();
+      downloadText("construction_schema.sql", sql);
+      toast.success(isZh ? "Schema SQL 已下载" : "Schema SQL downloaded");
+    } catch (e) {
+      toast.error((isZh ? "导出失败：" : "Export failed: ") + (e instanceof Error ? e.message : String(e)));
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const handleExportSeed = async () => {
+    setBusy("seed");
+    try {
+      const sql = await exportSeedSql();
+      downloadText("construction_seed_data.sql", sql);
+      toast.success(isZh ? "Seed SQL 已根据当前数据生成并下载" : "Seed SQL regenerated and downloaded");
+    } catch (e) {
+      toast.error((isZh ? "导出失败：" : "Export failed: ") + (e instanceof Error ? e.message : String(e)));
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const handleRestore = async () => {
+    setBusy("restore");
+    try {
+      const { created, skipped } = await restoreDefaultConstructionItems();
+      toast.success(
+        isZh
+          ? `已恢复：新增 ${created}，跳过 ${skipped}（保留原价格）`
+          : `Restored: ${created} created, ${skipped} skipped (existing prices preserved)`,
+      );
+      await refreshCounts();
+    } catch (e) {
+      toast.error((isZh ? "恢复失败：" : "Restore failed: ") + (e instanceof Error ? e.message : String(e)));
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const handleInit = async () => {
+    setBusy("init");
+    try {
+      const r = await initializeDefaultData();
+      if (!r.initialized) {
+        toast.warning((isZh ? "未执行：" : "Skipped: ") + r.reason);
+      } else {
+        toast.success(isZh ? "默认数据已初始化" : "Default data initialized");
+      }
+      await refreshCounts();
+    } catch (e) {
+      toast.error((isZh ? "初始化失败：" : "Init failed: ") + (e instanceof Error ? e.message : String(e)));
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  return (
+    <section className="rounded-lg border border-border bg-card p-6 shadow-panel">
+      <h2 className="mb-1 flex items-center gap-2 font-display text-base font-semibold">
+        <Database className="h-4 w-4 text-muted-foreground" />
+        {isZh ? "系统数据" : "System Data"}
+      </h2>
+      <p className="mb-4 text-xs text-muted-foreground">
+        {isZh
+          ? "管理可重复部署的基础数据：分类、施工项目、单位、报价方式、条款、PDF 模板、系统设置。客户与报价单不属于初始数据。"
+          : "Manage reproducible deployment data: categories, construction items, units, pricing types, terms, PDF templates, system settings. Customer & estimate records are NOT included."}
+      </p>
+
+      {/* Catalog counts grid */}
+      <div className="mb-5 grid grid-cols-2 gap-2 sm:grid-cols-4">
+        {CATALOG_TABLES.map((t) => (
+          <div key={t} className="rounded-md border border-border/60 bg-background/60 px-3 py-2">
+            <div className="text-[10px] uppercase tracking-wide text-muted-foreground">{t}</div>
+            <div className="text-lg font-semibold tabular-nums">
+              {loadingCounts ? "…" : (counts?.[t] ?? 0)}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+        <button
+          onClick={handleExportSchema}
+          disabled={busy !== null}
+          className="inline-flex items-center justify-center gap-2 rounded-md border border-input bg-background px-4 py-2.5 text-sm font-medium hover:bg-secondary disabled:opacity-50"
+        >
+          <Download className="h-4 w-4" />
+          {isZh ? "导出 Schema SQL" : "Export Schema SQL"}
+        </button>
+        <button
+          onClick={handleExportSeed}
+          disabled={busy !== null}
+          className="inline-flex items-center justify-center gap-2 rounded-md border border-input bg-background px-4 py-2.5 text-sm font-medium hover:bg-secondary disabled:opacity-50"
+        >
+          <FileText className="h-4 w-4" />
+          {busy === "seed" ? (isZh ? "生成中…" : "Generating…") : (isZh ? "导出 Seed Data SQL" : "Export Seed Data SQL")}
+        </button>
+        <button
+          onClick={handleRestore}
+          disabled={busy !== null}
+          className="inline-flex items-center justify-center gap-2 rounded-md border border-input bg-background px-4 py-2.5 text-sm font-medium hover:bg-secondary disabled:opacity-50"
+        >
+          <RefreshCw className={`h-4 w-4 ${busy === "restore" ? "animate-spin" : ""}`} />
+          {isZh ? "恢复默认施工项目" : "Restore Default Construction Items"}
+        </button>
+        <button
+          onClick={handleInit}
+          disabled={busy !== null || !allEmpty}
+          title={!allEmpty ? (isZh ? "仅当所有表为空时可用" : "Available only when all tables are empty") : undefined}
+          className="inline-flex items-center justify-center gap-2 rounded-md border border-input bg-background px-4 py-2.5 text-sm font-medium hover:bg-secondary disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <PlayCircle className="h-4 w-4" />
+          {isZh ? "初始化默认数据" : "Initialize Default Data"}
+        </button>
+      </div>
+
+      <p className="mt-3 text-[11px] leading-relaxed text-muted-foreground">
+        {isZh
+          ? "部署流程：新建 Supabase → 运行 construction_schema.sql → 运行 construction_seed_data.sql → VPS 拉取代码 → 配置 .env (VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY) → npm install && npm run build → pm2 restart。"
+          : "Deploy flow: create Supabase → run construction_schema.sql → run construction_seed_data.sql → git pull on VPS → set .env (VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY) → npm install && npm run build → pm2 restart."}
+      </p>
     </section>
   );
 }

@@ -1,76 +1,105 @@
-## Scope
 
-Substantial changes across Dashboard, Customers, Reports, and Project detail flow. All UI text bilingual via existing i18n.
+# V2 Construction Library → Supabase Standard Distribution
 
-## 1. Dashboard (`src/routes/index.tsx`)
-- Remove "Recent Customers" table/section. Keep stats cards, revenue/by-trade charts, quick actions.
+## Goal
+Turn the renovation quote app into a reproducible deployment: any fresh Supabase project can run two SQL files to get a complete V2 construction library, while customer/estimate data stays out of the seed.
 
-## 2. Customers (`src/routes/customers.tsx`)
-- Add new "Recent Customers" section below existing customers table.
-- Columns: Name · Phone · Project Address · Last Estimate Date · Last Status (colored badge).
-- Source data: derive from `useProjects()` store — group projects by `customerName`, take the most recent by `estimateDate`.
+---
 
-## 3. Project store extensions (`src/lib/project-store.ts`)
-Add fields to `Project`:
-- `issueDate?: string` (开单日 — quote sent date, defaults to estimateDate)
-- `settlementDate?: string` (结算日期)
-- `paymentMethod?: "Cash"|"Check"|"Bank Transfer"|"Zelle"|"Credit Card"|"Other"`
-- `customerPhone?: string`
-- `discount?: number`
-- `notes?: string`
-- `lineItems?: Array<{id, name, qty, unit, amount}>` (basic snapshot)
-- `parentProjectId?: string` (for add-on projects)
-- `addonNumber?: string`
+## 1. New Supabase tables
 
-Status mapping: Localized labels via i18n. Internal status stays English enum but introduce new values? Spec uses 审核中/施工中/待结算/已完成/已取消. Map:
-- 审核中 → `Estimate`
-- 施工中 → `Active`
-- 待结算 → `Pending Payment`
-- 已完成 → `Completed`
-- 已取消 → new `Cancelled`
+All under schema `public`, with `GRANT` + RLS + standard `created_at`/`updated_at`.
 
-Add `Cancelled` to `ProjectStatus` type. Update `summarizeProjects` to ignore cancelled.
+| Table | Purpose | Write access |
+|---|---|---|
+| `categories` | Construction categories (demo, framing, …, lowvoltage, general) | admin/super_admin |
+| `construction_items` | V2 price book items | admin/super_admin |
+| `units` | sqft, lf, ea, sq, job, hr | admin/super_admin |
+| `pricing_types` | Labor Only / Labor + Material / Turnkey / Estimate / … | admin/super_admin |
+| `terms_conditions` | Default disclaimer / T&C blocks (EN + ZH) | admin/super_admin |
+| `pdf_templates` | PDF layout config (jsonb) | admin/super_admin |
+| `system_settings` | key/value jsonb (tax rate defaults, currency, language, …) | admin/super_admin |
 
-Add helper: `formatDateDMY(iso)` → `DD-MM-YYYY`.
-Add helper: `statusColorClasses(status)`.
+**Read access:** all 7 tables are publicly readable (catalog data — `GRANT SELECT ... TO anon, authenticated`). Writes are gated through `has_role(auth.uid(), 'admin' | 'super_admin')`.
 
-## 4. Reports page (`src/routes/reports.tsx`)
-Below the pipeline cards, add a comprehensive **Project Records Table** with columns:
-Date | Customer (name + phone) | Project Address | Issue Date (date picker) | Status (colored dropdown) | Construction Date (date picker) | Settlement Date (date picker) | Payment Method (dropdown) | Notes (text)
+**Customer/estimate tables are explicitly NOT created** in this turn (out of scope per your answer).
 
-- Inline editable: status, dates via shadcn Calendar/Popover, payment method via Select, notes via Input.
-- Updates call `useProjects().update(id, patch)`.
-- Date display format `DD-MM-YYYY`.
-- Status badge color map: Estimate=blue, Active=orange, Pending=green, Completed=gray, Cancelled=red.
+---
 
-## 5. Project Detail page (new route `src/routes/projects.detail.$id.tsx`)
-Triggered from clicking a row in `projects.$status.tsx` list (wrap row in Link).
+## 2. Two deliverable SQL files
 
-Sections:
-- Header: customer info, project address, estimate number, status badge.
-- Meta grid: Issue date, Construction date, Settlement date, Payment method, Notes (editable).
-- Original Estimate panel: amount, discount, final amount, line items snapshot.
-- Add-on Projects section: list of children (`parentProjectId === this.id`), each card shows addon number, date, items, amount, status.
-- Button **[+ 新施工项目 / + New Add-on Project]** → navigates to `/projects/detail/$id/addon`.
+Generated and committed to `supabase/exports/`:
 
-## 6. Add-on Estimate page (new route `src/routes/projects.detail.$id.addon.tsx`)
-- Layout mirrors `/estimates` (left categories, middle items, right detail panel).
-- Reuse the existing components if possible by extracting; but for scope, render a simplified variant using the existing Estimates UI building blocks via copy.
-- Header: "新增施工项目 / New Add-on Project" + parent info (customer, address, project #, estimate #).
-- On Save: create new Project with `parentProjectId = $id`, `addonNumber = ADDON-<seq>`, status=Estimate, then navigate back to detail page.
+- **`construction_schema.sql`** — every `CREATE TABLE`, `GRANT`, RLS policy, the `has_role` function, the `update_updated_at_column` trigger function, and the existing `company_profile` / `profiles` / `user_roles` tables. Re-runnable on a fresh Supabase.
+- **`construction_seed_data.sql`** — `INSERT` statements for: 20 categories, ~236 construction items (V2), units, pricing types, default English + Chinese terms, the default PDF template, baseline system settings. Idempotent (`ON CONFLICT DO NOTHING`).
 
-Scope note: Full duplication of estimates UI is large. Implement a simpler add-on form (pick category/item from existing data, qty, unit price → amount, multiple lines, save) rather than full triple-pane. Header makes it clear it's an add-on entry form. This keeps scope manageable while meeting the linkage requirement.
+Fresh-deploy flow becomes:
 
-## 7. Projects list page (`src/routes/projects.$status.tsx`)
-- Make each row a `<Link to="/projects/detail/$id" params={{id: p.id}}>`.
-- Filter out cancelled where appropriate.
+```text
+psql < construction_schema.sql
+psql < construction_seed_data.sql
+git pull && npm i && npm run build && pm2 restart
+```
 
-## 8. i18n keys (`src/lib/i18n.tsx`)
-Add keys for all new labels: status names, payment methods, table headers, buttons, section titles.
+---
 
-## 9. Pipeline cards already in Reports — keep them; the new records table goes below.
+## 3. Frontend rewire (construction library only)
 
-## Out of scope (not requested now)
-- Full triple-pane editor reuse for add-on (using simplified line entry instead, will note for user).
-- PDF changes.
-- Persisting line items from current Estimates store into Project records (would need bigger refactor — add-on entries will persist their own line snapshots).
+- **`price-book-store.ts`** → fetch categories + items from Supabase on mount (browser client, SELECT is public). Keep the Zustand cache + dedup-on-upsert logic. Custom items now persist to `construction_items` via authenticated insert.
+- **`terms-store.ts`** → read defaults from `terms_conditions`.
+- **`company-store.ts`** → keep current `company_profile` wiring; merge any settings reads from `system_settings`.
+- **`src/lib/data.ts`** → kept as the V2 seed source of truth used by the seed-SQL generator and the "Restore Defaults" button. UI no longer imports `PRICE_ITEMS` / `CATEGORIES` directly.
+
+Customer/estimate/project stores are **not touched**.
+
+---
+
+## 4. Settings → "System Data" panel
+
+New section in `src/routes/_authenticated/settings.tsx` with 4 actions:
+
+1. **Export Schema SQL** — downloads `construction_schema.sql` (static file from `supabase/exports/`).
+2. **Export Seed Data SQL** — regenerates seed SQL from current DB rows (categories + construction_items + units + pricing_types + terms + pdf_templates + system_settings) and downloads it. Customer/estimate tables excluded.
+3. **Restore Default Construction Items** — upserts V2 list into `construction_items`. Dedup key: `category_id + name_en + name_zh + unit`. Skips duplicates, never overwrites prices. Shows `{created, skipped}` toast.
+4. **Initialize Default Data** — only enabled when target tables are empty; runs the full default seed (categories, units, pricing types, items, terms, template, settings).
+
+All four actions are admin/super_admin only.
+
+---
+
+## 5. Tables actually used by the system after this work
+
+```text
+public.company_profile       (already exists)
+public.profiles              (already exists)
+public.user_roles            (already exists)
+public.categories            (new)
+public.construction_items    (new)
+public.units                 (new)
+public.pricing_types         (new)
+public.terms_conditions      (new)
+public.pdf_templates         (new)
+public.system_settings       (new)
+```
+
+Customer / estimate / project / payment tables are **not** part of this distribution.
+
+---
+
+## Execution order
+
+1. Submit one migration creating all 7 new tables + GRANTs + RLS + indexes.
+2. Submit one data insert (via insert tool) that seeds the 7 tables from `data.ts` V2.
+3. Generate `supabase/exports/construction_schema.sql` and `construction_seed_data.sql` (committed to repo, served as static download).
+4. Rewire `price-book-store.ts` + `terms-store.ts` to read from Supabase (keep API surface unchanged so existing pages don't break).
+5. Add `System Data` panel + 4 actions in Settings.
+6. Verify: fresh-DB simulation (count rows after seed), Export Seed regenerates a working file, Restore Defaults shows correct skip count on second run.
+
+---
+
+## Risks / call-outs
+
+- **Schema for `pdf_templates` and `system_settings`** uses `jsonb`. Concrete keys (tax rate, currency, locale, header/footer config) will be pulled from current code (`company-store`, estimate PDF code) so existing UI keeps working.
+- **Terms** are currently stored locally per-user; moving defaults to DB means edits to defaults become global. Per-estimate custom terms stay in the estimate record (local store, out of scope).
+- **Static schema SQL** will lag behind future migrations unless regenerated. The "Export Schema SQL" button always returns the latest version because it's regenerated at build time from `supabase/migrations/`.
+- After approval, the migration tool runs the schema change first; only after types regenerate can I write the store rewire code that depends on the new tables.
