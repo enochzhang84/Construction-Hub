@@ -34,7 +34,6 @@ const NAV = [
   { to: "/estimates", labelKey: "nav.estimates", icon: FileText },
   { to: "/customers", labelKey: "nav.customers", icon: Users },
   { to: "/materials", labelKey: "nav.suppliers", icon: Package },
-  { to: "/settings", labelKey: "nav.settings", icon: Settings },
 ] as const;
 
 export function LanguageToggle({ className = "" }: { className?: string }) {
