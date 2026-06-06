@@ -795,7 +795,7 @@ function CustomerDetail({
           <Row icon={<Mail className="h-3.5 w-3.5" />} text={c.email || "—"} />
           <Row
             icon={<MapPin className="h-3.5 w-3.5" />}
-            text={[c.address, c.city, c.state, c.zip].filter(Boolean).join(", ") || "—"}
+            text={formatAddressLine(c) || "—"}
           />
           {c.notes && (
             <div className="mt-2 rounded border border-border/60 bg-secondary/30 p-2 text-xs italic text-muted-foreground">
