@@ -942,7 +942,7 @@ function exportPDF(
   .contact .row { white-space: nowrap; }
   .contact .lbl { color: #9ca3af; display: inline-block; min-width: 56px; text-align: left; }
   /* ===== Customer / project / estimate block ===== */
-  .info-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0; margin: 20px 0 6px; border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; }
+  .info-grid { display: grid; grid-template-columns: 1.1fr 1.9fr 1fr; gap: 0; margin: 20px 0 6px; border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; }
   .info-cell { padding: 14px 16px; font-size: 12px; border-right: 1px solid #e5e7eb; }
   .info-cell:last-child { border-right: 0; }
   .info-cell .blklabel { font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: #0f2a4a; font-weight: 700; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px solid #e5e7eb; }
