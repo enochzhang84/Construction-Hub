@@ -19,7 +19,7 @@ INSERT INTO public.pricing_types(code,label_en,label_zh,sort_order) VALUES ('Tur
 INSERT INTO public.pricing_types(code,label_en,label_zh,sort_order) VALUES ('Estimate','Estimate','估价',5) ON CONFLICT (code) DO NOTHING;
 INSERT INTO public.pricing_types(code,label_en,label_zh,sort_order) VALUES ('Custom','Custom','自定义',6) ON CONFLICT (code) DO NOTHING;
 
--- Categories
+-- Categories (20)
 INSERT INTO public.categories(id,name_en,name_zh,icon,sort_order) VALUES ('demo','Demolition','拆除工程','Hammer',1) ON CONFLICT (id) DO NOTHING;
 INSERT INTO public.categories(id,name_en,name_zh,icon,sort_order) VALUES ('framing','Rough Framing','粗木工','Construction',2) ON CONFLICT (id) DO NOTHING;
 INSERT INTO public.categories(id,name_en,name_zh,icon,sort_order) VALUES ('drywall','Drywall','石膏板','Square',3) ON CONFLICT (id) DO NOTHING;
@@ -41,14 +41,14 @@ INSERT INTO public.categories(id,name_en,name_zh,icon,sort_order) VALUES ('adu',
 INSERT INTO public.categories(id,name_en,name_zh,icon,sort_order) VALUES ('lowvoltage','Low Voltage','弱电工程','Cable',19) ON CONFLICT (id) DO NOTHING;
 INSERT INTO public.categories(id,name_en,name_zh,icon,sort_order) VALUES ('general','General Conditions','总包条件','ClipboardList',20) ON CONFLICT (id) DO NOTHING;
 
--- Construction Items (236 rows)
+-- Construction Items (236)
 INSERT INTO public.construction_items(id,category_id,name_en,name_zh,unit,default_pricing,labor_rate,material_rate,hours_per_unit) VALUES ('demo-1','demo','General Interior Demo','室内拆除','sqft','Labor Only',2.5,0,0.05) ON CONFLICT (id) DO NOTHING;
 INSERT INTO public.construction_items(id,category_id,name_en,name_zh,unit,default_pricing,labor_rate,material_rate,hours_per_unit) VALUES ('demo-2','demo','Kitchen Cabinet Removal','厨房橱柜拆除','lf','Labor Only',15,0,0.3) ON CONFLICT (id) DO NOTHING;
 INSERT INTO public.construction_items(id,category_id,name_en,name_zh,unit,default_pricing,labor_rate,material_rate,hours_per_unit) VALUES ('demo-3','demo','Flooring Removal (Tile)','地砖拆除','sqft','Labor Only',3.5,0,0.06) ON CONFLICT (id) DO NOTHING;
 INSERT INTO public.construction_items(id,category_id,name_en,name_zh,unit,default_pricing,labor_rate,material_rate,hours_per_unit) VALUES ('demo-4','demo','Bathtub Removal','浴缸拆除','ea','Labor Only',250,0,3) ON CONFLICT (id) DO NOTHING;
 INSERT INTO public.construction_items(id,category_id,name_en,name_zh,unit,default_pricing,labor_rate,material_rate,hours_per_unit) VALUES ('framing-1','framing','Interior Wall Framing','室内墙体框架','lf','Labor + Material',18,12,0.4) ON CONFLICT (id) DO NOTHING;
 INSERT INTO public.construction_items(id,category_id,name_en,name_zh,unit,default_pricing,labor_rate,material_rate,hours_per_unit) VALUES ('framing-2','framing','Header Installation','门梁安装','ea','Labor + Material',180,85,2) ON CONFLICT (id) DO NOTHING;
-INSERT INTO public.construction_items(id,category_id,name_en,name_zh,unit,default_pricing,labor_rate,material_rate,hours_per_unit) VALUES ('drywall-1','drywall','Drywall Install (1/2")','石膏板安装 (1/2\','sqft','Labor + Material',1.8,0.9,0.04) ON CONFLICT (id) DO NOTHING;
+INSERT INTO public.construction_items(id,category_id,name_en,name_zh,unit,default_pricing,labor_rate,material_rate,hours_per_unit) VALUES ('drywall-1','drywall','Drywall Install (1/2")','石膏板安装 (1/2")','sqft','Labor + Material',1.8,0.9,0.04) ON CONFLICT (id) DO NOTHING;
 INSERT INTO public.construction_items(id,category_id,name_en,name_zh,unit,default_pricing,labor_rate,material_rate,hours_per_unit) VALUES ('drywall-2','drywall','Tape & Texture','石膏板接缝与喷涂','sqft','Labor + Material',1.5,0.4,0.03) ON CONFLICT (id) DO NOTHING;
 INSERT INTO public.construction_items(id,category_id,name_en,name_zh,unit,default_pricing,labor_rate,material_rate,hours_per_unit) VALUES ('paint-1','paint','Interior Wall Paint (2 coats)','室内墙面油漆（两遍）','sqft','Labor + Material',1.2,0.6,0.02) ON CONFLICT (id) DO NOTHING;
 INSERT INTO public.construction_items(id,category_id,name_en,name_zh,unit,default_pricing,labor_rate,material_rate,hours_per_unit) VALUES ('paint-2','paint','Cabinet Refinishing','橱柜翻新','ea','Labor + Material',85,25,1.5) ON CONFLICT (id) DO NOTHING;
@@ -60,7 +60,7 @@ INSERT INTO public.construction_items(id,category_id,name_en,name_zh,unit,defaul
 INSERT INTO public.construction_items(id,category_id,name_en,name_zh,unit,default_pricing,labor_rate,material_rate,hours_per_unit) VALUES ('flooring-5','flooring','Self-Leveling Underlayment','自流平垫层','sqft','Labor + Material',1.8,1.2,0.04) ON CONFLICT (id) DO NOTHING;
 INSERT INTO public.construction_items(id,category_id,name_en,name_zh,unit,default_pricing,labor_rate,material_rate,hours_per_unit) VALUES ('flooring-6','flooring','Baseboard Installation','踢脚线安装','lf','Labor + Material',3.5,1.8,0.08) ON CONFLICT (id) DO NOTHING;
 INSERT INTO public.construction_items(id,category_id,name_en,name_zh,unit,default_pricing,labor_rate,material_rate,hours_per_unit) VALUES ('electrical-1','electrical','Outlet / Receptacle','插座安装','ea','Labor + Material',65,18,0.75) ON CONFLICT (id) DO NOTHING;
-INSERT INTO public.construction_items(id,category_id,name_en,name_zh,unit,default_pricing,labor_rate,material_rate,hours_per_unit) VALUES ('electrical-2','electrical','Recessed Light (6")','嵌入式筒灯 (6\','ea','Labor + Material',95,35,1) ON CONFLICT (id) DO NOTHING;
+INSERT INTO public.construction_items(id,category_id,name_en,name_zh,unit,default_pricing,labor_rate,material_rate,hours_per_unit) VALUES ('electrical-2','electrical','Recessed Light (6")','嵌入式筒灯 (6")','ea','Labor + Material',95,35,1) ON CONFLICT (id) DO NOTHING;
 INSERT INTO public.construction_items(id,category_id,name_en,name_zh,unit,default_pricing,labor_rate,material_rate,hours_per_unit) VALUES ('electrical-3','electrical','200A Panel Upgrade','200A 电箱升级','ea','Turnkey',1800,1200,16) ON CONFLICT (id) DO NOTHING;
 INSERT INTO public.construction_items(id,category_id,name_en,name_zh,unit,default_pricing,labor_rate,material_rate,hours_per_unit) VALUES ('electrical-4','electrical','EV Charger Circuit','EV 充电桩电路','ea','Turnkey',650,350,6) ON CONFLICT (id) DO NOTHING;
 INSERT INTO public.construction_items(id,category_id,name_en,name_zh,unit,default_pricing,labor_rate,material_rate,hours_per_unit) VALUES ('plumbing-1','plumbing','Toilet Install','马桶安装','ea','Labor + Material',285,220,2.5) ON CONFLICT (id) DO NOTHING;
@@ -73,7 +73,7 @@ INSERT INTO public.construction_items(id,category_id,name_en,name_zh,unit,defaul
 INSERT INTO public.construction_items(id,category_id,name_en,name_zh,unit,default_pricing,labor_rate,material_rate,hours_per_unit) VALUES ('kitchen-3','kitchen','Backsplash Tile','厨房墙砖','sqft','Labor + Material',12,8,0.25) ON CONFLICT (id) DO NOTHING;
 INSERT INTO public.construction_items(id,category_id,name_en,name_zh,unit,default_pricing,labor_rate,material_rate,hours_per_unit) VALUES ('bath-1','bath','Full Bath Remodel (Standard)','整体卫浴翻新（标准）','ea','Turnkey',8500,6500,80) ON CONFLICT (id) DO NOTHING;
 INSERT INTO public.construction_items(id,category_id,name_en,name_zh,unit,default_pricing,labor_rate,material_rate,hours_per_unit) VALUES ('bath-2','bath','Tile Shower Surround','瓷砖淋浴墙','sqft','Labor + Material',18,12,0.35) ON CONFLICT (id) DO NOTHING;
-INSERT INTO public.construction_items(id,category_id,name_en,name_zh,unit,default_pricing,labor_rate,material_rate,hours_per_unit) VALUES ('bath-3','bath','Vanity Install (36")','浴室柜安装 (36\','ea','Labor + Material',285,650,3) ON CONFLICT (id) DO NOTHING;
+INSERT INTO public.construction_items(id,category_id,name_en,name_zh,unit,default_pricing,labor_rate,material_rate,hours_per_unit) VALUES ('bath-3','bath','Vanity Install (36")','浴室柜安装 (36")','ea','Labor + Material',285,650,3) ON CONFLICT (id) DO NOTHING;
 INSERT INTO public.construction_items(id,category_id,name_en,name_zh,unit,default_pricing,labor_rate,material_rate,hours_per_unit) VALUES ('doorwindow-1','doorwindow','Interior Door (Prehung)','室内门（成品门）','ea','Labor + Material',185,195,2) ON CONFLICT (id) DO NOTHING;
 INSERT INTO public.construction_items(id,category_id,name_en,name_zh,unit,default_pricing,labor_rate,material_rate,hours_per_unit) VALUES ('doorwindow-2','doorwindow','Vinyl Window Replacement','塑钢窗更换','ea','Turnkey',285,425,3) ON CONFLICT (id) DO NOTHING;
 INSERT INTO public.construction_items(id,category_id,name_en,name_zh,unit,default_pricing,labor_rate,material_rate,hours_per_unit) VALUES ('doorwindow-3','doorwindow','Sliding Glass Door','推拉玻璃门','ea','Turnkey',850,1450,8) ON CONFLICT (id) DO NOTHING;
@@ -81,7 +81,7 @@ INSERT INTO public.construction_items(id,category_id,name_en,name_zh,unit,defaul
 INSERT INTO public.construction_items(id,category_id,name_en,name_zh,unit,default_pricing,labor_rate,material_rate,hours_per_unit) VALUES ('roof-2','roof','Gutter Install','雨水槽安装','lf','Labor + Material',6,5,0.15) ON CONFLICT (id) DO NOTHING;
 INSERT INTO public.construction_items(id,category_id,name_en,name_zh,unit,default_pricing,labor_rate,material_rate,hours_per_unit) VALUES ('siding-1','siding','Stucco Repair','拉毛墙修补','sqft','Labor + Material',8,3,0.15) ON CONFLICT (id) DO NOTHING;
 INSERT INTO public.construction_items(id,category_id,name_en,name_zh,unit,default_pricing,labor_rate,material_rate,hours_per_unit) VALUES ('siding-2','siding','Hardie Plank Siding','Hardie 板外墙','sqft','Labor + Material',5.5,4.5,0.1) ON CONFLICT (id) DO NOTHING;
-INSERT INTO public.construction_items(id,category_id,name_en,name_zh,unit,default_pricing,labor_rate,material_rate,hours_per_unit) VALUES ('concrete-1','concrete','Concrete Slab (4")','混凝土地坪 (4\','sqft','Turnkey',7,5,0.15) ON CONFLICT (id) DO NOTHING;
+INSERT INTO public.construction_items(id,category_id,name_en,name_zh,unit,default_pricing,labor_rate,material_rate,hours_per_unit) VALUES ('concrete-1','concrete','Concrete Slab (4")','混凝土地坪 (4")','sqft','Turnkey',7,5,0.15) ON CONFLICT (id) DO NOTHING;
 INSERT INTO public.construction_items(id,category_id,name_en,name_zh,unit,default_pricing,labor_rate,material_rate,hours_per_unit) VALUES ('concrete-2','concrete','Driveway Apron','车道延伸','sqft','Turnkey',9,6,0.18) ON CONFLICT (id) DO NOTHING;
 INSERT INTO public.construction_items(id,category_id,name_en,name_zh,unit,default_pricing,labor_rate,material_rate,hours_per_unit) VALUES ('landscape-1','landscape','Sod Installation','草皮铺设','sqft','Labor + Material',0.8,0.6,0.02) ON CONFLICT (id) DO NOTHING;
 INSERT INTO public.construction_items(id,category_id,name_en,name_zh,unit,default_pricing,labor_rate,material_rate,hours_per_unit) VALUES ('landscape-2','landscape','Drip Irrigation Zone','滴灌系统分区','ea','Turnkey',350,220,4) ON CONFLICT (id) DO NOTHING;
@@ -286,9 +286,7 @@ INSERT INTO public.terms_conditions(title,body,locale,is_default,sort_order) VAL
 ON CONFLICT DO NOTHING;
 
 -- Default PDF Template
-INSERT INTO public.pdf_templates(name,description,config,is_default) VALUES
-('Standard Estimate','Default bilingual estimate template','{"header":{"showLogo":true,"showCompany":true},"footer":{"showLicense":true,"showWebsite":true},"columns":["description","qty","unit","price","amount"],"locale":"en"}'::jsonb,true)
-ON CONFLICT DO NOTHING;
+INSERT INTO public.pdf_templates(name,description,config,is_default) VALUES ('Standard Estimate','Default bilingual estimate template','{"header":{"showLogo":true,"showCompany":true},"footer":{"showLicense":true,"showWebsite":true},"columns":["description","qty","unit","price","amount"],"locale":"en"}'::jsonb,true) ON CONFLICT DO NOTHING;
 
 -- System Settings
 INSERT INTO public.system_settings(key,value,description) VALUES ('default_currency','"USD"'::jsonb,'Default currency') ON CONFLICT (key) DO NOTHING;
