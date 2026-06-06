@@ -225,7 +225,7 @@ function CustomersPage() {
       if (archiveFilter === "active" && c.isArchived) return false;
       if (archiveFilter === "archived" && !c.isArchived) return false;
       if (needle) {
-        const hay = [c.name, c.phone, c.email, c.address, c.city].join(" ").toLowerCase();
+        const hay = [c.name, c.phone, c.email, c.address, c.unit, c.suite, c.building, c.city, c.state, c.zip, c.country].join(" ").toLowerCase();
         if (!hay.includes(needle)) return false;
       }
       if (statusFilter !== "all") {
