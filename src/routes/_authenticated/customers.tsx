@@ -249,6 +249,7 @@ function CustomersPage() {
 
   const openAdd = () => {
     setForm(EMPTY);
+    setAddrErrors({});
     setAddOpen(true);
   };
 
@@ -268,19 +269,43 @@ function CustomersPage() {
       notes: c.notes ?? "",
       source: c.source ?? "Website",
     });
+    setAddrErrors({});
     setEditingId(c.id);
   };
 
+  /** Normalize + validate address fields. Returns the normalized form payload, or null if invalid. */
+  const prepareForm = (): FormState | null => {
+    if (!form.name.trim()) return null;
+    const normalized = normalizeAddressInput(form);
+    const errs = validateAddress(form, false);
+    setAddrErrors(errs);
+    if (Object.keys(errs).length > 0) return null;
+    return {
+      ...form,
+      address: normalized.address ?? "",
+      unit: normalized.unit ?? "",
+      suite: normalized.suite ?? "",
+      building: normalized.building ?? "",
+      city: normalized.city ?? "",
+      state: normalized.state ?? "",
+      zip: normalized.zip ? formatZip(normalized.zip) : "",
+      country: normalized.country ?? "",
+    };
+  };
+
   const onSaveAdd = () => {
-    if (!form.name.trim()) return;
-    const c = addCustomer(form);
+    const payload = prepareForm();
+    if (!payload) return;
+    const c = addCustomer(payload);
     setSelectedId(c.id);
     setAddOpen(false);
   };
 
   const onSaveEdit = () => {
-    if (!editingId || !form.name.trim()) return;
-    updateCustomer(editingId, form);
+    if (!editingId) return;
+    const payload = prepareForm();
+    if (!payload) return;
+    updateCustomer(editingId, payload);
     setEditingId(null);
   };
 
