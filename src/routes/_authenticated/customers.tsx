@@ -658,7 +658,8 @@ function CustomersPage() {
         title={t("cust.dlg.title")}
         form={form}
         setForm={setForm}
-        onClose={() => setAddOpen(false)}
+        errors={addrErrors}
+        onClose={() => { setAddOpen(false); setAddrErrors({}); }}
         onSave={onSaveAdd}
       />
 
@@ -668,7 +669,8 @@ function CustomersPage() {
         title={locale === "zh" ? "编辑客户" : "Edit Customer"}
         form={form}
         setForm={setForm}
-        onClose={() => setEditingId(null)}
+        errors={addrErrors}
+        onClose={() => { setEditingId(null); setAddrErrors({}); }}
         onSave={onSaveEdit}
       />
 
