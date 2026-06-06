@@ -5,7 +5,17 @@ import { useCompany, useCompanyHydration, type CompanyProfile } from "@/lib/comp
 import { useTerms, DEFAULT_TERMS_EN, DEFAULT_TERMS_ZH } from "@/lib/terms-store";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { BookOpen, ChevronRight, FileText, RotateCcw, Upload, Trash2, UserCircle2, ShieldCheck } from "lucide-react";
+import { BookOpen, ChevronRight, FileText, RotateCcw, Upload, Trash2, UserCircle2, ShieldCheck, Database, Download, RefreshCw, PlayCircle } from "lucide-react";
+import {
+  CATALOG_TABLES,
+  type CatalogCounts,
+  exportSeedSql,
+  fetchSchemaSql,
+  downloadText,
+  getCatalogCounts,
+  restoreDefaultConstructionItems,
+  initializeDefaultData,
+} from "@/lib/system-data";
 
 export const Route = createFileRoute("/_authenticated/settings")({
   head: () => ({ meta: [{ title: "Settings · Construction Hub" }] }),
