@@ -104,7 +104,7 @@ function EstimatesPage() {
       setMeta({
         customerId: c.id,
         customerName: c.name,
-        projectAddress: `${c.address}, ${c.city}, ${c.state} ${c.zip}`,
+        projectAddress: buildProjectAddress(c),
         estimateNumber: newEstimateNumber(),
         date: new Date().toISOString().slice(0, 10),
         globalDiscount: 0,
