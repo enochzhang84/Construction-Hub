@@ -113,6 +113,9 @@ const DICT: Dict = {
   "pb.import.done": { en: "Import complete", zh: "导入完成" },
   "pb.import.created": { en: "Created", zh: "新增" },
   "pb.import.updated": { en: "Updated", zh: "更新" },
+  "pb.import.total": { en: "Total", zh: "总计" },
+  "pb.import.new": { en: "New", zh: "新增" },
+  "pb.import.skipped": { en: "Skipped (duplicate)", zh: "跳过（重复）" },
   "pb.f.trade": { en: "Trade", zh: "施工分类" },
   "pb.f.item": { en: "Item Name", zh: "项目名称" },
 
