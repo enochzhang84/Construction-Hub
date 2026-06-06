@@ -842,6 +842,18 @@ function exportPDF(
   const LZ = LABELS_ZH;
 
   const companyName = company.name?.trim() || "Your Company Name";
+  // Derive an English/Latin display name. If the company name already contains
+  // Latin letters, reuse it; otherwise fall back to a generic uppercase label.
+  const hasLatin = /[A-Za-z]/.test(companyName);
+  const companyNameEn = hasLatin
+    ? companyName.toUpperCase()
+    : "PROFESSIONAL REMODELING CONTRACTOR";
+  const tagline =
+    mode === "zh"
+      ? "专业住宅与商业装修服务"
+      : mode === "bilingual"
+        ? "Professional Residential & Commercial Remodeling · 专业住宅与商业装修服务"
+        : "Professional Residential & Commercial Remodeling";
 
   const lineRows = lines
     .map((l) => {
