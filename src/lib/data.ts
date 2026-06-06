@@ -109,6 +109,8 @@ export const CATEGORIES: Category[] = [
   { id: "fence", name: "Fencing", nameZh: "围栏工程", icon: "Fence" },
   { id: "deck", name: "Deck & Patio", nameZh: "露台工程", icon: "Grid3x3" },
   { id: "adu", name: "ADU Addition", nameZh: "ADU 加建", icon: "Plus" },
+  { id: "lowvoltage", name: "Low Voltage", nameZh: "弱电工程", icon: "Cable" },
+  { id: "general", name: "General Conditions", nameZh: "总包条件", icon: "ClipboardList" },
 ];
 
 export const PRICE_ITEMS: PriceItem[] = [
