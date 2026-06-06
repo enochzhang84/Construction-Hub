@@ -29,6 +29,24 @@ function fmt(n: number) {
   return n.toLocaleString("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 2 });
 }
 
+function buildProjectAddress(c: { address: string; unit?: string; suite?: string; building?: string; city: string; state: string; zip: string; country?: string }): string {
+  const lines: string[] = [];
+  if (c.address?.trim()) lines.push(c.address.trim());
+  if (c.unit?.trim()) lines.push(c.unit.trim());
+  if (c.suite?.trim()) lines.push(`Suite ${c.suite.trim()}`);
+  if (c.building?.trim()) lines.push(`Building ${c.building.trim()}`);
+  const cityStateZip = [c.city, `${c.state} ${c.zip}`.trim()].filter(Boolean).join(", ");
+  if (cityStateZip) lines.push(cityStateZip);
+  if (c.country?.trim()) lines.push(c.country.trim());
+  return lines.join("\n");
+}
+
+function formatDateAddDays(dateStr: string, days: number): string {
+  const d = new Date(dateStr + "T00:00:00");
+  d.setDate(d.getDate() + days);
+  return d.toISOString().slice(0, 10);
+}
+
 function EstimatesPage() {
   const t = useT();
   const locale = useLocale();
