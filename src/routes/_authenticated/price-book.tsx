@@ -271,12 +271,13 @@ function PriceBookPage() {
 
       <ImportPreviewDialog
         rows={importing}
+        existingItems={items}
         onClose={() => setImporting(null)}
         onConfirm={(rows) => {
           const res = upsertMany(rows);
           setImporting(null);
           alert(
-            `${t("pb.import.done")}\n${t("pb.import.created")}: ${res.created}\n${t("pb.import.updated")}: ${res.updated}`,
+            `${t("pb.import.done")}\n${t("pb.import.created")}: ${res.created}\n${t("pb.import.skipped")}: ${res.skipped}`,
           );
         }}
       />
@@ -625,10 +626,12 @@ function AddDialog({
 
 function ImportPreviewDialog({
   rows,
+  existingItems,
   onClose,
   onConfirm,
 }: {
   rows: ImportRow[] | null;
+  existingItems: PriceItem[];
   onClose: () => void;
   onConfirm: (rows: Array<ImportRow["data"]>) => void;
 }) {
@@ -640,8 +643,13 @@ function ImportPreviewDialog({
       </Dialog>
     );
   }
+  const keyOf = (i: { categoryId: string; name: string; nameZh?: string; unit: string }) =>
+    `${i.categoryId}__${(i.name ?? "").trim().toLowerCase()}__${(i.nameZh ?? "").trim().toLowerCase()}__${(i.unit ?? "").trim().toLowerCase()}`;
+  const existingKeys = new Set(existingItems.map((i) => keyOf(i)));
   const ok = rows.filter((r) => r.ok);
   const bad = rows.filter((r) => !r.ok);
+  const dup = ok.filter((r) => existingKeys.has(keyOf(r.data)));
+  const fresh = ok.filter((r) => !existingKeys.has(keyOf(r.data)));
 
   return (
     <Dialog open={!!rows} onOpenChange={(o) => !o && onClose()}>
@@ -650,7 +658,11 @@ function ImportPreviewDialog({
           <DialogTitle>{t("pb.import.preview")}</DialogTitle>
         </DialogHeader>
         <div className="text-xs text-muted-foreground">
-          {t("pb.import.valid")}: <span className="font-semibold text-foreground">{ok.length}</span>
+          {t("pb.import.total")}: <span className="font-semibold text-foreground">{rows.length}</span>
+          {"  ·  "}
+          {t("pb.import.new")}: <span className="font-semibold text-emerald-600">{fresh.length}</span>
+          {"  ·  "}
+          {t("pb.import.skipped")}: <span className="font-semibold text-amber-600">{dup.length}</span>
           {"  ·  "}
           {t("pb.import.invalid")}: <span className="font-semibold text-destructive">{bad.length}</span>
         </div>
@@ -679,10 +691,12 @@ function ImportPreviewDialog({
                   <td className="px-2 py-1 text-right font-mono">{r.data.laborRate}</td>
                   <td className="px-2 py-1 text-right font-mono">{r.data.materialRate}</td>
                   <td className="px-2 py-1">
-                    {r.ok ? (
-                      <span className="text-emerald-600">OK</span>
-                    ) : (
+                    {!r.ok ? (
                       <span className="text-destructive">{r.error}</span>
+                    ) : existingKeys.has(keyOf(r.data)) ? (
+                      <span className="text-amber-600">{t("pb.import.skipped")}</span>
+                    ) : (
+                      <span className="text-emerald-600">{t("pb.import.new")}</span>
                     )}
                   </td>
                 </tr>
@@ -698,11 +712,11 @@ function ImportPreviewDialog({
             {t("common.cancel")}
           </button>
           <button
-            disabled={ok.length === 0}
-            onClick={() => onConfirm(ok.map((r) => r.data))}
+            disabled={fresh.length === 0}
+            onClick={() => onConfirm(fresh.map((r) => r.data))}
             className="inline-flex h-10 items-center justify-center rounded-[10px] bg-foreground px-4 text-sm font-medium text-background transition-colors hover:bg-foreground/90 disabled:opacity-50"
           >
-            {t("pb.import.confirm")} ({ok.length})
+            {t("pb.import.confirm")} ({fresh.length})
           </button>
         </DialogFooter>
       </DialogContent>
