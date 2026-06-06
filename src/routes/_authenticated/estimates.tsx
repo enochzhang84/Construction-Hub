@@ -890,7 +890,7 @@ function exportPDF(
 <meta charset="utf-8" />
 <title>${esc(meta.estimateNumber)} — ${esc(companyName)}</title>
 <style>
-  @page { size: letter; margin: 0.6in; }
+  @page { size: letter; margin: 0.5in; }
   * { box-sizing: border-box; }
   body {
     font-family: "Helvetica Neue", "Inter", "PingFang SC", "Hiragino Sans GB",
@@ -898,42 +898,57 @@ function exportPDF(
     color: #1a1a1a; margin: 0; padding: 28px;
     -webkit-print-color-adjust: exact; print-color-adjust: exact;
   }
-  .head { display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; padding-bottom: 16px; border-bottom: 2px solid #1a1a1a; }
-  .head .left { display: flex; gap: 14px; align-items: flex-start; }
-  .logo { width: 64px; height: 64px; object-fit: contain; border-radius: 6px; }
-  .brand { font-size: 22px; font-weight: 700; letter-spacing: -0.01em; line-height: 1.15; }
-  .sub { font-size: 11px; color: #777; margin-top: 4px; }
-  .cline { font-size: 11px; color: #555; line-height: 1.55; margin-top: 6px; }
-  .meta { font-size: 11px; text-align: right; line-height: 1.7; }
-  .meta .estno { font-size: 14px; font-weight: 700; color: #111; }
-  .twocol { display: flex; gap: 24px; margin: 22px 0 6px; }
-  .twocol > div { flex: 1; font-size: 12px; }
-  .blklabel { font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; color: #888; font-weight: 700; margin-bottom: 4px; }
-  .muted { color: #777; }
-  .small { font-size: 10px; }
-  .zh { color: #555; font-size: 0.92em; }
-  table { width: 100%; border-collapse: collapse; margin-top: 8px; }
-  thead th { background: #f5f3ee; text-align: left; padding: 8px 10px; font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid #ddd; }
-  tbody td { padding: 10px; border-bottom: 1px solid #eee; font-size: 11.5px; vertical-align: top; }
+  /* ===== Company header ===== */
+  .head { display: flex; justify-content: space-between; align-items: center; gap: 28px; padding-bottom: 18px; border-bottom: 3px solid #0f2a4a; }
+  .head .left { display: flex; align-items: center; gap: 18px; flex: 1; min-width: 0; }
+  .logo { width: 84px; height: 84px; object-fit: contain; border-radius: 8px; background: #fff; padding: 4px; border: 1px solid #e5e7eb; flex: none; }
+  .brand-cn { font-size: 34px; font-weight: 800; letter-spacing: -0.01em; line-height: 1.1; color: #0f2a4a; }
+  .brand-en { font-size: 20px; font-weight: 700; letter-spacing: 0.04em; color: #1a1a1a; margin-top: 4px; text-transform: uppercase; }
+  .tagline { font-size: 12px; color: #6b7280; margin-top: 6px; letter-spacing: 0.02em; }
+  .contact { text-align: right; font-size: 11px; line-height: 1.7; color: #374151; flex: none; min-width: 200px; }
+  .contact .row { white-space: nowrap; }
+  .contact .lbl { color: #9ca3af; display: inline-block; min-width: 56px; text-align: left; }
+  /* ===== Customer / project / estimate block ===== */
+  .info-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0; margin: 20px 0 6px; border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; }
+  .info-cell { padding: 14px 16px; font-size: 12px; border-right: 1px solid #e5e7eb; }
+  .info-cell:last-child { border-right: 0; }
+  .info-cell .blklabel { font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: #0f2a4a; font-weight: 700; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px solid #e5e7eb; }
+  .info-cell .strong { font-size: 13px; font-weight: 700; color: #111; margin-bottom: 3px; }
+  .info-cell .muted { color: #6b7280; font-size: 11px; line-height: 1.55; }
+  .info-cell .estno { font-size: 15px; font-weight: 700; color: #0f2a4a; font-family: "JetBrains Mono", "SF Mono", Menlo, monospace; }
+  /* ===== Line item table ===== */
+  table { width: 100%; border-collapse: collapse; margin-top: 14px; }
+  thead th { background: #0f2a4a; color: #fff; text-align: left; padding: 10px 12px; font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 700; }
+  thead th.right { text-align: right; }
+  tbody td { padding: 10px 12px; border-bottom: 1px solid #eee; font-size: 11.5px; vertical-align: top; }
+  tbody tr:nth-child(even) td { background: #fafbfc; }
   td.right, th.right { text-align: right; }
   .mono { font-family: "JetBrains Mono", "SF Mono", Menlo, monospace; }
   .strong { font-weight: 600; }
-  .totals { margin-top: 16px; margin-left: auto; width: 280px; font-size: 12px; }
-  .totals .row { display: flex; justify-content: space-between; padding: 4px 0; color: #555; }
-  .totals .grand { display: flex; justify-content: space-between; padding: 8px 0 0; border-top: 1px solid #ccc; margin-top: 6px; font-size: 16px; font-weight: 700; color: #111; }
-  .block { margin-top: 22px; font-size: 11px; color: #444; line-height: 1.55; }
-  .block h4 { font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; color: #888; margin: 0 0 4px; font-weight: 700; }
+  .muted { color: #777; }
+  .small { font-size: 10px; }
+  .zh { color: #555; font-size: 0.92em; }
+  /* ===== Totals ===== */
+  .totals-wrap { display: flex; justify-content: flex-end; margin-top: 18px; }
+  .totals { width: 340px; font-size: 12px; border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; }
+  .totals .row { display: flex; justify-content: space-between; padding: 8px 14px; color: #4b5563; background: #fafbfc; }
+  .totals .row + .row { border-top: 1px solid #eef0f3; }
+  .totals .grand { display: flex; justify-content: space-between; align-items: center; padding: 14px 16px; background: #0f2a4a; color: #fff; font-weight: 700; }
+  .totals .grand .label { font-size: 13px; text-transform: uppercase; letter-spacing: 0.06em; }
+  .totals .grand .amt { font-size: 26px; letter-spacing: -0.01em; }
+  /* ===== Terms / sigs / footer ===== */
   .terms { margin-top: 28px; page-break-inside: avoid; }
-  .terms h3 { font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: #111; margin: 0 0 10px; padding-bottom: 6px; border-bottom: 1.5px solid #1a1a1a; font-weight: 700; }
+  .terms h3 { font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: #0f2a4a; margin: 0 0 10px; padding-bottom: 6px; border-bottom: 1.5px solid #0f2a4a; font-weight: 700; }
   .terms-body { font-size: 10.5px; line-height: 1.6; color: #333; white-space: pre-wrap; column-count: 2; column-gap: 24px; }
   .terms-zh { margin-top: 14px; padding-top: 12px; border-top: 1px dashed #ccc; }
   .sigs { margin-top: 32px; display: flex; gap: 32px; page-break-inside: avoid; }
   .sig { flex: 1; }
-  .sig .blklabel { margin-bottom: 28px; }
+  .sig .blklabel { font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; color: #0f2a4a; font-weight: 700; margin-bottom: 28px; }
   .sig .field { font-size: 10px; color: #555; margin-bottom: 14px; }
   .sig .field .lbl { display: inline-block; width: 90px; color: #888; }
   .sig .field .ink { display: inline-block; min-width: 180px; border-bottom: 1px solid #333; padding: 0 4px 2px; }
-  .footer { margin-top: 28px; padding-top: 10px; border-top: 1px solid #eee; font-size: 9.5px; color: #999; text-align: center; }
+  .footer { margin-top: 30px; padding-top: 14px; border-top: 2px solid #0f2a4a; font-size: 10px; color: #6b7280; text-align: center; line-height: 1.7; }
+  .footer .fbrand { color: #0f2a4a; font-weight: 700; font-size: 12px; letter-spacing: 0.02em; }
   @media print { .noprint { display: none !important; } }
   .bar { position: fixed; top: 10px; right: 10px; }
   .bar button { font-size: 12px; padding: 6px 12px; cursor: pointer; }
@@ -947,28 +962,37 @@ function exportPDF(
   <div class="head">
     <div class="left">
       ${company.logoUrl ? `<img class="logo" src="${esc(company.logoUrl)}" alt="logo" />` : ""}
-      <div>
-        <div class="brand">${esc(companyName)}</div>
-        <div class="sub">${titleHeader}</div>
-        <div class="cline">${companyLines.join("<br/>")}</div>
+      <div style="min-width:0;">
+        <div class="brand-cn">${esc(companyName)}</div>
+        <div class="brand-en">${esc(companyNameEn)}</div>
+        <div class="tagline">${esc(tagline)}</div>
       </div>
     </div>
-    <div class="meta">
-      <div class="estno">${esc(meta.estimateNumber)}</div>
-      <div><strong>${bi(LABELS_EN.date, LZ.date, mode)}:</strong> ${esc(meta.date)}</div>
+    <div class="contact">
+      ${company.phone ? `<div class="row"><span class="lbl">${L.phone}</span> ${esc(company.phone)}</div>` : ""}
+      ${company.email ? `<div class="row"><span class="lbl">${L.email}</span> ${esc(company.email)}</div>` : ""}
+      ${company.website ? `<div class="row"><span class="lbl">${L.web}</span> ${esc(company.website)}</div>` : ""}
+      ${company.license ? `<div class="row"><span class="lbl">${L.license} #</span> ${esc(company.license)}</div>` : ""}
+      ${company.address ? `<div class="row" style="white-space:normal; margin-top:4px; color:#6b7280;">${esc(company.address)}</div>` : ""}
     </div>
   </div>
 
-  <div class="twocol">
-    <div>
+  <div class="info-grid">
+    <div class="info-cell">
       <div class="blklabel">${bi(LABELS_EN.billTo, LZ.billTo, mode)}</div>
       <div class="strong">${esc(customerName)}</div>
       ${customerPhone ? `<div class="muted mono">${esc(customerPhone)}</div>` : ""}
       ${customerEmail ? `<div class="muted">${esc(customerEmail)}</div>` : ""}
     </div>
-    <div>
+    <div class="info-cell">
       <div class="blklabel">${bi(LABELS_EN.projectAddress, LZ.projectAddress, mode)}</div>
-      <div>${esc(projectAddr) || "—"}</div>
+      <div class="muted" style="font-size:12px; color:#111;">${esc(projectAddr) || "—"}</div>
+    </div>
+    <div class="info-cell">
+      <div class="blklabel">${bi("Estimate Info", "报价信息", mode)}</div>
+      <div class="muted" style="margin-bottom:6px;">${bi(LABELS_EN.estimate, LZ.estimate, mode)}</div>
+      <div class="estno">${esc(meta.estimateNumber)}</div>
+      <div class="muted" style="margin-top:6px;">${bi(LABELS_EN.date, LZ.date, mode)}: <span style="color:#111;">${esc(meta.date)}</span></div>
     </div>
   </div>
 
@@ -985,10 +1009,12 @@ function exportPDF(
     <tbody>${lineRows}</tbody>
   </table>
 
-  <div class="totals">
-    <div class="row"><span>${bi(LABELS_EN.subtotal, LZ.subtotal, mode)}</span><span class="mono">${fmt(totals.subtotal)}</span></div>
-    <div class="row"><span>${bi(LABELS_EN.discounts, LZ.discounts, mode)}</span><span class="mono">− ${fmt(totals.lineDiscounts + totals.globalDiscount)}</span></div>
-    <div class="grand"><span>${bi(LABELS_EN.totalRow, LZ.totalRow, mode)}</span><span class="mono">${fmt(totals.total)}</span></div>
+  <div class="totals-wrap">
+    <div class="totals">
+      <div class="row"><span>${bi(LABELS_EN.subtotal, LZ.subtotal, mode)}</span><span class="mono">${fmt(totals.subtotal)}</span></div>
+      <div class="row"><span>${bi(LABELS_EN.discounts, LZ.discounts, mode)}</span><span class="mono">− ${fmt(totals.lineDiscounts + totals.globalDiscount)}</span></div>
+      <div class="grand"><span class="label">${bi(LABELS_EN.totalRow, LZ.totalRow, mode)}</span><span class="amt mono">${fmt(totals.total)}</span></div>
+    </div>
   </div>
 
   <div class="terms">
@@ -1018,7 +1044,15 @@ function exportPDF(
     </div>
   </div>
 
-  <div class="footer">${esc(`Generated by ${companyName || "Contractor Estimating System"}`)}</div>
+  <div class="footer">
+    <div class="fbrand">${esc(companyName)}${companyNameEn ? ` · ${esc(companyNameEn)}` : ""}</div>
+    <div>${[
+      company.license ? `${L.license} #${esc(company.license)}` : "",
+      company.phone ? `${L.phone}: ${esc(company.phone)}` : "",
+      company.website ? esc(company.website) : "",
+    ].filter(Boolean).join(" &nbsp;·&nbsp; ")}</div>
+    <div style="margin-top:4px;">${esc(titleHeader)}</div>
+  </div>
 
 
   ${autoPrint ? `<script>window.addEventListener("load", function () { setTimeout(function () { window.print(); }, 350); });</script>` : ""}
