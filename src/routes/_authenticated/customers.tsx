@@ -173,6 +173,7 @@ function CustomersPage() {
   const [addOpen, setAddOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<FormState>(EMPTY);
+  const [addrErrors, setAddrErrors] = useState<AddressErrors>({});
   const [flagDialog, setFlagDialog] = useState<{ customer: Customer } | null>(null);
   const [deleteDialog, setDeleteDialog] = useState<{ customer: Customer; projectCount: number } | null>(null);
 
