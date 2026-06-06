@@ -1018,15 +1018,16 @@ function exportPDF(
       ${customerPhone ? `<div class="muted mono">${esc(customerPhone)}</div>` : ""}
       ${customerEmail ? `<div class="muted">${esc(customerEmail)}</div>` : ""}
     </div>
-    <div class="info-cell">
+    <div class="info-cell" style="white-space:normal;">
       <div class="blklabel">${bi(LABELS_EN.projectAddress, LZ.projectAddress, mode)}</div>
-      <div class="muted" style="font-size:12px; color:#111;">${esc(projectAddr) || "—"}</div>
+      <div style="font-size:12.5px; color:#111; line-height:1.65;">${projectAddr ? esc(projectAddr).replace(/\n/g, "<br/>") : "—"}</div>
     </div>
     <div class="info-cell">
       <div class="blklabel">${bi("Estimate Info", "报价信息", mode)}</div>
       <div class="muted" style="margin-bottom:6px;">${bi(LABELS_EN.estimate, LZ.estimate, mode)}</div>
       <div class="estno">${esc(meta.estimateNumber)}</div>
-      <div class="muted" style="margin-top:6px;">${bi(LABELS_EN.date, LZ.date, mode)}: <span style="color:#111;">${esc(meta.date)}</span></div>
+      <div class="muted" style="margin-top:8px;">${bi(LABELS_EN.date, LZ.date, mode)}: <span style="color:#111;">${esc(meta.date)}</span></div>
+      <div class="muted" style="margin-top:4px;">${bi(LABELS_EN.validUntil, LZ.validUntil, mode)}: <span style="color:#111;">${esc(validUntil)}</span></div>
     </div>
   </div>
 
