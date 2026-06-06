@@ -130,40 +130,51 @@ function PublicHome() {
   return (
     <div className="min-h-screen w-full bg-white text-slate-900">
       {/* Top Nav */}
-      <header className="sticky top-0 z-30 border-b border-slate-200/70 bg-white/80 backdrop-blur">
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
-          <div className="flex items-center gap-2.5">
+      <header className="sticky top-0 z-30 border-b border-slate-200/70 bg-white/85 backdrop-blur">
+        <div className="mx-auto flex h-[72px] max-w-7xl items-center justify-between gap-4 px-4 sm:px-6">
+          <Link to="/" className="flex items-center gap-3 min-w-0">
             {profile.logoUrl ? (
-              <img src={profile.logoUrl} alt={companyName} className="h-9 w-9 rounded-lg object-cover" />
+              <img
+                src={profile.logoUrl}
+                alt={companyName}
+                className="h-12 w-12 sm:h-14 sm:w-14 rounded-xl object-contain bg-white ring-1 ring-slate-200 p-1"
+              />
             ) : (
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-900 text-white">
-                <HardHat className="h-5 w-5" />
+              <div className="flex h-12 w-12 sm:h-14 sm:w-14 items-center justify-center rounded-xl bg-slate-900 text-white">
+                <HardHat className="h-6 w-6 sm:h-7 sm:w-7" />
               </div>
             )}
-            <div className="font-semibold tracking-tight">{companyName}</div>
-          </div>
+            <div className="leading-tight min-w-0">
+              <div className="truncate text-[20px] sm:text-[24px] font-bold tracking-tight text-slate-900">
+                {companyName}
+              </div>
+              <div className="hidden sm:block text-[12px] text-slate-500">
+                Professional Remodeling Contractor
+              </div>
+            </div>
+          </Link>
 
-          <nav className="hidden items-center gap-8 text-sm text-slate-600 md:flex">
+          <nav className="hidden items-center gap-8 text-[15px] text-slate-600 lg:flex">
             <a href="#home" className="hover:text-slate-900">{t.navHome}</a>
             <a href="#features" className="hover:text-slate-900">{t.navFeatures}</a>
             <a href="#contact" className="hover:text-slate-900">{t.navContact}</a>
           </nav>
 
-          <div className="flex items-center gap-3">
-            <div className="hidden items-center gap-1 rounded-full border border-slate-200 bg-white px-1 py-0.5 text-xs sm:inline-flex">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="hidden h-10 items-center gap-1 rounded-full border border-slate-200 bg-white px-1.5 text-[15px] sm:inline-flex">
               <button
                 onClick={() => setLocale("en")}
                 className={
-                  "rounded-full px-2.5 py-1 transition-colors " +
+                  "h-8 rounded-full px-3 font-medium transition-colors " +
                   (locale === "en" ? "bg-slate-900 text-white" : "text-slate-500 hover:text-slate-900")
                 }
               >
-                EN
+                English
               </button>
               <button
                 onClick={() => setLocale("zh")}
                 className={
-                  "rounded-full px-2.5 py-1 transition-colors " +
+                  "h-8 rounded-full px-3 font-medium transition-colors " +
                   (locale === "zh" ? "bg-slate-900 text-white" : "text-slate-500 hover:text-slate-900")
                 }
               >
@@ -172,14 +183,14 @@ function PublicHome() {
             </div>
             <Link
               to="/dashboard"
-              className="hidden items-center gap-1.5 rounded-full bg-slate-900 px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90 sm:inline-flex"
+              className="hidden h-12 w-[140px] items-center justify-center gap-1.5 rounded-full bg-slate-900 text-[15px] font-semibold text-white shadow-sm transition-opacity hover:opacity-90 sm:inline-flex"
             >
               {t.login}
-              <ArrowRight className="h-3.5 w-3.5" />
+              <ArrowRight className="h-4 w-4" />
             </Link>
             <button
               onClick={() => setMenuOpen((v) => !v)}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-md text-slate-600 md:hidden"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-md text-slate-700 sm:hidden"
               aria-label="menu"
             >
               {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -187,12 +198,32 @@ function PublicHome() {
           </div>
         </div>
         {menuOpen && (
-          <div className="border-t border-slate-200 bg-white px-6 py-4 md:hidden">
-            <div className="flex flex-col gap-3 text-sm">
+          <div className="border-t border-slate-200 bg-white px-6 py-4 sm:hidden">
+            <div className="flex flex-col gap-4 text-[15px]">
               <a href="#home" onClick={() => setMenuOpen(false)}>{t.navHome}</a>
               <a href="#features" onClick={() => setMenuOpen(false)}>{t.navFeatures}</a>
               <a href="#contact" onClick={() => setMenuOpen(false)}>{t.navContact}</a>
-              <Link to="/dashboard" className="font-medium text-slate-900">{t.login}</Link>
+              <div className="flex items-center gap-2 pt-2">
+                <button
+                  onClick={() => setLocale("en")}
+                  className={"h-9 rounded-full px-4 text-sm font-medium " + (locale === "en" ? "bg-slate-900 text-white" : "border border-slate-200 text-slate-700")}
+                >
+                  English
+                </button>
+                <button
+                  onClick={() => setLocale("zh")}
+                  className={"h-9 rounded-full px-4 text-sm font-medium " + (locale === "zh" ? "bg-slate-900 text-white" : "border border-slate-200 text-slate-700")}
+                >
+                  中文
+                </button>
+              </div>
+              <Link
+                to="/dashboard"
+                onClick={() => setMenuOpen(false)}
+                className="inline-flex h-12 w-full items-center justify-center rounded-full bg-slate-900 text-[15px] font-semibold text-white"
+              >
+                {t.login}
+              </Link>
             </div>
           </div>
         )}
