@@ -45,50 +45,37 @@ export const usePriceBookStore = create<PriceBookState>()(
         return created;
       },
       upsertMany: (rows) => {
+        // Per requirement: never overwrite existing items — skip duplicates,
+        // only insert new ones. Duplicate key: categoryId + name + nameZh + unit.
         let created = 0;
-        let updated = 0;
+        let skipped = 0;
         const state = get();
         const all: PriceItem[] = [
           ...PRICE_ITEMS.map((i) => ({ ...i, ...(state.overrides[i.id] ?? {}) })),
           ...state.customItems,
         ];
-        const keyOf = (i: { categoryId: string; name: string; unit: string }) =>
-          `${i.categoryId}__${i.name.trim().toLowerCase()}__${i.unit.trim().toLowerCase()}`;
-        const byKey = new Map(all.map((i) => [keyOf(i), i] as const));
+        const keyOf = (i: { categoryId: string; name: string; unit: string; nameZh?: string }) =>
+          `${i.categoryId}__${(i.name ?? "").trim().toLowerCase()}__${(i.nameZh ?? "").trim().toLowerCase()}__${(i.unit ?? "").trim().toLowerCase()}`;
+        const keys = new Set(all.map((i) => keyOf(i)));
 
-        const newOverrides = { ...state.overrides };
         const newCustoms = [...state.customItems];
-
         for (const row of rows) {
-          const existing = byKey.get(keyOf(row));
-          if (existing) {
-            const patch: Partial<PriceItem> = {
-              nameZh: row.nameZh,
-              defaultPricing: row.defaultPricing,
-              laborRate: row.laborRate,
-              materialRate: row.materialRate,
-              notes: row.notes,
-            };
-            const ci = newCustoms.findIndex((c) => c.id === existing.id);
-            if (ci >= 0) {
-              newCustoms[ci] = { ...newCustoms[ci], ...patch };
-            } else {
-              newOverrides[existing.id] = { ...newOverrides[existing.id], ...patch };
-            }
-            updated++;
-          } else {
-            const item: PriceItem = {
-              ...row,
-              hoursPerUnit: row.hoursPerUnit ?? 0,
-              id: row.id ?? makeId(row.categoryId),
-            } as PriceItem;
-            newCustoms.unshift(item);
-            byKey.set(keyOf(item), item);
-            created++;
+          const k = keyOf(row as PriceItem);
+          if (keys.has(k)) {
+            skipped++;
+            continue;
           }
+          const item: PriceItem = {
+            ...row,
+            hoursPerUnit: row.hoursPerUnit ?? 0,
+            id: row.id ?? makeId(row.categoryId),
+          } as PriceItem;
+          newCustoms.unshift(item);
+          keys.add(k);
+          created++;
         }
-        set({ overrides: newOverrides, customItems: newCustoms });
-        return { created, updated };
+        set({ customItems: newCustoms });
+        return { created, skipped };
       },
       reset: () => set({ overrides: {}, customItems: [] }),
     }),
