@@ -11,8 +11,19 @@ import {
   HardHat,
   Globe,
   LogOut,
+  ChevronDown,
+  UserCircle,
 } from "lucide-react";
 import { useLocaleStore, useLocale, useT } from "@/lib/i18n";
+import { useCompany, useCompanyHydration } from "@/lib/company-store";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
