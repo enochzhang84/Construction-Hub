@@ -108,9 +108,13 @@ type FormState = {
   phone: string;
   email: string;
   address: string;
+  unit: string;
+  suite: string;
+  building: string;
   city: string;
   state: string;
   zip: string;
+  country: string;
   notes: string;
   source: CustomerSource;
 };
@@ -120,9 +124,13 @@ const EMPTY: FormState = {
   phone: "",
   email: "",
   address: "",
+  unit: "",
+  suite: "",
+  building: "",
   city: "",
   state: "CA",
   zip: "",
+  country: "United States",
   notes: "",
   source: "Website",
 };
