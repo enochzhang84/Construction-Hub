@@ -1,11 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useT, useLocale } from "@/lib/i18n";
-import { useCompany, useCompanyHydration, type CompanyProfile } from "@/lib/company-store";
 import { useTerms, DEFAULT_TERMS_EN, DEFAULT_TERMS_ZH } from "@/lib/terms-store";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { BookOpen, ChevronRight, FileText, RotateCcw, Upload, Trash2, UserCircle2, ShieldCheck, Database, Download, RefreshCw, PlayCircle } from "lucide-react";
+import { BookOpen, ChevronRight, FileText, RotateCcw, UserCircle2, ShieldCheck, Database, Download, RefreshCw, PlayCircle } from "lucide-react";
 import {
   CATALOG_TABLES,
   type CatalogCounts,
@@ -17,149 +16,16 @@ import {
   initializeDefaultData,
 } from "@/lib/system-data";
 
+
 export const Route = createFileRoute("/_authenticated/settings")({
   head: () => ({ meta: [{ title: "Settings · Construction Hub" }] }),
   component: SettingsPage,
 });
 
-function Field({
-  label,
-  field,
-  placeholder,
-  type = "text",
-}: {
-  label: string;
-  field: keyof CompanyProfile;
-  placeholder?: string;
-  type?: string;
-}) {
-  const value = useCompany((s) => s.profile[field]);
-  const setProfile = useCompany((s) => s.setProfile);
-  return (
-    <label className="block">
-      <div className="mb-1 text-xs font-medium text-muted-foreground">{label}</div>
-      <input
-        type={type}
-        value={value}
-        placeholder={placeholder}
-        onChange={(e) => setProfile({ [field]: e.target.value } as Partial<CompanyProfile>)}
-        className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring/40"
-      />
-    </label>
-  );
-}
-
-const ACCEPTED_LOGO_TYPES = "image/svg+xml,image/png,image/jpeg,image/webp,image/gif,image/avif,image/x-icon,image/vnd.microsoft.icon";
-const MAX_LOGO_BYTES = 2 * 1024 * 1024; // 2MB
-
-function readFileAsDataURL(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const r = new FileReader();
-    r.onload = () => resolve(String(r.result));
-    r.onerror = () => reject(r.error);
-    r.readAsDataURL(file);
-  });
-}
-
-async function readSvgAsInlineDataURL(file: File): Promise<string> {
-  // For SVG, inline as utf-8 data URL so it renders as a true vector.
-  const text = await file.text();
-  return `data:image/svg+xml;utf8,${encodeURIComponent(text)}`;
-}
-
-function LogoUploader() {
-  const logoUrl = useCompany((s) => s.profile.logoUrl);
-  const setProfile = useCompany((s) => s.setProfile);
-  const inputRef = useRef<HTMLInputElement>(null);
-  const [uploading, setUploading] = useState(false);
-
-  const handleFile = async (file: File) => {
-    if (!file.type.startsWith("image/")) {
-      toast.error("请选择图片文件 (Please pick an image file)");
-      return;
-    }
-    if (file.size > MAX_LOGO_BYTES) {
-      toast.error("图片过大，请选择 2MB 以内的图片");
-      return;
-    }
-    try {
-      setUploading(true);
-      const dataUrl =
-        file.type === "image/svg+xml"
-          ? await readSvgAsInlineDataURL(file)
-          : await readFileAsDataURL(file);
-      setProfile({ logoUrl: dataUrl });
-      toast.success("Logo 已上传");
-    } catch (e) {
-      console.error(e);
-      toast.error("上传失败");
-    } finally {
-      setUploading(false);
-    }
-  };
-
-  return (
-    <div>
-      <div className="mb-1 text-xs font-medium text-muted-foreground">Company Logo</div>
-      <div className="flex items-center gap-4 rounded-md border border-dashed border-border bg-secondary/30 p-4">
-        <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-md border border-border bg-background overflow-hidden">
-          {logoUrl ? (
-            <img
-              src={logoUrl}
-              alt="Logo preview"
-              className="h-full w-full object-contain"
-              style={{ imageRendering: "auto" }}
-            />
-          ) : (
-            <span className="text-[10px] text-muted-foreground">No logo</span>
-          )}
-        </div>
-        <div className="flex-1 min-w-0">
-          <input
-            ref={inputRef}
-            type="file"
-            accept={ACCEPTED_LOGO_TYPES}
-            className="hidden"
-            onChange={(e) => {
-              const f = e.target.files?.[0];
-              if (f) void handleFile(f);
-              e.target.value = "";
-            }}
-          />
-          <div className="flex flex-wrap gap-2">
-            <button
-              type="button"
-              disabled={uploading}
-              onClick={() => inputRef.current?.click()}
-              className="inline-flex items-center gap-1.5 rounded-md border border-input bg-background px-3 py-1.5 text-xs font-medium hover:bg-secondary disabled:opacity-50"
-            >
-              <Upload className="h-3.5 w-3.5" />
-              {uploading ? "上传中…" : logoUrl ? "更换 Logo" : "上传 Logo"}
-            </button>
-            {logoUrl && (
-              <button
-                type="button"
-                onClick={() => setProfile({ logoUrl: "" })}
-                className="inline-flex items-center gap-1.5 rounded-md border border-input bg-background px-3 py-1.5 text-xs font-medium text-destructive hover:bg-destructive/10"
-              >
-                <Trash2 className="h-3.5 w-3.5" />
-                移除
-              </button>
-            )}
-          </div>
-          <p className="mt-2 text-[11px] leading-relaxed text-muted-foreground">
-            支持 SVG、PNG、JPG、WebP、GIF、AVIF、ICO 等格式。推荐使用 SVG 以获得无损矢量显示；位图建议使用透明背景的高分辨率图片。最大 2MB。
-          </p>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 function SettingsPage() {
   const t = useT();
-  const profile = useCompany((s) => s.profile);
-  useCompanyHydration();
+
 
 
   const ROLES = [
@@ -176,35 +42,6 @@ function SettingsPage() {
         <p className="text-sm text-muted-foreground">{t("set.subtitle")}</p>
       </header>
       <div className="flex-1 overflow-y-auto finder-scroll p-8 space-y-6 max-w-3xl">
-        <section className="rounded-lg border border-border bg-card p-6 shadow-panel">
-          <h2 className="mb-1 font-display text-base font-semibold">Company Profile</h2>
-          <p className="mb-4 text-xs text-muted-foreground">
-            Shown on estimates, printouts, and PDFs sent to your customers.
-          </p>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Company Name" field="name" placeholder="Your Company Name" />
-            <Field label="License Number" field="license" placeholder="CSLB 0000000" />
-            <Field label="Phone" field="phone" placeholder="(510) 555-0100" />
-            <Field label="Email" field="email" type="email" placeholder="info@company.com" />
-            <div className="sm:col-span-2">
-              <Field label="Address" field="address" placeholder="Street, City, State ZIP" />
-            </div>
-            <Field label="Website" field="website" placeholder="www.company.com" />
-            <Field label="Default Tax Rate (%)" field="taxRate" type="number" placeholder="0" />
-            <div className="sm:col-span-2">
-              <LogoUploader />
-            </div>
-          </div>
-          <div className="mt-5 flex justify-end">
-            <button
-              onClick={() => toast.success("Company profile saved")}
-              className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90"
-            >
-              Save Changes
-            </button>
-          </div>
-        </section>
-
         <section className="rounded-lg border border-border bg-card p-6 shadow-panel">
           <h2 className="mb-4 font-display text-base font-semibold">{t("set.roles")}</h2>
           <div className="space-y-2">
