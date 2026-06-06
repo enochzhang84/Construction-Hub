@@ -691,10 +691,12 @@ function ImportPreviewDialog({
                   <td className="px-2 py-1 text-right font-mono">{r.data.laborRate}</td>
                   <td className="px-2 py-1 text-right font-mono">{r.data.materialRate}</td>
                   <td className="px-2 py-1">
-                    {r.ok ? (
-                      <span className="text-emerald-600">OK</span>
-                    ) : (
+                    {!r.ok ? (
                       <span className="text-destructive">{r.error}</span>
+                    ) : existingKeys.has(keyOf(r.data)) ? (
+                      <span className="text-amber-600">{t("pb.import.skipped")}</span>
+                    ) : (
+                      <span className="text-emerald-600">{t("pb.import.new")}</span>
                     )}
                   </td>
                 </tr>
@@ -710,11 +712,11 @@ function ImportPreviewDialog({
             {t("common.cancel")}
           </button>
           <button
-            disabled={ok.length === 0}
-            onClick={() => onConfirm(ok.map((r) => r.data))}
+            disabled={fresh.length === 0}
+            onClick={() => onConfirm(fresh.map((r) => r.data))}
             className="inline-flex h-10 items-center justify-center rounded-[10px] bg-foreground px-4 text-sm font-medium text-background transition-colors hover:bg-foreground/90 disabled:opacity-50"
           >
-            {t("pb.import.confirm")} ({ok.length})
+            {t("pb.import.confirm")} ({fresh.length})
           </button>
         </DialogFooter>
       </DialogContent>
