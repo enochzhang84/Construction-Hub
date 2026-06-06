@@ -754,6 +754,7 @@ interface PDFLabels {
   subtitle: string;
   estimate: string;
   date: string;
+  validUntil: string;
   billTo: string;
   projectAddress: string;
   item: string;
