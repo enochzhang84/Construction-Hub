@@ -120,7 +120,7 @@ function PublicHome() {
     { icon: CheckCircle2, label: isZh ? "已完成" : "Completed" },
   ];
 
-  const screens: { title: string; icon: typeof LayoutDashboard; render: () => JSX.Element }[] = [
+  const screens: { title: string; icon: typeof LayoutDashboard; render: () => React.ReactElement }[] = [
     { title: "Dashboard", icon: LayoutDashboard, render: () => <ScreenDashboard /> },
     { title: "Customers", icon: Users, render: () => <ScreenCustomers /> },
     { title: "Estimates", icon: FileText, render: () => <ScreenEstimates /> },
