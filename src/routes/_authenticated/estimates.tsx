@@ -907,6 +907,7 @@ function exportPDF(
   const customerPhone = customer?.phone || "";
   const customerEmail = customer?.email || "";
   const projectAddr = meta.projectAddress || "";
+  const validUntil = meta.date ? formatDateAddDays(meta.date, 30) : "";
 
   const companyLines: string[] = [];
   if (company.address) companyLines.push(esc(company.address));
