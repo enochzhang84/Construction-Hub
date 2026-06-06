@@ -177,35 +177,6 @@ function SettingsPage() {
       </header>
       <div className="flex-1 overflow-y-auto finder-scroll p-8 space-y-6 max-w-3xl">
         <section className="rounded-lg border border-border bg-card p-6 shadow-panel">
-          <h2 className="mb-1 font-display text-base font-semibold">Company Profile</h2>
-          <p className="mb-4 text-xs text-muted-foreground">
-            Shown on estimates, printouts, and PDFs sent to your customers.
-          </p>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Company Name" field="name" placeholder="Your Company Name" />
-            <Field label="License Number" field="license" placeholder="CSLB 0000000" />
-            <Field label="Phone" field="phone" placeholder="(510) 555-0100" />
-            <Field label="Email" field="email" type="email" placeholder="info@company.com" />
-            <div className="sm:col-span-2">
-              <Field label="Address" field="address" placeholder="Street, City, State ZIP" />
-            </div>
-            <Field label="Website" field="website" placeholder="www.company.com" />
-            <Field label="Default Tax Rate (%)" field="taxRate" type="number" placeholder="0" />
-            <div className="sm:col-span-2">
-              <LogoUploader />
-            </div>
-          </div>
-          <div className="mt-5 flex justify-end">
-            <button
-              onClick={() => toast.success("Company profile saved")}
-              className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90"
-            >
-              Save Changes
-            </button>
-          </div>
-        </section>
-
-        <section className="rounded-lg border border-border bg-card p-6 shadow-panel">
           <h2 className="mb-4 font-display text-base font-semibold">{t("set.roles")}</h2>
           <div className="space-y-2">
             {ROLES.map((r) => (
