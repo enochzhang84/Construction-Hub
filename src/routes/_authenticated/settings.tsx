@@ -1,11 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useT, useLocale } from "@/lib/i18n";
-import { useCompany, useCompanyHydration, type CompanyProfile } from "@/lib/company-store";
 import { useTerms, DEFAULT_TERMS_EN, DEFAULT_TERMS_ZH } from "@/lib/terms-store";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { BookOpen, ChevronRight, FileText, RotateCcw, Upload, Trash2, UserCircle2, ShieldCheck, Database, Download, RefreshCw, PlayCircle } from "lucide-react";
+import { BookOpen, ChevronRight, FileText, RotateCcw, UserCircle2, ShieldCheck, Database, Download, RefreshCw, PlayCircle } from "lucide-react";
 import {
   CATALOG_TABLES,
   type CatalogCounts,
@@ -16,6 +15,7 @@ import {
   restoreDefaultConstructionItems,
   initializeDefaultData,
 } from "@/lib/system-data";
+
 
 export const Route = createFileRoute("/_authenticated/settings")({
   head: () => ({ meta: [{ title: "Settings · Construction Hub" }] }),
