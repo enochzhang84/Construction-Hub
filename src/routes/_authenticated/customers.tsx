@@ -1045,6 +1045,18 @@ function CustomerDialog({
             <Input value={form.address} onChange={(v) => set("address", v)} />
           </div>
           <div className="space-y-1.5">
+            <label className="text-xs font-medium">{t("cust.f.unit")}</label>
+            <Input value={form.unit} onChange={(v) => set("unit", v)} />
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium">{t("cust.f.suite")}</label>
+            <Input value={form.suite} onChange={(v) => set("suite", v)} />
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium">{t("cust.f.building")}</label>
+            <Input value={form.building} onChange={(v) => set("building", v)} />
+          </div>
+          <div className="space-y-1.5">
             <label className="text-xs font-medium">{t("cust.f.city")}</label>
             <Input value={form.city} onChange={(v) => set("city", v)} />
           </div>
