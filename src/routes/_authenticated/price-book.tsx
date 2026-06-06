@@ -271,12 +271,13 @@ function PriceBookPage() {
 
       <ImportPreviewDialog
         rows={importing}
+        existingItems={items}
         onClose={() => setImporting(null)}
         onConfirm={(rows) => {
           const res = upsertMany(rows);
           setImporting(null);
           alert(
-            `${t("pb.import.done")}\n${t("pb.import.created")}: ${res.created}\n${t("pb.import.updated")}: ${res.updated}`,
+            `${t("pb.import.done")}\n${t("pb.import.created")}: ${res.created}\n${t("pb.import.skipped")}: ${res.skipped}`,
           );
         }}
       />
