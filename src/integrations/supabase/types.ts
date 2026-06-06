@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      categories: {
+        Row: {
+          created_at: string
+          icon: string
+          id: string
+          name_en: string
+          name_zh: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          icon?: string
+          id: string
+          name_en: string
+          name_zh?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          icon?: string
+          id?: string
+          name_en?: string
+          name_zh?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       company_profile: {
         Row: {
           address: string
@@ -56,6 +86,119 @@ export type Database = {
         }
         Relationships: []
       }
+      construction_items: {
+        Row: {
+          category_id: string
+          created_at: string
+          created_by: string | null
+          default_pricing: string
+          hours_per_unit: number
+          id: string
+          is_custom: boolean
+          labor_rate: number
+          material_rate: number
+          name_en: string
+          name_zh: string
+          notes: string | null
+          unit: string
+          updated_at: string
+        }
+        Insert: {
+          category_id: string
+          created_at?: string
+          created_by?: string | null
+          default_pricing?: string
+          hours_per_unit?: number
+          id: string
+          is_custom?: boolean
+          labor_rate?: number
+          material_rate?: number
+          name_en: string
+          name_zh?: string
+          notes?: string | null
+          unit: string
+          updated_at?: string
+        }
+        Update: {
+          category_id?: string
+          created_at?: string
+          created_by?: string | null
+          default_pricing?: string
+          hours_per_unit?: number
+          id?: string
+          is_custom?: boolean
+          labor_rate?: number
+          material_rate?: number
+          name_en?: string
+          name_zh?: string
+          notes?: string | null
+          unit?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "construction_items_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pdf_templates: {
+        Row: {
+          config: Json
+          created_at: string
+          description: string | null
+          id: string
+          is_default: boolean
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          config?: Json
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_default?: boolean
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          config?: Json
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_default?: boolean
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      pricing_types: {
+        Row: {
+          code: string
+          created_at: string
+          label_en: string
+          label_zh: string
+          sort_order: number
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          label_en: string
+          label_zh?: string
+          sort_order?: number
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          label_en?: string
+          label_zh?: string
+          sort_order?: number
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -77,6 +220,84 @@ export type Database = {
           display_name?: string | null
           id?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      system_settings: {
+        Row: {
+          description: string | null
+          key: string
+          updated_at: string
+          value: Json
+        }
+        Insert: {
+          description?: string | null
+          key: string
+          updated_at?: string
+          value?: Json
+        }
+        Update: {
+          description?: string | null
+          key?: string
+          updated_at?: string
+          value?: Json
+        }
+        Relationships: []
+      }
+      terms_conditions: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          is_default: boolean
+          locale: string
+          sort_order: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          id?: string
+          is_default?: boolean
+          locale?: string
+          sort_order?: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          is_default?: boolean
+          locale?: string
+          sort_order?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      units: {
+        Row: {
+          code: string
+          created_at: string
+          label_en: string
+          label_zh: string
+          sort_order: number
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          label_en: string
+          label_zh?: string
+          sort_order?: number
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          label_en?: string
+          label_zh?: string
+          sort_order?: number
         }
         Relationships: []
       }
