@@ -9,7 +9,7 @@ interface PriceBookState {
   addItem: (item: Partial<PriceItem> & Pick<PriceItem, "categoryId" | "name" | "unit" | "defaultPricing" | "laborRate" | "materialRate">) => PriceItem;
   upsertMany: (
     rows: Array<Partial<PriceItem> & Pick<PriceItem, "categoryId" | "name" | "unit" | "defaultPricing" | "laborRate" | "materialRate">>,
-  ) => { created: number; updated: number };
+  ) => { created: number; skipped: number };
   reset: () => void;
 }
 
