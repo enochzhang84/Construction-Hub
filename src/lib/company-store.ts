@@ -136,19 +136,20 @@ export const useCompany = create<CompanyState>()(
 export function useCompanyHydration() {
   useEffect(() => {
     void useCompany.getState().hydrateFromRemote();
-    const channel = supabase
-      .channel("company_profile_changes")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "company_profile" },
-        (payload) => {
-          const row = (payload.new ?? payload.old) as Row | null;
-          if (row) {
-            useCompany.setState({ profile: rowToProfile(row), loaded: true });
-          }
-        },
-      )
-      .subscribe();
+    const channel = supabase.channel(
+      `company_profile_changes_${Math.random().toString(36).slice(2)}`,
+    );
+    channel.on(
+      "postgres_changes",
+      { event: "*", schema: "public", table: "company_profile" },
+      (payload) => {
+        const row = (payload.new ?? payload.old) as Row | null;
+        if (row) {
+          useCompany.setState({ profile: rowToProfile(row), loaded: true });
+        }
+      },
+    );
+    channel.subscribe();
     return () => {
       void supabase.removeChannel(channel);
     };
