@@ -74,7 +74,7 @@ function EstimatesPage() {
     setMeta({
       customerId: c?.id ?? null,
       customerName: c?.name ?? "",
-      projectAddress: c ? `${c.address}, ${c.city}, ${c.state} ${c.zip}` : "",
+      projectAddress: c ? buildProjectAddress(c) : "",
     });
   };
 
