@@ -32,7 +32,7 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
   component: Dashboard,
 });
 
-const AMOUNTS = [42000, 31500, 28000, 24500, 22000, 18500, 15500, 12000, 9500, 7200];
+
 
 function fmtUSD(n: number) {
   return n.toLocaleString("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
@@ -67,58 +67,51 @@ function Dashboard() {
   }> = [
     {
       label: t("dash.stat.estimatesMonth"),
-      value: String(sum.estimates.length || 27),
-      delta: "+12%",
+      value: String(sum.estimates.length),
+      delta: "",
       icon: FileText,
       tone: "info",
-      trend: "up",
     },
     {
       label: t("dash.stat.closedRevenue"),
-      value: fmtUSD(sum.contractTotal || 184250),
-      delta: "+8.4%",
+      value: fmtUSD(sum.contractTotal),
+      delta: "",
       icon: DollarSign,
       tone: "positive",
-      trend: "up",
     },
     {
       label: t("dash.stat.awaiting"),
-      value: String(focus.followUps.length || 6),
-      delta: t("dash.stat.actionNeeded"),
+      value: String(focus.followUps.length),
+      delta: "",
       icon: Clock,
       tone: "warning",
     },
     {
       label: t("dash.stat.sent"),
-      value: String(sum.active.length || 11),
-      delta: t("dash.stat.avgDays"),
+      value: String(sum.active.length),
+      delta: "",
       icon: Send,
       tone: "neutral",
     },
     {
       label: t("dash.stat.closed"),
-      value: String(sum.completed.length || 9),
-      delta: isZh ? "本月 +2" : "+2 vs last mo.",
+      value: String(sum.completed.length),
+      delta: "",
       icon: CheckCircle2,
       tone: "positive",
-      trend: "up",
     },
     {
       label: t("dash.stat.customers"),
-      value: String(customers.length || 48),
-      delta: isZh ? "+5 新增" : "+5 new",
+      value: String(customers.length),
+      delta: "",
       icon: Users,
       tone: "info",
-      trend: "up",
     },
   ];
 
-  const tradeRows = CATEGORIES.slice(0, 10).map((c, i) => ({
-    name: tCategory(c, locale),
-    amount: AMOUNTS[i],
-  }));
-  const max = Math.max(...tradeRows.map((r) => r.amount));
-  const ytdTotal = tradeRows.reduce((s, r) => s + r.amount, 0);
+  const tradeRows: { name: string; amount: number }[] = [];
+  const max = 1;
+  const ytdTotal = sum.completed.reduce((s, p) => s + (p.amount || 0), 0);
 
   return (
     <div className="h-full overflow-y-auto finder-scroll">
