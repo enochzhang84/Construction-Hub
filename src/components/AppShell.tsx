@@ -172,7 +172,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 <div className="text-[13px] font-semibold">{isZh ? "管理员" : "Admin"}</div>
                 {email && <div className="truncate text-[11px] font-normal text-muted-foreground">{email}</div>}
               </DropdownMenuLabel>
-              <DropdownMenuItem onSelect={() => navigate({ to: "/settings" })}>
+              <DropdownMenuItem onSelect={() => navigate({ to: "/profile" })}>
                 <UserCircle className="mr-2 h-4 w-4" />
                 {isZh ? "我的资料" : "My Profile"}
               </DropdownMenuItem>
