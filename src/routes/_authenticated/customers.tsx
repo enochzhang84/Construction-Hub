@@ -108,9 +108,13 @@ type FormState = {
   phone: string;
   email: string;
   address: string;
+  unit: string;
+  suite: string;
+  building: string;
   city: string;
   state: string;
   zip: string;
+  country: string;
   notes: string;
   source: CustomerSource;
 };
@@ -120,9 +124,13 @@ const EMPTY: FormState = {
   phone: "",
   email: "",
   address: "",
+  unit: "",
+  suite: "",
+  building: "",
   city: "",
   state: "CA",
   zip: "",
+  country: "United States",
   notes: "",
   source: "Website",
 };
@@ -217,7 +225,7 @@ function CustomersPage() {
       if (archiveFilter === "active" && c.isArchived) return false;
       if (archiveFilter === "archived" && !c.isArchived) return false;
       if (needle) {
-        const hay = [c.name, c.phone, c.email, c.address, c.city].join(" ").toLowerCase();
+        const hay = [c.name, c.phone, c.email, c.address, c.unit, c.suite, c.building, c.city, c.state, c.zip, c.country].join(" ").toLowerCase();
         if (!hay.includes(needle)) return false;
       }
       if (statusFilter !== "all") {
@@ -248,9 +256,13 @@ function CustomersPage() {
       phone: c.phone,
       email: c.email,
       address: c.address,
+      unit: c.unit ?? "",
+      suite: c.suite ?? "",
+      building: c.building ?? "",
       city: c.city,
       state: c.state,
       zip: c.zip,
+      country: c.country ?? "United States",
       notes: c.notes ?? "",
       source: c.source ?? "Website",
     });
@@ -1033,6 +1045,18 @@ function CustomerDialog({
             <Input value={form.address} onChange={(v) => set("address", v)} />
           </div>
           <div className="space-y-1.5">
+            <label className="text-xs font-medium">{t("cust.f.unit")}</label>
+            <Input value={form.unit} onChange={(v) => set("unit", v)} />
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium">{t("cust.f.suite")}</label>
+            <Input value={form.suite} onChange={(v) => set("suite", v)} />
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium">{t("cust.f.building")}</label>
+            <Input value={form.building} onChange={(v) => set("building", v)} />
+          </div>
+          <div className="space-y-1.5">
             <label className="text-xs font-medium">{t("cust.f.city")}</label>
             <Input value={form.city} onChange={(v) => set("city", v)} />
           </div>
@@ -1043,6 +1067,10 @@ function CustomerDialog({
           <div className="space-y-1.5">
             <label className="text-xs font-medium">{t("cust.f.zip")}</label>
             <Input value={form.zip} onChange={(v) => set("zip", v)} />
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium">{t("cust.f.country")}</label>
+            <Input value={form.country} onChange={(v) => set("country", v)} />
           </div>
           <div className="space-y-1.5">
             <label className="text-xs font-medium">Source</label>

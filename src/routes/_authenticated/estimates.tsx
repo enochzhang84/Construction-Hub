@@ -29,6 +29,24 @@ function fmt(n: number) {
   return n.toLocaleString("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 2 });
 }
 
+function buildProjectAddress(c: { address: string; unit?: string; suite?: string; building?: string; city: string; state: string; zip: string; country?: string }): string {
+  const lines: string[] = [];
+  if (c.address?.trim()) lines.push(c.address.trim());
+  if (c.unit?.trim()) lines.push(c.unit.trim());
+  if (c.suite?.trim()) lines.push(`Suite ${c.suite.trim()}`);
+  if (c.building?.trim()) lines.push(`Building ${c.building.trim()}`);
+  const cityStateZip = [c.city, `${c.state} ${c.zip}`.trim()].filter(Boolean).join(", ");
+  if (cityStateZip) lines.push(cityStateZip);
+  if (c.country?.trim()) lines.push(c.country.trim());
+  return lines.join("\n");
+}
+
+function formatDateAddDays(dateStr: string, days: number): string {
+  const d = new Date(dateStr + "T00:00:00");
+  d.setDate(d.getDate() + days);
+  return d.toISOString().slice(0, 10);
+}
+
 function EstimatesPage() {
   const t = useT();
   const locale = useLocale();
@@ -56,7 +74,7 @@ function EstimatesPage() {
     setMeta({
       customerId: c?.id ?? null,
       customerName: c?.name ?? "",
-      projectAddress: c ? `${c.address}, ${c.city}, ${c.state} ${c.zip}` : "",
+      projectAddress: c ? buildProjectAddress(c) : "",
     });
   };
 
@@ -86,7 +104,7 @@ function EstimatesPage() {
       setMeta({
         customerId: c.id,
         customerName: c.name,
-        projectAddress: `${c.address}, ${c.city}, ${c.state} ${c.zip}`,
+        projectAddress: buildProjectAddress(c),
         estimateNumber: newEstimateNumber(),
         date: new Date().toISOString().slice(0, 10),
         globalDiscount: 0,
@@ -736,6 +754,7 @@ interface PDFLabels {
   subtitle: string;
   estimate: string;
   date: string;
+  validUntil: string;
   billTo: string;
   projectAddress: string;
   item: string;
@@ -763,6 +782,7 @@ const LABELS_EN: PDFLabels = {
   subtitle: "Contractor Estimate",
   estimate: "Estimate #",
   date: "Date",
+  validUntil: "Valid Until",
   billTo: "Bill To",
   projectAddress: "Project Address",
   item: "Item",
@@ -790,6 +810,7 @@ const LABELS_ZH: PDFLabels = {
   subtitle: "装修报价单",
   estimate: "报价编号",
   date: "日期",
+  validUntil: "有效期至",
   billTo: "客户",
   projectAddress: "项目地址",
   item: "项目",
@@ -886,6 +907,7 @@ function exportPDF(
   const customerPhone = customer?.phone || "";
   const customerEmail = customer?.email || "";
   const projectAddr = meta.projectAddress || "";
+  const validUntil = meta.date ? formatDateAddDays(meta.date, 30) : "";
 
   const companyLines: string[] = [];
   if (company.address) companyLines.push(esc(company.address));
@@ -921,8 +943,8 @@ function exportPDF(
   .contact .row { white-space: nowrap; }
   .contact .lbl { color: #9ca3af; display: inline-block; min-width: 56px; text-align: left; }
   /* ===== Customer / project / estimate block ===== */
-  .info-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0; margin: 20px 0 6px; border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; }
-  .info-cell { padding: 14px 16px; font-size: 12px; border-right: 1px solid #e5e7eb; }
+  .info-grid { display: grid; grid-template-columns: 1.1fr 1.9fr 1fr; gap: 0; margin: 20px 0 6px; border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; }
+  .info-cell { padding: 14px 16px; font-size: 12px; border-right: 1px solid #e5e7eb; word-break: break-word; }
   .info-cell:last-child { border-right: 0; }
   .info-cell .blklabel { font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: #0f2a4a; font-weight: 700; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px solid #e5e7eb; }
   .info-cell .strong { font-size: 13px; font-weight: 700; color: #111; margin-bottom: 3px; }
@@ -996,15 +1018,16 @@ function exportPDF(
       ${customerPhone ? `<div class="muted mono">${esc(customerPhone)}</div>` : ""}
       ${customerEmail ? `<div class="muted">${esc(customerEmail)}</div>` : ""}
     </div>
-    <div class="info-cell">
+    <div class="info-cell" style="white-space:normal;">
       <div class="blklabel">${bi(LABELS_EN.projectAddress, LZ.projectAddress, mode)}</div>
-      <div class="muted" style="font-size:12px; color:#111;">${esc(projectAddr) || "—"}</div>
+      <div style="font-size:12.5px; color:#111; line-height:1.65;">${projectAddr ? esc(projectAddr).replace(/\n/g, "<br/>") : "—"}</div>
     </div>
     <div class="info-cell">
       <div class="blklabel">${bi("Estimate Info", "报价信息", mode)}</div>
       <div class="muted" style="margin-bottom:6px;">${bi(LABELS_EN.estimate, LZ.estimate, mode)}</div>
       <div class="estno">${esc(meta.estimateNumber)}</div>
-      <div class="muted" style="margin-top:6px;">${bi(LABELS_EN.date, LZ.date, mode)}: <span style="color:#111;">${esc(meta.date)}</span></div>
+      <div class="muted" style="margin-top:8px;">${bi(LABELS_EN.date, LZ.date, mode)}: <span style="color:#111;">${esc(meta.date)}</span></div>
+      <div class="muted" style="margin-top:4px;">${bi(LABELS_EN.validUntil, LZ.validUntil, mode)}: <span style="color:#111;">${esc(validUntil)}</span></div>
     </div>
   </div>
 
