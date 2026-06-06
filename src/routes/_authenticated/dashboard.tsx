@@ -16,8 +16,7 @@ import {
   CalendarDays,
   Flag,
 } from "lucide-react";
-import { CATEGORIES } from "@/lib/data";
-import { useT, useLocale, tCategory } from "@/lib/i18n";
+import { useT, useLocale } from "@/lib/i18n";
 import { LanguageToggle } from "@/components/AppShell";
 import { useProjects, summarizeProjects } from "@/lib/project-store";
 import { useCustomers } from "@/lib/customer-store";
