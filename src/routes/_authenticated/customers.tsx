@@ -1037,6 +1037,7 @@ function CustomerDialog({
   title,
   form,
   setForm,
+  errors,
   onClose,
   onSave,
 }: {
@@ -1044,11 +1045,13 @@ function CustomerDialog({
   title: string;
   form: FormState;
   setForm: (f: FormState) => void;
+  errors: AddressErrors;
   onClose: () => void;
   onSave: () => void;
 }) {
   const t = useT();
   const set = <K extends keyof FormState>(k: K, v: FormState[K]) => setForm({ ...form, [k]: v });
+  const preview = formatAddressLine(form);
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
@@ -1071,35 +1074,45 @@ function CustomerDialog({
           </div>
           <div className="col-span-2 space-y-1.5">
             <label className="text-xs font-medium">{t("cust.f.address")}</label>
-            <Input value={form.address} onChange={(v) => set("address", v)} />
+            <Input value={form.address} onChange={(v) => set("address", v)} error={errors.address} />
           </div>
           <div className="space-y-1.5">
             <label className="text-xs font-medium">{t("cust.f.unit")}</label>
-            <Input value={form.unit} onChange={(v) => set("unit", v)} />
+            <Input value={form.unit} onChange={(v) => set("unit", v)} error={errors.unit} placeholder="e.g. 102" />
           </div>
           <div className="space-y-1.5">
             <label className="text-xs font-medium">{t("cust.f.suite")}</label>
-            <Input value={form.suite} onChange={(v) => set("suite", v)} />
+            <Input value={form.suite} onChange={(v) => set("suite", v)} error={errors.suite} placeholder="e.g. 200" />
           </div>
           <div className="space-y-1.5">
             <label className="text-xs font-medium">{t("cust.f.building")}</label>
-            <Input value={form.building} onChange={(v) => set("building", v)} />
+            <Input value={form.building} onChange={(v) => set("building", v)} error={errors.building} placeholder="e.g. A" />
           </div>
           <div className="space-y-1.5">
             <label className="text-xs font-medium">{t("cust.f.city")}</label>
-            <Input value={form.city} onChange={(v) => set("city", v)} />
+            <Input value={form.city} onChange={(v) => set("city", v)} error={errors.city} />
           </div>
           <div className="space-y-1.5">
             <label className="text-xs font-medium">{t("cust.f.state")}</label>
-            <Input value={form.state} onChange={(v) => set("state", v)} />
+            <Input
+              value={form.state}
+              onChange={(v) => set("state", v.toUpperCase().slice(0, 2))}
+              error={errors.state}
+              placeholder="CA"
+            />
           </div>
           <div className="space-y-1.5">
             <label className="text-xs font-medium">{t("cust.f.zip")}</label>
-            <Input value={form.zip} onChange={(v) => set("zip", v)} />
+            <Input
+              value={form.zip}
+              onChange={(v) => set("zip", v.replace(/[^\d-]/g, "").slice(0, 10))}
+              error={errors.zip}
+              placeholder="94538 or 94538-1234"
+            />
           </div>
           <div className="space-y-1.5">
             <label className="text-xs font-medium">{t("cust.f.country")}</label>
-            <Input value={form.country} onChange={(v) => set("country", v)} />
+            <Input value={form.country} onChange={(v) => set("country", v)} error={errors.country} />
           </div>
           <div className="space-y-1.5">
             <label className="text-xs font-medium">Source</label>
@@ -1124,6 +1137,12 @@ function CustomerDialog({
               className="h-11 w-full rounded-[10px] border border-input bg-background px-3.5 text-sm outline-none transition-colors hover:border-foreground/20 focus:border-primary focus:ring-2 focus:ring-primary/15"
             />
           </div>
+          {preview && (
+            <div className="col-span-2 rounded-[10px] border border-dashed border-border bg-secondary/30 px-3.5 py-2.5">
+              <div className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">Address preview</div>
+              <div className="mt-1 whitespace-pre-line text-sm text-foreground">{preview}</div>
+            </div>
+          )}
         </div>
         <DialogFooter>
           <button
@@ -1144,13 +1163,22 @@ function CustomerDialog({
   );
 }
 
-function Input({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+function Input({ value, onChange, error, placeholder }: { value: string; onChange: (v: string) => void; error?: string; placeholder?: string }) {
   return (
-    <input
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      className="h-11 w-full rounded-[10px] border border-input bg-background px-3.5 text-sm outline-none transition-colors hover:border-foreground/20 focus:border-primary focus:ring-2 focus:ring-primary/15"
-    />
+    <div className="space-y-1">
+      <input
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        className={
+          "h-11 w-full rounded-[10px] border bg-background px-3.5 text-sm outline-none transition-colors hover:border-foreground/20 focus:ring-2 " +
+          (error
+            ? "border-destructive focus:border-destructive focus:ring-destructive/15"
+            : "border-input focus:border-primary focus:ring-primary/15")
+        }
+      />
+      {error && <p className="text-[11px] text-destructive">{error}</p>}
+    </div>
   );
 }
 
