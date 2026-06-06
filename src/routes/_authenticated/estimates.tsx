@@ -810,6 +810,7 @@ const LABELS_ZH: PDFLabels = {
   subtitle: "装修报价单",
   estimate: "报价编号",
   date: "日期",
+  validUntil: "有效期至",
   billTo: "客户",
   projectAddress: "项目地址",
   item: "项目",
