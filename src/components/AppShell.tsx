@@ -104,13 +104,8 @@ export function AppShell({ children }: { children: ReactNode }) {
   return (
     <div className="flex h-screen w-full overflow-hidden bg-background text-foreground">
       <aside className="flex w-64 shrink-0 flex-col border-r border-sidebar-border bg-sidebar">
-        <div className="flex items-center gap-1.5 px-4 pt-4">
-          <span className="h-3 w-3 rounded-full bg-[oklch(0.72_0.18_28)]" />
-          <span className="h-3 w-3 rounded-full bg-[oklch(0.82_0.16_85)]" />
-          <span className="h-3 w-3 rounded-full bg-[oklch(0.72_0.16_150)]" />
-        </div>
 
-        <Link to="/dashboard" className="flex items-center gap-3 px-4 pb-4 pt-5">
+        <Link to="/dashboard" className="flex items-center gap-3 px-4 py-6">
           {profile.logoUrl ? (
             <img
               src={profile.logoUrl}
@@ -178,15 +173,11 @@ export function AppShell({ children }: { children: ReactNode }) {
                 <div className="text-[13px] font-semibold">{isZh ? "管理员" : "Admin"}</div>
                 {email && <div className="truncate text-[11px] font-normal text-muted-foreground">{email}</div>}
               </DropdownMenuLabel>
-              <DropdownMenuSeparator />
               <DropdownMenuItem onSelect={() => navigate({ to: "/settings" })}>
                 <UserCircle className="mr-2 h-4 w-4" />
                 {isZh ? "我的资料" : "My Profile"}
               </DropdownMenuItem>
-              <DropdownMenuItem onSelect={() => navigate({ to: "/settings" })}>
-                <Settings className="mr-2 h-4 w-4" />
-                {isZh ? "系统设置" : "Settings"}
-              </DropdownMenuItem>
+              <DropdownMenuSeparator />
               <DropdownMenuSeparator />
               <DropdownMenuItem onSelect={handleSignOut} className="text-destructive focus:text-destructive">
                 <LogOut className="mr-2 h-4 w-4" />
