@@ -256,9 +256,13 @@ function CustomersPage() {
       phone: c.phone,
       email: c.email,
       address: c.address,
+      unit: c.unit ?? "",
+      suite: c.suite ?? "",
+      building: c.building ?? "",
       city: c.city,
       state: c.state,
       zip: c.zip,
+      country: c.country ?? "United States",
       notes: c.notes ?? "",
       source: c.source ?? "Website",
     });
