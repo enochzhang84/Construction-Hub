@@ -176,7 +176,10 @@ export function AppShell({ children }: { children: ReactNode }) {
                 <UserCircle className="mr-2 h-4 w-4" />
                 {isZh ? "我的资料" : "My Profile"}
               </DropdownMenuItem>
-              <DropdownMenuSeparator />
+              <DropdownMenuItem onSelect={() => navigate({ to: "/settings" })}>
+                <Settings className="mr-2 h-4 w-4" />
+                {isZh ? "系统设置" : "System Settings"}
+              </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onSelect={handleSignOut} className="text-destructive focus:text-destructive">
                 <LogOut className="mr-2 h-4 w-4" />
