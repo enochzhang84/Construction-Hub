@@ -28,6 +28,7 @@ import {
 } from "lucide-react";
 import { useT, useLocale } from "@/lib/i18n";
 import { useCustomers } from "@/lib/customer-store";
+import { formatAddressLine, normalizeAddressInput, validateAddress, formatZip, type AddressErrors } from "@/lib/address";
 import {
   useProjects,
   formatDMY,
@@ -172,6 +173,7 @@ function CustomersPage() {
   const [addOpen, setAddOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<FormState>(EMPTY);
+  const [addrErrors, setAddrErrors] = useState<AddressErrors>({});
   const [flagDialog, setFlagDialog] = useState<{ customer: Customer } | null>(null);
   const [deleteDialog, setDeleteDialog] = useState<{ customer: Customer; projectCount: number } | null>(null);
 
@@ -247,6 +249,7 @@ function CustomersPage() {
 
   const openAdd = () => {
     setForm(EMPTY);
+    setAddrErrors({});
     setAddOpen(true);
   };
 
@@ -266,19 +269,43 @@ function CustomersPage() {
       notes: c.notes ?? "",
       source: c.source ?? "Website",
     });
+    setAddrErrors({});
     setEditingId(c.id);
   };
 
+  /** Normalize + validate address fields. Returns the normalized form payload, or null if invalid. */
+  const prepareForm = (): FormState | null => {
+    if (!form.name.trim()) return null;
+    const normalized = normalizeAddressInput(form);
+    const errs = validateAddress(form, false);
+    setAddrErrors(errs);
+    if (Object.keys(errs).length > 0) return null;
+    return {
+      ...form,
+      address: normalized.address ?? "",
+      unit: normalized.unit ?? "",
+      suite: normalized.suite ?? "",
+      building: normalized.building ?? "",
+      city: normalized.city ?? "",
+      state: normalized.state ?? "",
+      zip: normalized.zip ? formatZip(normalized.zip) : "",
+      country: normalized.country ?? "",
+    };
+  };
+
   const onSaveAdd = () => {
-    if (!form.name.trim()) return;
-    const c = addCustomer(form);
+    const payload = prepareForm();
+    if (!payload) return;
+    const c = addCustomer(payload);
     setSelectedId(c.id);
     setAddOpen(false);
   };
 
   const onSaveEdit = () => {
-    if (!editingId || !form.name.trim()) return;
-    updateCustomer(editingId, form);
+    if (!editingId) return;
+    const payload = prepareForm();
+    if (!payload) return;
+    updateCustomer(editingId, payload);
     setEditingId(null);
   };
 
@@ -631,7 +658,8 @@ function CustomersPage() {
         title={t("cust.dlg.title")}
         form={form}
         setForm={setForm}
-        onClose={() => setAddOpen(false)}
+        errors={addrErrors}
+        onClose={() => { setAddOpen(false); setAddrErrors({}); }}
         onSave={onSaveAdd}
       />
 
@@ -641,7 +669,8 @@ function CustomersPage() {
         title={locale === "zh" ? "编辑客户" : "Edit Customer"}
         form={form}
         setForm={setForm}
-        onClose={() => setEditingId(null)}
+        errors={addrErrors}
+        onClose={() => { setEditingId(null); setAddrErrors({}); }}
         onSave={onSaveEdit}
       />
 
@@ -794,7 +823,7 @@ function CustomerDetail({
           <Row icon={<Mail className="h-3.5 w-3.5" />} text={c.email || "—"} />
           <Row
             icon={<MapPin className="h-3.5 w-3.5" />}
-            text={[c.address, c.city, c.state, c.zip].filter(Boolean).join(", ") || "—"}
+            text={formatAddressLine(c) || "—"}
           />
           {c.notes && (
             <div className="mt-2 rounded border border-border/60 bg-secondary/30 p-2 text-xs italic text-muted-foreground">
@@ -1008,6 +1037,7 @@ function CustomerDialog({
   title,
   form,
   setForm,
+  errors,
   onClose,
   onSave,
 }: {
@@ -1015,11 +1045,13 @@ function CustomerDialog({
   title: string;
   form: FormState;
   setForm: (f: FormState) => void;
+  errors: AddressErrors;
   onClose: () => void;
   onSave: () => void;
 }) {
   const t = useT();
   const set = <K extends keyof FormState>(k: K, v: FormState[K]) => setForm({ ...form, [k]: v });
+  const preview = formatAddressLine(form);
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
@@ -1042,35 +1074,45 @@ function CustomerDialog({
           </div>
           <div className="col-span-2 space-y-1.5">
             <label className="text-xs font-medium">{t("cust.f.address")}</label>
-            <Input value={form.address} onChange={(v) => set("address", v)} />
+            <Input value={form.address} onChange={(v) => set("address", v)} error={errors.address} />
           </div>
           <div className="space-y-1.5">
             <label className="text-xs font-medium">{t("cust.f.unit")}</label>
-            <Input value={form.unit} onChange={(v) => set("unit", v)} />
+            <Input value={form.unit} onChange={(v) => set("unit", v)} error={errors.unit} placeholder="e.g. 102" />
           </div>
           <div className="space-y-1.5">
             <label className="text-xs font-medium">{t("cust.f.suite")}</label>
-            <Input value={form.suite} onChange={(v) => set("suite", v)} />
+            <Input value={form.suite} onChange={(v) => set("suite", v)} error={errors.suite} placeholder="e.g. 200" />
           </div>
           <div className="space-y-1.5">
             <label className="text-xs font-medium">{t("cust.f.building")}</label>
-            <Input value={form.building} onChange={(v) => set("building", v)} />
+            <Input value={form.building} onChange={(v) => set("building", v)} error={errors.building} placeholder="e.g. A" />
           </div>
           <div className="space-y-1.5">
             <label className="text-xs font-medium">{t("cust.f.city")}</label>
-            <Input value={form.city} onChange={(v) => set("city", v)} />
+            <Input value={form.city} onChange={(v) => set("city", v)} error={errors.city} />
           </div>
           <div className="space-y-1.5">
             <label className="text-xs font-medium">{t("cust.f.state")}</label>
-            <Input value={form.state} onChange={(v) => set("state", v)} />
+            <Input
+              value={form.state}
+              onChange={(v) => set("state", v.toUpperCase().slice(0, 2))}
+              error={errors.state}
+              placeholder="CA"
+            />
           </div>
           <div className="space-y-1.5">
             <label className="text-xs font-medium">{t("cust.f.zip")}</label>
-            <Input value={form.zip} onChange={(v) => set("zip", v)} />
+            <Input
+              value={form.zip}
+              onChange={(v) => set("zip", v.replace(/[^\d-]/g, "").slice(0, 10))}
+              error={errors.zip}
+              placeholder="94538 or 94538-1234"
+            />
           </div>
           <div className="space-y-1.5">
             <label className="text-xs font-medium">{t("cust.f.country")}</label>
-            <Input value={form.country} onChange={(v) => set("country", v)} />
+            <Input value={form.country} onChange={(v) => set("country", v)} error={errors.country} />
           </div>
           <div className="space-y-1.5">
             <label className="text-xs font-medium">Source</label>
@@ -1095,6 +1137,12 @@ function CustomerDialog({
               className="h-11 w-full rounded-[10px] border border-input bg-background px-3.5 text-sm outline-none transition-colors hover:border-foreground/20 focus:border-primary focus:ring-2 focus:ring-primary/15"
             />
           </div>
+          {preview && (
+            <div className="col-span-2 rounded-[10px] border border-dashed border-border bg-secondary/30 px-3.5 py-2.5">
+              <div className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">Address preview</div>
+              <div className="mt-1 whitespace-pre-line text-sm text-foreground">{preview}</div>
+            </div>
+          )}
         </div>
         <DialogFooter>
           <button
@@ -1115,13 +1163,22 @@ function CustomerDialog({
   );
 }
 
-function Input({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+function Input({ value, onChange, error, placeholder }: { value: string; onChange: (v: string) => void; error?: string; placeholder?: string }) {
   return (
-    <input
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      className="h-11 w-full rounded-[10px] border border-input bg-background px-3.5 text-sm outline-none transition-colors hover:border-foreground/20 focus:border-primary focus:ring-2 focus:ring-primary/15"
-    />
+    <div className="space-y-1">
+      <input
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        className={
+          "h-11 w-full rounded-[10px] border bg-background px-3.5 text-sm outline-none transition-colors hover:border-foreground/20 focus:ring-2 " +
+          (error
+            ? "border-destructive focus:border-destructive focus:ring-destructive/15"
+            : "border-input focus:border-primary focus:ring-primary/15")
+        }
+      />
+      {error && <p className="text-[11px] text-destructive">{error}</p>}
+    </div>
   );
 }
 
