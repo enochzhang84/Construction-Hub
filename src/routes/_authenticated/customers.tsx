@@ -28,6 +28,7 @@ import {
 } from "lucide-react";
 import { useT, useLocale } from "@/lib/i18n";
 import { useCustomers } from "@/lib/customer-store";
+import { formatAddressLine, normalizeAddressInput, validateAddress, formatZip, type AddressErrors } from "@/lib/address";
 import {
   useProjects,
   formatDMY,
