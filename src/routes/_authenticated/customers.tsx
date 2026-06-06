@@ -1069,6 +1069,10 @@ function CustomerDialog({
             <Input value={form.zip} onChange={(v) => set("zip", v)} />
           </div>
           <div className="space-y-1.5">
+            <label className="text-xs font-medium">{t("cust.f.country")}</label>
+            <Input value={form.country} onChange={(v) => set("country", v)} />
+          </div>
+          <div className="space-y-1.5">
             <label className="text-xs font-medium">Source</label>
             <select
               value={form.source}
