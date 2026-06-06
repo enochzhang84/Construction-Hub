@@ -86,33 +86,58 @@ export function AppShell({ children }: { children: ReactNode }) {
     const { data } = supabase.auth.onAuthStateChange((_e, session) => {
       setEmail(session?.user?.email ?? null);
     });
+export function AppShell({ children }: { children: ReactNode }) {
+  const path = useRouterState({ select: (s) => s.location.pathname });
+  const navigate = useNavigate();
+  const t = useT();
+  const locale = useLocale();
+  const isZh = locale === "zh";
+  const [email, setEmail] = useState<string | null>(null);
+  useCompanyHydration();
+  const profile = useCompany((s) => s.profile);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => setEmail(data.user?.email ?? null));
+    const { data } = supabase.auth.onAuthStateChange((_e, session) => {
+      setEmail(session?.user?.email ?? null);
+    });
     return () => data.subscription.unsubscribe();
   }, []);
 
   async function handleSignOut() {
     await supabase.auth.signOut();
-    toast.success("Signed out");
+    toast.success(isZh ? "已退出登录" : "Signed out");
     navigate({ to: "/auth", replace: true });
   }
 
+  const brandName = profile.name || "Construction Hub";
+
   return (
     <div className="flex h-screen w-full overflow-hidden bg-background text-foreground">
-      <aside className="flex w-60 shrink-0 flex-col border-r border-sidebar-border bg-sidebar">
+      <aside className="flex w-64 shrink-0 flex-col border-r border-sidebar-border bg-sidebar">
         <div className="flex items-center gap-1.5 px-4 pt-4">
           <span className="h-3 w-3 rounded-full bg-[oklch(0.72_0.18_28)]" />
           <span className="h-3 w-3 rounded-full bg-[oklch(0.82_0.16_85)]" />
           <span className="h-3 w-3 rounded-full bg-[oklch(0.72_0.16_150)]" />
         </div>
 
-        <div className="flex items-center gap-2.5 px-4 pb-4 pt-5">
-          <div className="flex h-9 w-9 items-center justify-center rounded-md bg-primary text-primary-foreground">
-            <HardHat className="h-5 w-5" />
+        <Link to="/dashboard" className="flex items-center gap-3 px-4 pb-4 pt-5">
+          {profile.logoUrl ? (
+            <img
+              src={profile.logoUrl}
+              alt={brandName}
+              className="h-12 w-12 rounded-xl object-contain bg-white ring-1 ring-sidebar-border p-1"
+            />
+          ) : (
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary text-primary-foreground">
+              <HardHat className="h-6 w-6" />
+            </div>
+          )}
+          <div className="leading-tight min-w-0">
+            <div className="truncate font-display text-[16px] font-bold tracking-tight">{brandName}</div>
+            <div className="text-[11px] text-muted-foreground">Professional Remodeling Contractor</div>
           </div>
-          <div className="leading-tight">
-            <div className="font-display text-[15px] font-semibold">Construction Hub</div>
-            <div className="text-[11px] text-muted-foreground">{t("app.subtitle")}</div>
-          </div>
-        </div>
+        </Link>
 
         <nav className="flex-1 space-y-0.5 px-2 py-2 finder-scroll overflow-y-auto">
           {NAV.map((n) => {
@@ -137,20 +162,49 @@ export function AppShell({ children }: { children: ReactNode }) {
         </nav>
 
         <div className="border-t border-sidebar-border p-3 space-y-2">
-          <LanguageToggle className="w-full justify-center" />
-          {email && (
-            <div className="rounded-md bg-card/60 px-3 py-2 text-[11px] text-muted-foreground">
-              <div className="truncate font-medium text-foreground">{email}</div>
-              <div>{t("app.workspaceMeta")}</div>
-            </div>
-          )}
-          <button
-            onClick={handleSignOut}
-            className="flex w-full items-center justify-center gap-1.5 rounded-md border border-sidebar-border bg-card/40 px-3 py-1.5 text-xs font-medium text-sidebar-foreground/80 transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground"
-          >
-            <LogOut className="h-3.5 w-3.5" />
-            {t("auth.logout")}
-          </button>
+          <LanguageToggle className="w-full justify-center h-10 text-[13px]" />
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                className="flex w-full items-center gap-2 rounded-md border border-sidebar-border bg-card/60 px-3 py-2 text-left transition-colors hover:bg-sidebar-accent"
+                aria-label="user menu"
+              >
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+                  <UserCircle className="h-5 w-5" />
+                </div>
+                <div className="flex-1 min-w-0 leading-tight">
+                  <div className="truncate text-[13px] font-semibold text-foreground">
+                    {isZh ? "管理员" : "Admin"}
+                  </div>
+                  {email && (
+                    <div className="truncate text-[11px] text-muted-foreground">{email}</div>
+                  )}
+                </div>
+                <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" side="top" className="w-56">
+              <DropdownMenuLabel>
+                <div className="text-[13px] font-semibold">{isZh ? "管理员" : "Admin"}</div>
+                {email && <div className="truncate text-[11px] font-normal text-muted-foreground">{email}</div>}
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onSelect={() => navigate({ to: "/settings" })}>
+                <UserCircle className="mr-2 h-4 w-4" />
+                {isZh ? "我的资料" : "My Profile"}
+              </DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => navigate({ to: "/settings" })}>
+                <Settings className="mr-2 h-4 w-4" />
+                {isZh ? "系统设置" : "Settings"}
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onSelect={handleSignOut} className="text-destructive focus:text-destructive">
+                <LogOut className="mr-2 h-4 w-4" />
+                {t("auth.logout")}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </aside>
 
