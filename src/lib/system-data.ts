@@ -185,7 +185,18 @@ export async function restoreDefaultConstructionItems(): Promise<{
 
   // 3. Filter seed → only new rows
   const seed = buildSeedItems();
-  const toInsert: Array<Record<string, unknown>> = [];
+  type ItemInsert = {
+    id: string;
+    category_id: string;
+    name_en: string;
+    name_zh: string;
+    unit: string;
+    default_pricing: string;
+    labor_rate: number;
+    material_rate: number;
+    hours_per_unit: number;
+  };
+  const toInsert: ItemInsert[] = [];
   let skipped = 0;
   for (const r of seed) {
     const k = dedupKey(r.categoryId, r.name, r.nameZh ?? "", r.unit);
@@ -207,7 +218,7 @@ export async function restoreDefaultConstructionItems(): Promise<{
     });
   }
 
-  // 4. Batch insert (1000 row chunks)
+  // 4. Batch insert (500 row chunks)
   let created = 0;
   for (let i = 0; i < toInsert.length; i += 500) {
     const chunk = toInsert.slice(i, i + 500);
