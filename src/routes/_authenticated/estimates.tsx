@@ -29,16 +29,10 @@ function fmt(n: number) {
   return n.toLocaleString("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 2 });
 }
 
+import { formatAddress } from "@/lib/address";
+
 function buildProjectAddress(c: { address: string; unit?: string; suite?: string; building?: string; city: string; state: string; zip: string; country?: string }): string {
-  const lines: string[] = [];
-  if (c.address?.trim()) lines.push(c.address.trim());
-  if (c.unit?.trim()) lines.push(c.unit.trim());
-  if (c.suite?.trim()) lines.push(`Suite ${c.suite.trim()}`);
-  if (c.building?.trim()) lines.push(`Building ${c.building.trim()}`);
-  const cityStateZip = [c.city, `${c.state} ${c.zip}`.trim()].filter(Boolean).join(", ");
-  if (cityStateZip) lines.push(cityStateZip);
-  if (c.country?.trim()) lines.push(c.country.trim());
-  return lines.join("\n");
+  return formatAddress(c);
 }
 
 function formatDateAddDays(dateStr: string, days: number): string {
