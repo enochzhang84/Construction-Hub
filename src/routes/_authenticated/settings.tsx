@@ -237,6 +237,9 @@ function SettingsPage() {
 
         <UsersAndRolesSection />
 
+        <SystemDataSection />
+
+
 
         <section className="rounded-lg border border-border bg-card p-6 shadow-panel">
           <h2 className="mb-2 font-display text-base font-semibold">{t("set.roadmap")}</h2>
